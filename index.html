@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JUDES CBO - Empowerment for Development</title>
+      <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Basic SEO -->
+  <title>Jude Community Based Organization - Empowering Communities in Oyugis, Homabay</title>
+  <meta name="description" content="Jude CBO (judescbo.org) is dedicated to empowering communities in Oyugis-Homabay through education, women empowerment, agricultural development, health, and social justice.">
+  <meta name="keywords" content="Jude CBO, judescbo.org, Community Based Organization, Oyugis, Homabay, Kenya NGOs, Women Empowerment, Youth Development, Agriculture, Education, Community Support, Social Justice, Nonprofit Kenya">
+  <meta name="author" content="Jude Community Based Organization">
+
+  <!-- Robots -->
+  <meta name="robots" content="index, follow">
+  <meta name="revisit-after" content="7 days">
+
+  <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+  <meta property="og:title" content="Judes Community Based Organization - Oyugis Homabay">
+  <meta property="og:description" content="We promote education, women empowerment, agriculture, health, and sustainable development for a brighter future in Oyugis-Homabay.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.judescbo.org">
+  <meta property="og:image" content="https://www.judescbo.org/judes-logo.png">
+  <meta property="og:site_name" content="Jude CBO">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Jude Community Based Organization - judescbo.org">
+  <meta name="twitter:description" content="Empowering communities in Oyugis-Homabay through education, agriculture, women empowerment, and social justice.">
+  <meta name="twitter:image" content="https://www.judescbo.org/assets/images/twitter-card.jpg">
+  <meta name="twitter:site" content="@JudeCBO">
+
+  <!-- Favicon -->
+  <link rel="icon" href="https://www.judescbo.org/judes-logo.png" type="image/png">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://www.judescbo.org">
+
+  <!-- Theme Color (Mobile browsers) -->
+  <meta name="theme-color" content="#28a745">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --blue: #1a365d;
+            --green: #2d5016;
+            --red: #9b2c2c;
+            --light: #f7fafc;
+            --dark: #2d3748;
+            --text: #4a5568;
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            color: var(--text);
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+            font-family: 'Raleway', sans-serif;
+        }
+        
+        h1, h2, h3, h4, h5 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--blue) 0%, var(--green) 100%);
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            animation: fadeIn 1s ease;
+        }
+        
+    /* Logo Fix */
+    .logo-img {
+      width: 70px;
+      height: 70px;
+      border-radius: 30%; /* Makes logo round */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+    }
+
+    .logo-img img {
+      width: 100%;
+      height: 70%;
+      object-fit: cover; /* Keeps aspect ratio */
+      display: block;
+    margin-right: 10px;
+    
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+        
+        .logo-subtext {
+            font-size: 0.8rem;
+            color: #ecc94b;
+            margin-top: 2px;
+        }
+        
+        /* Desktop Navigation */
+        .desktop-nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        .desktop-nav li {
+            margin-left: 2rem;
+        }
+        
+        .desktop-nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            padding: 0.5rem 0;
+            transition: var(--transition);
+        }
+        
+        .desktop-nav a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--red);
+            transition: var(--transition);
+        }
+        
+        .desktop-nav a:hover:after {
+            width: 100%;
+        }
+        
+        /* Mobile Navigation */
+        .mobile-nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 1001;
+        }
+        
+        .mobile-nav {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 70%;
+            max-width: 300px;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--blue) 0%, var(--green) 100%);
+            z-index: 1000;
+            padding: 5rem 1.5rem;
+            transition: right 0.4s ease;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mobile-nav.active {
+            right: 0;
+        }
+        
+        .mobile-nav ul {
+            list-style: none;
+        }
+        
+        .mobile-nav li {
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .mobile-nav.active li {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .mobile-nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            display: block;
+            padding: 0.5rem 0;
+            transition: var(--transition);
+        }
+        
+        .mobile-nav a:hover {
+            color: var(--red);
+            padding-left: 10px;
+        }
+        
+        .close-nav {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.2rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1002;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 8rem 0 5rem;
+            background: linear-gradient(135deg, var(--blue) 0%, var(--green) 100%);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1.5rem;
+            animation: slideUp 1s ease;
+        }
+        
+        .hero p {
+            font-size: 2.3rem;
+            margin-bottom: 2rem;
+            animation: slideUp 1.2s ease;
+            font-weight: bold;
+        }
+        
+        .hero-btn {
+            display: inline-block;
+            background-color: var(--red);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            animation: fadeIn 1.5s ease;
+        }
+        
+        .hero-btn:hover {
+            background-color: #c53030;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 5rem 0;
+            background-color: white;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--dark);
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            position: relative;
+            display: inline-block;
+            padding-bottom: 1rem;
+        }
+        
+        .section-title h2:after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 3px;
+            background-color: var(--red);
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            background-color: var(--light);
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--blue);
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+        
+        .feature-card:hover .feature-icon {
+            color: var(--green);
+            transform: scale(1.1);
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        /* Blog Section */
+        .blog {
+            padding: 5rem 0;
+            background-color: var(--light);
+        }
+        
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .blog-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .blog-img {
+            height: 200px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--blue);
+            font-size: 3rem;
+        }
+        
+        .blog-content {
+            padding: 1.5rem;
+        }
+        
+        .blog-content h3 {
+            margin-bottom: 0.5rem;
+            color: var(--blue);
+        }
+        
+        .blog-meta {
+            color: var(--text);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .blog-meta i {
+            margin-right: 0.5rem;
+            color: var(--green);
+        }
+        
+        /* Contact Section */
+        .contact {
+            padding: 5rem 0;
+            background-color: white;
+        }
+        
+        .contact-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+        }
+        
+        .contact-info {
+            background: linear-gradient(135deg, var(--blue) 0%, var(--green) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        
+        .contact-info h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .contact-detail {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .contact-detail i {
+            font-size: 1.2rem;
+            margin-right: 1rem;
+            color: var(--red);
+            background-color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .contact-form {
+            background-color: var(--light);
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Raleway', sans-serif;
+        }
+        
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, var(--blue) 0%, var(--green) 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .submit-btn:hover {
+            background: linear-gradient(135deg, var(--green) 0%, var(--blue) 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, var(--blue) 0%, var(--green) 100%);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .footer-section h3:after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 2px;
+            background-color: var(--red);
+            bottom: 0;
+            left: 0;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .footer-links a:hover {
+            color: var(--red);
+            padding-left: 5px;
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            transition: var(--transition);
+        }
+        
+        .social-icons a:hover {
+            background-color: var(--red);
+            transform: translateY(-3px);
+        }
+        
+        .date-display {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Media Queries */
+        @media (max-width: 900px) {
+            .desktop-nav {
+                display: none;
+            }
+            
+            .mobile-nav-toggle {
+                display: block;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            
+            .logo-text {
+                font-size: 1.3rem;
+            }
+.logo-img {
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+    margin-right: 8px;
+    border-radius: 50%; /* Makes the logo round */
+    object-fit: cover;  /* Ensures the image fits nicely inside */
+}
+.subscribe-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+.subscribe-form input {
+    flex: 1;
+    padding: 0.6rem;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+}
+
+.subscribe-form button {
+    background: var(--accent);
+    border: 10px;
+    border-color: solid #ffffff;
+    padding: 0.6rem 1.2rem;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    color: rgb(228, 175, 0);
+    transition: var(--transition);
+}
+
+.subscribe-form button:hover {
+    color: black;
+    background: #d69e2e;
+    transform: translateY(-2px);
+   
+}
+
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <div class="logo-img">
+                    <img src="jude-logo.png" alt="judes logo">
+                </div>
+                <div>
+                    <div class="logo-text">JUDES CBO</div>
+                    <div class="logo-subtext">Empowerment for Development</div>
+                </div>
+            </div>
+            
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#programs">Programs</a></li>
+                    <li><a href="#blog">Blog</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+            
+            <button class="mobile-nav-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+    
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+        <button class="close-nav">
+            <i class="fas fa-times"></i>
+        </button>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#programs">Programs</a></li>
+            <li><a href="#blog">Blog</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-slide active" style="background-image: url('image (1).jpeg');"></div>
+  <div class="hero-slide" style="background-image: url('image (2).jpeg');"></div>
+  <div class="hero-slide" style="background-image: url('image (3).jpeg');"></div>
+
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">JUDES COMMUNITY BASED ORGANIZATION</h1>
+    <p class="hero-subtitle">
+      <span id="typed-text"></span>
+      <span class="cursor">|</span>
+    </p>
+    <div class="hero-ctas">
+      <a href="#contact" class="hero-btn primary">Get Involved</a>
+      <a href="#" class="hero-btn secondary" onclick="openPopup()">Donate Now</a>
+      <a href="#programs" class="hero-btn secondary">Our Programs</a>
+    </div>
+  </div>
+</section>
+
+<style>
+/* Hero Base */
+.hero {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Slides */
+.hero-slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transform: scale(1.1);
+  transition: opacity 1s ease-in-out, transform 5s ease;
+}
+.hero-slide.active {
+  opacity: 1;
+  transform: scale(1);
+  z-index: 1;
+}
+
+/* Dark overlay */
+.hero-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.55);
+  z-index: 2;
+}
+
+/* Content */
+.hero-content {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  color: #fff;
+  animation: fadeInUp 2s ease-in-out;
+}
+
+.hero-title {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: slideInDown 1.5s ease;
+}
+
+.hero-subtitle {
+  font-size: 1.4rem;
+  margin-bottom: 2rem;
+  font-weight: 300;
+  min-height: 40px;
+}
+
+/* CTA Buttons */
+.hero-ctas {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.hero-btn {
+  display: inline-block;
+  padding: 12px 25px;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.hero-btn.primary {
+  background: #f04e30;
+  color: #fff;
+}
+.hero-btn.primary:hover {
+  background: #ff7043;
+  transform: scale(1.05);
+}
+
+.hero-btn.secondary {
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+}
+.hero-btn.secondary:hover {
+  background: #fff;
+  color: #333;
+  transform: scale(1.05);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Typing effect */
+.cursor {
+  display: inline-block;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.subscribe-btn {
+    background: linear-gradient(135deg, #ff6600, #ff8533); /* Orange gradient */
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 50px; /* Rounded pill style */
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: all 0.3s ease-in-out;
+}
+
+.subscribe-btn:hover {
+    background: linear-gradient(135deg, #ff8533, #ff6600);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+}
+
+.subscribe-btn:active {
+    transform: scale(0.95);
+}
+</style>
+
+<script>
+// Hero slideshow
+let slides = document.querySelectorAll(".hero-slide");
+let index = 0;
+function showNextSlide() {
+  slides[index].classList.remove("active");
+  index = (index + 1) % slides.length;
+  slides[index].classList.add("active");
+}
+setInterval(showNextSlide, 5000);
+
+// Typing animation
+const phrases = ["Empowering Communities", "Educating for Change", "Transforming Lives"];
+let currentPhrase = 0;
+let currentChar = 0;
+const typedText = document.getElementById("typed-text");
+function typeEffect() {
+  if (currentChar < phrases[currentPhrase].length) {
+    typedText.textContent += phrases[currentPhrase].charAt(currentChar);
+    currentChar++;
+    setTimeout(typeEffect, 100);
+  } else {
+    setTimeout(eraseEffect, 2000);
+  }
+}
+function eraseEffect() {
+  if (currentChar > 0) {
+    typedText.textContent = phrases[currentPhrase].substring(0, currentChar - 1);
+    currentChar--;
+    setTimeout(eraseEffect, 50);
+  } else {
+    currentPhrase = (currentPhrase + 1) % phrases.length;
+    setTimeout(typeEffect, 500);
+  }
+}
+typeEffect();
+</script>
+
+<section class="features" id="about" style="background: linear-gradient(135deg, #f9f9f9, #eef6ff); padding: 60px 0;">
+  <div class="container">
+    
+    <div class="section-title">
+      <h2>Who Are We</h2>
+    </div>
+
+    <div class="features-grid">
+      
+      <!-- Our Story -->
+      <div class="feature-card reveal">
+        <i class="fas fa-history feature-icon"></i>
+        <h3>Our Story</h3>
+        <p>
+          JUDES Community Based Organization was founded and registered in 2018 in Homabay County, inspired by St. Jude, the patron of the desperate. 
+          It was established to address critical gaps in underserved rural communities, where health, education, and social equity challenges were deeply interconnected.
+        </p>
+        <p>
+          Our beginnings were rooted in collaboration between health professionals, disability advocates, and community leaders determined to break systemic barriers such as stigma, lack of accessible services, and cultural taboos. 
+          Since then, we have grown into a trusted force for grassroots transformation and advocacy.
+        </p>
+      </div>
+
+      <!-- Mission -->
+      <div class="feature-card reveal">
+        <i class="fas fa-bullseye feature-icon"></i>
+        <h3>Our Mission</h3>
+        <p>
+          To prioritize the needs of the vulnerable and less fortunate by addressing interconnected 
+          challenges in education, health, economic empowerment, and social justice. Our mission is to bridge gaps that limit opportunity, eliminate barriers to access, 
+          and nurture environments where dignity, respect, and self-sufficiency are at the core of development.
+        </p>
+        <p>
+          We achieve this by engaging with local communities, designing sustainable programs, and promoting collective action 
+          that strengthens resilience and drives lasting social transformation.
+        </p>
+      </div>
+
+      <!-- Vision -->
+      <div class="feature-card reveal">
+        <i class="fas fa-eye feature-icon"></i>
+        <h3>Our Vision</h3>
+        <p>
+          A compassionate and inclusive community where everyone has equal access to resources, opportunities, and support systems needed to thrive. 
+          We envision a society where poverty, stigma, and inequality no longer hinder progress, and individuals are empowered to live with dignity, 
+          purpose, and fulfillment.
+        </p>
+        <p>
+          By fostering solidarity, innovation, and accountability, we aim to inspire future generations and build a culture that leaves no one behind.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Core Values Section Title -->
+    <div class="section-title" style="margin-top:50px;">
+      <h2>Our Core Values</h2>
+    </div>
+
+    <div class="features-grid">
+      <!-- Compassion -->
+      <div class="feature-card reveal">
+        <i class="fas fa-hand-holding-heart feature-icon"></i>
+        <h3>Compassion</h3>
+        <p>
+          We care deeply about the well-being of our community members, offering support and kindness especially in times of vulnerability.
+        </p>
+      </div>
+
+      <!-- Empowerment -->
+      <div class="feature-card reveal">
+        <i class="fas fa-lightbulb feature-icon"></i>
+        <h3>Empowerment</h3>
+        <p>
+          We believe in the potential of individuals to create positive change. Through skills, knowledge, and resources, 
+          we enable people to take charge of their own development.
+        </p>
+      </div>
+
+      <!-- Inclusivity -->
+      <div class="feature-card reveal">
+        <i class="fas fa-users feature-icon"></i>
+        <h3>Inclusivity</h3>
+        <p>
+          We celebrate diversity and ensure equal opportunities for all, regardless of gender, ability, or background. 
+          Inclusivity drives the strength and unity of our community.
+        </p>
+      </div>
+
+      <!-- Integrity -->
+      <div class="feature-card reveal">
+        <i class="fas fa-balance-scale feature-icon"></i>
+        <h3>Integrity</h3>
+        <p>
+          We operate with transparency, accountability, and ethics in every program and decision, building trust within the communities we serve.
+        </p>
+      </div>
+
+      <!-- Community -->
+      <div class="feature-card reveal">
+        <i class="fas fa-handshake feature-icon"></i>
+        <h3>Community</h3>
+        <p>
+          We believe in collaboration, partnerships, and collective action. By working together, we achieve greater impact and sustainable solutions.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- Features Section -->
+<section class="features" id="programs">
+    <div class="container">
+        <div class="section-title">
+            <h2>Our Programs</h2>
+            <p>We are committed to transforming lives through sustainable, inclusive, and impactful programs designed to meet the unique needs of our community.</p>
+        </div>
+        
+        <div class="features-grid">
+            <!-- Agricultural Development -->
+            <div class="feature-card">
+                <i class="fas fa-seedling feature-icon"></i>
+                <h3>Agricultural Development</h3>
+                <p>
+                    We empower local farmers with modern, sustainable farming practices that improve yields while protecting the environment. 
+                    Our program focuses on climate-smart agriculture, access to quality seeds, training on organic farming, and post-harvest handling. 
+                    By encouraging agribusiness ventures, we help families achieve food security and generate income, reducing poverty and hunger in the community.
+                </p>
+            </div>
+            
+            <!-- Education Support -->
+            <div class="feature-card">
+                <i class="fas fa-graduation-cap feature-icon"></i>
+                <h3>Education Support</h3>
+                <p>
+                    We believe education is the foundation for a brighter future. Through this program, we provide scholarships, school supplies, and mentorship opportunities for vulnerable children and youth. 
+                    We also run after-school learning initiatives, digital literacy training, and capacity-building for teachers. 
+                    Our goal is to break barriers to education and empower learners to achieve their full potential.
+                </p>
+            </div>
+            
+            <!-- Women Empowerment -->
+            <div class="feature-card">
+                <i class="fas fa-hand-holding-heart feature-icon"></i>
+                <h3>Women Empowerment</h3>
+                <p>
+                    This program focuses on enhancing the socio-economic independence of women and girls. 
+                    We provide vocational training, entrepreneurship skills, and access to microfinance opportunities that enable women to start and sustain small businesses. 
+                    Additionally, we raise awareness on gender equality, reproductive health, and leadership, ensuring women become active decision-makers in their homes and communities.
+                </p>
+            </div>
+            
+            <!-- Youth Development -->
+            <div class="feature-card">
+                <i class="fas fa-users feature-icon"></i>
+                <h3>Youth Development</h3>
+                <p>
+                    We nurture young people to be agents of positive change by offering mentorship, skills training, and leadership development programs. 
+                    Our focus is on equipping youth with entrepreneurial skills, digital knowledge, and opportunities to participate in community development initiatives. 
+                    We also run campaigns on drug abuse prevention, mental health, and civic engagement to ensure holistic growth.
+                </p>
+            </div>
+            
+            <!-- Health & Wellness -->
+            <div class="feature-card">
+                <i class="fas fa-clinic-medical feature-icon"></i>
+                <h3>Health & Wellness</h3>
+                <p>
+                    Access to quality healthcare is vital for a thriving community. 
+                    We organize health camps, awareness campaigns, and partnerships with medical professionals to provide free checkups, maternal health support, and preventive care. 
+                    Our focus includes nutrition education, HIV/AIDS awareness, and mental health support to promote overall community well-being.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    
+    <!-- Blog Section -->
+    <section class="blog" id="blog">
+        <div class="container">
+            <div class="section-title">
+                <h2>Latest Blogs</h2>
+            </div>
+            
+            <div class="blog-grid">
+                <div class="blog-card">
+                    <div class="blog-img">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <div class="blog-content">
+                        <h3>New Agricultural Program Launch</h3>
+                        <div class="blog-meta">
+                            <i class="far fa-calendar"></i> <span>June 15, 2023</span>
+                        </div>
+                        <p>We're excited to announce our new sustainable agriculture program aimed at improving food security in the region.</p>
+                    </div>
+                </div>
+                
+                <div class="blog-card">
+                    <div class="blog-img">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="blog-content">
+                        <h3>Education Scholarship Opportunities</h3>
+                        <div class="blog-meta">
+                            <i class="far fa-calendar"></i> <span>May 28, 2023</span>
+                        </div>
+                        <p>Applications are now open for our annual education scholarship program for deserving students.</p>
+                    </div>
+                </div>
+                
+                <div class="blog-card">
+                    <div class="blog-img">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="blog-content">
+                        <h3>Community Cleanup Initiative</h3>
+                        <div class="blog-meta">
+                            <i class="far fa-calendar"></i> <span>April 10, 2023</span>
+                        </div>
+                        <p>Join us for our monthly community cleanup event to help keep our environment clean and healthy.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact Section -->
+<section class="contact" id="contact">
+    <div class="container">
+        <div class="section-title">
+            <h2>Contact Us</h2>
+        </div>
+        
+        <div class="contact-container">
+            <!-- Contact Info -->
+            <div class="contact-info">
+                <h3>Get In Touch</h3>
+                
+                <div class="contact-detail">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <h4>Location</h4>
+                        <p>Oyugis-Homabay, Kenya</p>
+                    </div>
+                </div>
+                
+                <div class="contact-detail">
+                    <i class="fas fa-phone"></i>
+                    <div>
+                        <h4>Phone</h4>
+                        <p>+254 712 345 678</p>
+                    </div>
+                </div>
+                
+                <div class="contact-detail">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <h4>Email</h4>
+                        <p>info@judescbo.org</p>
+                    </div>
+                </div>
+
+                <!-- Google Map Embed -->
+                <div class="map-container">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.7751981126!2d34.7404!3d-0.6773!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182a4dca14c9f7cd%3A0xb784be2c0e14a1b8!2sOyugis%2C%20Kenya!5e0!3m2!1sen!2ske!4v1696490457890!5m2!1sen!2ske"
+                        width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+            
+            <!-- Contact Form -->
+            <div class="contact-form">
+                <h3>Send Message</h3>
+                <form id="contact-form" method="POST" action="contact-form-handler.php">
+                    <div class="form-group">
+                        <label for="name">Your Name</label>
+                        <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Your Email</label>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Your Message</label>
+                        <textarea id="message" name="message" class="form-control" placeholder="Enter your message" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <!-- About -->
+            <div class="footer-section">
+                <h3>About JUDES CBO</h3>
+                <p>We are a community-based organization dedicated to empowerment and development in Oyugis-Homabay, Kenya.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#programs">Programs</a></li>
+                    <li><a href="#gallery">Gallery</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            
+            <!-- Contact Info -->
+            <div class="footer-section">
+                <h3>Contact Info</h3>
+                <p><i class="fas fa-map-marker-alt"></i> Oyugis Town, Homabay County, Kenya</p>
+                <p><i class="fas fa-phone"></i> +254 712 109 310</p>
+                <p><i class="fas fa-envelope"></i> info@judescbo.org</p>
+                
+                <div class="date-display">
+                    <p id="current-date">Loading date...</p>
+                    <p id="current-time">Loading time...</p>
+                </div>
+            </div>
+            
+            <!-- Newsletter Subscription -->
+            <div class="footer-section subscribe-section">
+                <h3>Subscribe to Our Newsletter</h3>
+                <p>Stay connected with our latest programs, events, and updates.</p>
+                <form id="subscribe-form" method="POST" action="subscribe-handler.php" class="subscribe-form">
+                    <input type="email" id="subscriber-email" name="email" placeholder="Enter your email address" required>
+                    <button type="submit">Subscribe</button>
+                </form>
+                <p id="subscribe-message"></p>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; <span id="year"></span> JUDES COMMUNITY BASED ORGANIZATION. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+<!-- Popup Modal -->
+<div id="mpesaPopup" class="popup">
+  <div class="popup-content">
+    <span class="close" onclick="closePopup()">&times;</span>
+    <h3>Donate via M-Pesa</h3>
+    <p>Enter the amount and confirm to proceed with your donation.</p>
+    <form action="https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest" method="post" target="_blank">
+      <label for="amount">Donation Amount (KES)</label>
+      <input type="number" id="amount" name="amount" placeholder="Enter amount" required>
+      <button type="submit" class="donate-btn">Proceed with M-Pesa</button>
+    </form>
+  </div>
+</div>
+
+<!-- Styles -->
+<style>
+.donate-btn {
+  background: #34b233;
+  color: #fff;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.3s;
+  margin-right: 10px;
+}
+.donate-btn:hover { background: #2e9e2c; }
+
+.cancel-btn {
+  background: #ccc;
+  color: #333;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+.cancel-btn:hover { background: #999; }
+
+.popup {
+  display: none; 
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center; align-items: center;
+}
+.popup-content {
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  width: 350px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  position: relative;
+}
+.popup-content h3 { margin-bottom: 15px; }
+.popup-content input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0 20px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.close {
+  position: absolute;
+  top: 20px; right: 30px;
+  font-size: 28px;
+  cursor: pointer;
+  color: #333;
+}
+</style>
+
+<!-- JavaScript -->
+<script>
+function openPopup() {
+  document.getElementById("mpesaPopup").style.display = "flex";
+}
+function closePopup() {
+  document.getElementById("mpesaPopup").style.display = "none";
+}
+</script>
+
+<!-- Floating WhatsApp Icon -->
+<a href="https://wa.me/254712109310?text=Hello%20JUDES%20CBO!%20I%20would%20like%20to%20know%20more%20about%20your%20programs." 
+   class="whatsapp-float" target="_blank">
+   <i class="fab fa-whatsapp"></i>
+</a>
+
+<style>
+.whatsapp-float {
+    position: fixed;
+    width: 55px;
+    height: 55px;
+    bottom: 20px;
+    right: 20px;
+    background-color: #25d366;
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 28px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+.whatsapp-float:hover {
+    background-color: #20b954;
+}
+.whatsapp-float i {
+    margin: 0;
+}
+</style>
+
+    
+    <script>
+        // Mobile Navigation
+        const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+        const mobileNav = document.querySelector('.mobile-nav');
+        const closeNav = document.querySelector('.close-nav');
+        
+        mobileNavToggle.addEventListener('click', () => {
+            mobileNav.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        closeNav.addEventListener('click', () => {
+            mobileNav.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+        
+        // Close mobile nav when clicking on a link
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav a');
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileNav.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+        });
+        
+        // Date and Time Display
+        function updateDateTime() {
+            const now = new Date();
+            
+            // Format date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateString = now.toLocaleDateString('en-US', options);
+            
+            // Format time
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            // Update DOM
+            document.getElementById('current-date').innerHTML = `<i class="far fa-calendar"></i> ${dateString}`;
+            document.getElementById('current-time').innerHTML = `<i class="far fa-clock"></i> ${timeString}`;
+        }
+        
+        // Update date and time immediately and then every second
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        
+        // Animate elements on scroll
+        function animateOnScroll() {
+            const elements = document.querySelectorAll('.feature-card, .blog-card');
+            
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const screenPosition = window.innerHeight / 1.3;
+                
+                if (elementPosition < screenPosition) {
+                    element.style.opacity = 1;
+                    element.style.transform = 'translateY(0)';
+                }
+            });
+        }
+        
+        // Set initial state for animation
+        document.querySelectorAll('.feature-card, .blog-card').forEach(card => {
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        });
+        
+        // Listen for scroll events
+        window.addEventListener('scroll', animateOnScroll);
+        // Trigger once on load in case elements are already in view
+        window.addEventListener('load', animateOnScroll);
+         // Auto-update footer year
+    document.getElementById("year").textContent = new Date().getFullYear();
+    // Auto-update footer year
+document.getElementById("year").textContent = new Date().getFullYear();
+
+// Subscription form handling
+document.getElementById("subscribe-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const email = document.getElementById("subscriber-email").value;
+    document.getElementById("subscribe-message").textContent = 
+        "✅ Thank you for subscribing! (" + email + ")";
+    this.reset();
+});
+
+</script>
+</body>
+</html>
