@@ -34,7 +34,7 @@
     <meta name="twitter:site" content="@JudeCBO">
 
     <!-- Favicon -->
-    <link rel="icon" href="jude-logo.png" type="image/png">
+    <link rel="icon" href="https://www.judescbo.org/jude-logo.png" type="image/png">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://www.judescbo.org">
@@ -1144,23 +1144,14 @@
                 </p>
             </div>
             
-            <!-- Education Support -->
-            <div class="feature-card">
-                <i class="fas fa-graduation-cap feature-icon"></i>
-                <h3>Education Support</h3>
-                <p>
-                    Providing scholarships, school supplies, mentorship, and after-school learning initiatives to help vulnerable children access education. 
-                    We also run digital literacy and teacher capacity-building programs to nurture future leaders.
-                </p>
-            </div>
-            
             <!-- Women Empowerment -->
             <div class="feature-card">
                 <i class="fas fa-hand-holding-heart feature-icon"></i>
                 <h3>Women Empowerment</h3>
                 <p>
                     Promoting socio-economic independence for women through vocational training, entrepreneurship skills, and microfinance opportunities. 
-                    We also champion gender equality, reproductive health, and leadership so women can thrive as active decision-makers.
+                    We also champion gender equality, reproductive health, and leadership while running campaigns against 
+                    <strong>Sexual & Gender-Based Violence (SGBV)</strong>, ensuring women and girls can thrive as active decision-makers free from abuse.
                 </p>
             </div>
             
@@ -1180,7 +1171,9 @@
                 <h3>Health & Wellness</h3>
                 <p>
                     Supporting access to healthcare through free medical camps, maternal health services, and preventive care awareness. 
-                    Focus areas include nutrition, HIV/AIDS education, and mental health programs for overall community well-being.
+                    Focus areas include nutrition, HIV/AIDS education, mental health, 
+                    <strong>sex education, contraceptive awareness, and reproductive health advocacy</strong> 
+                    to promote overall community well-being.
                 </p>
             </div>
 
@@ -1197,7 +1190,8 @@
     </div>
 </section>
 
-   <!-- Blog Section -->
+
+<!-- Blog Section -->
 <section class="blog" id="blog">
     <div class="container">
         <div class="section-title">
@@ -1217,38 +1211,22 @@
                         <i class="far fa-calendar"></i> <span>June 15, 2023</span>
                     </div>
                     <p>We're excited to announce our new sustainable agriculture program aimed at improving food security in the region.</p>
-                    <a href="#" class="read-more">Read More</a>
-                    
-                    <!-- Share Options -->
-                    <div class="share-icons">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                    </div>
+                    <button class="read-more" onclick="openModal('agricultureModal')">Read More</button>
                 </div>
             </div>
 
-            <!-- Education Blog -->
+            <!-- Youth and Adolescent Health Programme Blog -->
             <div class="blog-card">
                 <div class="blog-icon">
-                    <i class="fas fa-graduation-cap fa-4x"></i>
+                    <i class="fas fa-heartbeat fa-4x"></i>
                 </div>
                 <div class="blog-content">
-                    <h3>Education Scholarship Opportunities</h3>
+                    <h3>Youth and Adolescent Health Programme</h3>
                     <div class="blog-meta">
-                        <i class="far fa-calendar"></i> <span>May 28, 2023</span>
+                        <i class="far fa-calendar"></i> <span>August 20, 2023</span>
                     </div>
-                    <p>Applications are now open for our annual education scholarship program for deserving students.</p>
-                    <a href="#" class="read-more">Read More</a>
-
-                    <!-- Share Options -->
-                    <div class="share-icons">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                    </div>
+                    <p>Our Youth and Adolescent Health Programme focuses on SRHR, mental health, mentorship, and peer networks...</p>
+                    <button class="read-more" onclick="openModal('healthModal')">Read More</button>
                 </div>
             </div>
 
@@ -1263,15 +1241,7 @@
                         <i class="far fa-calendar"></i> <span>April 10, 2023</span>
                     </div>
                     <p>Join us for our monthly community cleanup event to help keep our environment clean and healthy.</p>
-                    <a href="#" class="read-more">Read More</a>
-
-                    <!-- Share Options -->
-                    <div class="share-icons">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                    </div>
+                    <button class="read-more" onclick="openModal('cleanupModal')">Read More</button>
                 </div>
             </div>
 
@@ -1285,16 +1255,8 @@
                     <div class="blog-meta">
                         <i class="far fa-calendar"></i> <span>March 12, 2023</span>
                     </div>
-                    <p>Our new initiative supports neurodiverse individuals and persons with Cerebral Palsy through inclusive education, advocacy, and empowerment programs.</p>
-                    <a href="#" class="read-more">Read More</a>
-
-                    <!-- Share Options -->
-                    <div class="share-icons">
-                        <a href="#"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                    </div>
+                    <p>Our initiative supports neurodiverse individuals and persons with Cerebral Palsy through inclusive education, advocacy, and empowerment.</p>
+                    <button class="read-more" onclick="openModal('disabilityModal')">Read More</button>
                 </div>
             </div>
 
@@ -1302,29 +1264,161 @@
     </div>
 </section>
 
+<!-- Popup Modals -->
+<div id="agricultureModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('agricultureModal')">&times;</span>
+        <h2>New Agricultural Program Launch</h2>
+        <p>
+            We’re excited to announce our new sustainable agriculture program aimed at improving food security in the region. 
+            This program empowers smallholder farmers with climate-smart techniques, provides access to quality seeds, and supports post-harvest handling and storage. 
+            <br><br>
+            Through this initiative, Jude’s CBO is working to reduce food waste, enhance agribusiness opportunities, and strengthen food supply chains so families can thrive with dignity.
+        </p>
+    </div>
+</div>
+
+<div id="healthModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('healthModal')">&times;</span>
+        <h2>Youth and Adolescent Health Programme</h2>
+        <p>
+            At Jude’s CBO, we are committed to creating a future where young people can make informed choices about their health, education, and wellbeing. 
+            Our Youth and Adolescent Health Programme focuses on Sexual and Reproductive Health and Rights (SRHR) and mental health, with a strong emphasis on empowering adolescent girls and young women (AGYW).
+        </p>
+        <ul>
+            <li>Comprehensive sexuality education tailored for adolescents and youth.</li>
+            <li>Access to youth-friendly reproductive health services in partnership with local facilities.</li>
+            <li>Mentorship and peer-support networks to guide young people in making better life choices.</li>
+            <li>Mental health awareness and counseling support for resilience and wellbeing.</li>
+        </ul>
+        <p>
+            We are currently partnering with Tiko Africa (Triggerise) in Homa Bay County, working across 10 civic wards to provide contraceptives, HIV testing, and mental health support. 
+            Together, we are building a healthier, brighter future where no girl is left behind because of unplanned pregnancies or lack of support.
+        </p>
+    </div>
+</div>
+
+<div id="cleanupModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('cleanupModal')">&times;</span>
+        <h2>Community Cleanup Initiative</h2>
+        <p>
+            Our monthly cleanup initiative brings together residents, students, and local leaders to address waste and pollution challenges in Oyugis and Homa Bay County. 
+            By engaging the community, we are fostering environmental stewardship, reducing health risks, and creating cleaner spaces where children can safely play and families can live in dignity.
+        </p>
+    </div>
+</div>
+
+<div id="disabilityModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('disabilityModal')">&times;</span>
+        <h2>Breaking Barriers: Disability Inclusion</h2>
+        <p>
+            Jude’s CBO is committed to supporting neurodiverse individuals and persons with Cerebral Palsy through inclusive education, vocational training, and community awareness programs. 
+            <br><br>
+            Our focus is on removing stigma, promoting dignity, and ensuring that every person—regardless of ability—can actively contribute to society and access equal opportunities. 
+            By breaking barriers, we are paving the way for a more inclusive and compassionate community.
+        </p>
+    </div>
+</div>
+
 <!-- CSS Styling -->
 <style>
 .blog-icon {
     text-align: center;
     margin-bottom: 15px;
-    color: #2c7a7b; /* accent color */
-}
-
-.share-icons {
-    margin-top: 10px;
-}
-
-.share-icons a {
-    margin-right: 10px;
-    color: #444;
-    font-size: 1.2rem;
-    transition: color 0.3s ease;
-}
-
-.share-icons a:hover {
     color: #2c7a7b;
 }
+
+.read-more {
+    background: #2c7a7b;
+    color: #fff;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background .3s ease;
+}
+
+.read-more:hover {
+    background: #225e5f;
+}
+
+/* Modal Styling */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    padding-top: 60px;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    overflow: auto;
+    background: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+    background: #fff;
+    margin: auto;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 800px;
+    position: relative;
+    animation: fadeIn .3s ease;
+    line-height: 1.6;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: #333;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #d00;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: scale(0.9);}
+    to {opacity: 1; transform: scale(1);}
+}
+
+@media(max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        font-size: 0.95rem;
+        padding: 20px;
+    }
+    .close {
+        font-size: 28px;
+        top: 10px;
+        right: 15px;
+    }
+}
 </style>
+
+<!-- JavaScript -->
+<script>
+function openModal(id) {
+    document.getElementById(id).style.display = "block";
+}
+function closeModal(id) {
+    document.getElementById(id).style.display = "none";
+}
+window.onclick = function(event) {
+    document.querySelectorAll('.modal').forEach(modal => {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    });
+}
+</script>
+
 
     
     <!-- Contact Section -->
@@ -1462,24 +1556,101 @@
         </div>
     </footer>
     
-    <!-- Popup Modal -->
-    <div id="mpesaPopup" class="popup">
-        <div class="popup-content">
-            <span class="close" onclick="closePopup()">&times;</span>
-            <h3>Donate via M-Pesa</h3>
-            <p>Enter the amount and confirm to proceed with your donation.</p>
-            <form id="donation-form">
-                <label for="amount">Donation Amount (KES)</label>
-                <input type="number" id="amount" name="amount" placeholder="Enter amount" required min="10">
-                <label for="phone">M-Pesa Phone Number</label>
-                <input type="tel" id="phone" name="phone" placeholder="07XX XXX XXX" required pattern="[0-9]{10}">
-                <div style="margin-top: 20px;">
-                    <button type="submit" class="donate-btn">Proceed with M-Pesa</button>
-                    <button type="button" class="cancel-btn" onclick="closePopup()">Cancel</button>
-                </div>
-            </form>
-        </div>
+<!-- Popup Modal -->
+<div id="mpesaPopup" class="popup">
+    <div class="popup-content">
+        <span class="close" onclick="closePopup()">&times;</span>
+        <h3>Donate via M-Pesa</h3>
+        <p>Enter the amount and confirm to proceed with your donation.</p>
+        <form id="donation-form">
+            <label for="amount">Donation Amount (KES)</label>
+            <input type="number" id="amount" name="amount" placeholder="Enter amount" required min="10">
+
+            <label for="phone">M-Pesa Phone Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="07XX XXX XXX" required pattern="[0-9]{10}">
+
+            <div style="margin-top: 20px;">
+                <button type="submit" class="donate-btn">Proceed with M-Pesa</button>
+                <button type="button" class="cancel-btn" onclick="closePopup()">Cancel</button>
+            </div>
+        </form>
     </div>
+</div>
+
+<script>
+    // Open popup
+    function openPopup() {
+        document.getElementById("mpesaPopup").style.display = "flex";
+    }
+
+    // Close popup
+    function closePopup() {
+        document.getElementById("mpesaPopup").style.display = "none";
+    }
+
+    // Handle form submission
+    document.getElementById("donation-form").addEventListener("submit", function(e) {
+        e.preventDefault(); // Stop actual form submission
+        alert("⚠️ This feature is not fully implemented. Please contact us for donation details.");
+        closePopup();
+    });
+</script>
+
+<style>
+    /* Popup Styling */
+    .popup {
+        display: none; /* 👈 stays hidden until openPopup() is called */
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7);
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .popup-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        position: relative;
+    }
+
+    .close {
+        position: absolute;
+        top: 10px; right: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #333;
+    }
+
+    .donate-btn {
+        background: green;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        margin-right: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .cancel-btn {
+        background: red;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+</style>
+
+<!-- Example Trigger Button -->
+<button onclick="openPopup()">Donate Now</button>
+
 
     <!-- Floating WhatsApp Icon -->
     <a href="https://wa.me/254712109310?text=Hello%20JUDES%20CBO!%20I%20would%20like%20to%20know%20more%20about%20your%20programs." 
