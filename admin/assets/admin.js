@@ -208,3 +208,19 @@ function adminToast(message, type) {
         adminToast(count === 1 ? 'Image pasted.' : `${count} images pasted.`);
     });
 })();
+
+// Date and time fields: open the picker on any click, and mark empty ones so they look like placeholders
+(function () {
+    const fields = document.querySelectorAll('input[type="date"], input[type="time"], input[type="datetime-local"], input[type="month"]');
+    const mark = el => el.classList.toggle('has-value', el.value !== '');
+    fields.forEach(el => {
+        mark(el);
+        el.addEventListener('input', () => mark(el));
+        el.addEventListener('change', () => mark(el));
+        el.addEventListener('click', () => {
+            if (typeof el.showPicker === 'function') {
+                try { el.showPicker(); } catch (e) { /* not allowed in this context; the native control still works */ }
+            }
+        });
+    });
+})();
