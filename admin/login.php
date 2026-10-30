@@ -64,6 +64,7 @@ $flashes = take_flashes();
         <img src="../images/icons/icon-192.png" alt="Judes CBO" class="auth-logo">
         <h1>Staff login</h1>
         <p class="auth-sub">Judes CBO website dashboard</p>
+        <?php if (dashboard_locked()): ?><div class="alert alert-info" role="status"><i class="fas fa-lock"></i><span><strong>The dashboard is closed for maintenance.</strong> Only System admins can log in right now.<?= setting('dash_lock_message') ? ' ' . h(setting('dash_lock_message')) : '' ?></span></div><?php endif; ?>
         <?php foreach ($flashes as $f): ?><div class="alert alert-<?= h($f['type']) ?>" role="status"><?= h($f['message']) ?></div><?php endforeach; ?>
         <?php if ($error): ?><div class="alert alert-error" role="alert"><?= h($error) ?></div><?php endif; ?>
         <form method="post" class="form-stack">

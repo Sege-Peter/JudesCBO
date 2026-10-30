@@ -19,6 +19,9 @@ function nav_items(): array
         $items[] = ['settings.php', 'Settings', 'fa-sliders'];
         $items[] = ['activity.php', 'Activity log', 'fa-clock-rotate-left'];
     }
+    if (is_developer()) {
+        $items[] = ['system.php', 'System', 'fa-server'];
+    }
     return $items;
 }
 
@@ -73,7 +76,7 @@ function render_header(string $title, string $active = ''): void
                 <div class="user-menu">
                     <button type="button" class="user-btn" id="user-btn" aria-expanded="false">
                         <span class="avatar"><?= h(mb_strtoupper(mb_substr($user['name'], 0, 1))) ?></span>
-                        <span class="user-meta"><strong><?= h($user['name']) ?></strong><small><?= h(ucfirst($user['role'])) ?></small></span>
+                        <span class="user-meta"><strong><?= h($user['name']) ?></strong><small><?= h(role_label($user['role'])) ?></small></span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="dropdown" id="user-dropdown">

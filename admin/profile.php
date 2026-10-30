@@ -3,7 +3,7 @@ require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/includes/layout.php';
 require __DIR__ . '/includes/totp.php';
 $me = require_login();
-$required = $me['role'] === 'admin' && setting('require_2fa_admins', '1') === '1';
+$required = in_array($me['role'], ['admin', 'developer'], true) && setting('require_2fa_admins', '1') === '1';
 
 function load_2fa(int $id): array
 {
@@ -181,7 +181,7 @@ render_header('My profile');
             <label class="field">Full name<input type="text" name="name" value="<?= h($me['name']) ?>" required></label>
             <label class="field">Email<input type="email" name="email" value="<?= h($me['email']) ?>" required></label>
             <label class="field">Username<input type="text" value="<?= h($me['username']) ?>" disabled></label>
-            <label class="field">Role<input type="text" value="<?= h(ucfirst($me['role'])) ?>" disabled></label>
+            <label class="field">Role<input type="text" value="<?= h(role_label($me['role'])) ?>" disabled></label>
             <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save details</button>
         </form>
     </section>

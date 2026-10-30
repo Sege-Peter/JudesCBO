@@ -2,7 +2,7 @@
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/includes/layout.php';
 require __DIR__ . '/includes/images.php';
-require __DIR__ . '/includes/publisher.php';
+require_once __DIR__ . '/includes/publisher.php';
 $user = require_login();
 
 const ALBUMS = ['General', 'Community', 'Outreach', 'Youth Health', 'SGBV', 'Mental Health', 'Disability Inclusion', 'Events'];

@@ -13,6 +13,10 @@ ErrorDocument 503 /503.html
 
 RewriteEngine On
 
+# BEGIN maintenance mode (managed by the dashboard, do not edit)
+# (off)
+# END maintenance mode
+
 # Clean URLs: /about serves about.html, and old /about.html links redirect to /about
 # (GET only so form posts are never redirected; the staff dashboard has its own rules)
 RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$

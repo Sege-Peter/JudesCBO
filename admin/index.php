@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/includes/layout.php';
-require __DIR__ . '/includes/publisher.php';
+require_once __DIR__ . '/includes/publisher.php';
 $user = require_login();
 
 // Keep date-based pages fresh (finished events move to "Past") with a rebuild once a day

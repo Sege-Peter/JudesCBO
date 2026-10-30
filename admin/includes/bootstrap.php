@@ -98,7 +98,7 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 function column_exists(string $table, string $column): bool
 {
@@ -143,6 +143,23 @@ function migrate(): void
         $stmt = db()->prepare('INSERT INTO partners (name, logo, url, sort_order) VALUES (?, ?, ?, ?)');
         foreach ($seed as $i => $p) $stmt->execute([...$p, $i + 1]);
     }
+    // Version 5: System admin role, signing users out remotely, "last seen"
+    db()->exec("ALTER TABLE users MODIFY role ENUM('developer','admin','editor') NOT NULL DEFAULT 'editor'");
+    $columns = [
+        'session_version' => 'INT UNSIGNED NOT NULL DEFAULT 1',
+        'last_seen_at' => 'DATETIME NULL',
+        'last_ip' => 'VARCHAR(45) NULL',
+    ];
+    foreach ($columns as $name => $type) {
+        if (!column_exists('users', $name)) {
+            db()->exec("ALTER TABLE users ADD COLUMN $name $type");
+        }
+    }
+    // The first administrator becomes the System admin, so someone can always reach the System page
+    if ((int) db()->query("SELECT COUNT(*) FROM users WHERE role = 'developer'")->fetchColumn() === 0) {
+        db()->exec("UPDATE users SET role = 'developer' WHERE role = 'admin' ORDER BY active DESC, id LIMIT 1");
+    }
+    db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('maint_token', '" . bin2hex(random_bytes(16)) . "')");
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
 
@@ -205,7 +222,22 @@ function login_from_remember_cookie(): void
     session_regenerate_id(true);
     $_SESSION['user_id'] = (int) $row['user_id'];
     $_SESSION['last_seen'] = time();
+    $_SESSION['sv'] = user_session_version((int) $row['user_id']);
     issue_remember_token((int) $row['user_id']);
+}
+
+function user_session_version(int $userId): int
+{
+    $stmt = db()->prepare('SELECT session_version FROM users WHERE id = ?');
+    $stmt->execute([$userId]);
+    return (int) $stmt->fetchColumn();
+}
+
+/** Signs a user out everywhere: open sessions end on their next click and "remember me" stops working. */
+function force_logout(int $userId): void
+{
+    db()->prepare('UPDATE users SET session_version = session_version + 1 WHERE id = ?')->execute([$userId]);
+    revoke_all_tokens($userId);
 }
 
 function current_user(): ?array
@@ -223,10 +255,21 @@ function current_user(): ?array
     }
     if (!empty($_SESSION['user_id'])) {
         $_SESSION['last_seen'] = time();
-        $stmt = db()->prepare('SELECT id, name, email, username, role, active, totp_enabled FROM users WHERE id = ?');
+        $stmt = db()->prepare('SELECT id, name, email, username, role, active, totp_enabled, session_version FROM users WHERE id = ?');
         $stmt->execute([$_SESSION['user_id']]);
         $row = $stmt->fetch();
+        $_SESSION['sv'] ??= $row ? (int) $row['session_version'] : 0; // sessions from before this feature
+        if ($row && (int) $_SESSION['sv'] !== (int) $row['session_version']) {
+            unset($_SESSION['user_id'], $_SESSION['sv']);
+            flash('info', 'You were signed out. Please log in again.');
+            return $user = null;
+        }
         $user = ($row && (int) $row['active'] === 1) ? $row : null;
+        // "Last seen" for the Users and System pages, written at most once a minute
+        if ($user && time() - ($_SESSION['seen_saved'] ?? 0) > 60) {
+            $_SESSION['seen_saved'] = time();
+            db()->prepare('UPDATE users SET last_seen_at = NOW(), last_ip = ? WHERE id = ?')->execute([client_ip(), $user['id']]);
+        }
     }
     return $user;
 }
@@ -237,8 +280,15 @@ function require_login(): array
     if (!$user) {
         redirect('login.php');
     }
+    // While the dashboard is locked for maintenance only System admins can use it
+    if (dashboard_locked() && $user['role'] !== 'developer') {
+        unset($_SESSION['user_id'], $_SESSION['sv']);
+        redirect('login.php');
+    }
+    maintenance_tick();
+    staff_bypass_cookie();
     // Administrators must turn on two-step login before using the dashboard (when required in Settings)
-    if ($user['role'] === 'admin' && !(int) $user['totp_enabled'] && setting('require_2fa_admins', '1') === '1'
+    if (in_array($user['role'], ['admin', 'developer'], true) && !(int) $user['totp_enabled'] && setting('require_2fa_admins', '1') === '1'
         && !in_array(basename($_SERVER['SCRIPT_NAME']), ['profile.php', 'logout.php'], true)) {
         flash('info', 'Administrators need two-step login. Set it up below to continue.');
         redirect('profile.php#two-step');
@@ -249,10 +299,16 @@ function require_login(): array
 /** Finishes signing in once the password (and two-step code, if on) are confirmed. */
 function complete_login(int $userId, bool $remember, string $note): never
 {
+    if (dashboard_locked() && user_role($userId) !== 'developer') {
+        unset($_SESSION['pending_2fa']);
+        flash('error', 'The dashboard is closed for maintenance. Only System admins can log in right now.');
+        redirect('login.php');
+    }
     session_regenerate_id(true);
     unset($_SESSION['pending_2fa']);
     $_SESSION['user_id'] = $userId;
     $_SESSION['last_seen'] = time();
+    $_SESSION['sv'] = user_session_version($userId);
     if ($remember) {
         issue_remember_token($userId);
     }
@@ -261,20 +317,112 @@ function complete_login(int $userId, bool $remember, string $note): never
     redirect('index.php');
 }
 
+/* ---------- Roles ---------- */
+
+const ROLES = [
+    'developer' => 'System admin',
+    'admin' => 'Administrator',
+    'editor' => 'Editor',
+];
+const ROLE_RANK = ['editor' => 1, 'admin' => 2, 'developer' => 3];
+
+function role_label(string $role): string
+{
+    return ROLES[$role] ?? ucfirst($role);
+}
+
+function user_role(int $userId): string
+{
+    $stmt = db()->prepare('SELECT role FROM users WHERE id = ?');
+    $stmt->execute([$userId]);
+    return (string) $stmt->fetchColumn();
+}
+
 function require_admin(): array
 {
     $user = require_login();
-    if ($user['role'] !== 'admin') {
+    if (!in_array($user['role'], ['admin', 'developer'], true)) {
         http_response_code(403);
         exit('Only administrators can open this page.');
     }
     return $user;
 }
 
+function require_developer(): array
+{
+    $user = require_login();
+    if ($user['role'] !== 'developer') {
+        http_response_code(403);
+        exit('Only System admins can open this page.');
+    }
+    return $user;
+}
+
+/** Administrators and System admins. */
 function is_admin(): bool
 {
     $user = current_user();
-    return $user !== null && $user['role'] === 'admin';
+    return $user !== null && in_array($user['role'], ['admin', 'developer'], true);
+}
+
+function is_developer(): bool
+{
+    $user = current_user();
+    return $user !== null && $user['role'] === 'developer';
+}
+
+/** Whether $me may change $target's account: System admins manage everyone, administrators manage everyone but System admins. */
+function can_manage(array $me, array $target): bool
+{
+    return $me['role'] === 'developer' || ($me['role'] === 'admin' && $target['role'] !== 'developer');
+}
+
+/** Roles $me may hand out. */
+function assignable_roles(array $me): array
+{
+    return $me['role'] === 'developer' ? ROLES : array_diff_key(ROLES, ['developer' => true]);
+}
+
+/* ---------- Maintenance ---------- */
+
+function dashboard_locked(): bool
+{
+    return setting('dash_lock') === '1';
+}
+
+function maintenance_on(): bool
+{
+    return setting('maint_on') === '1';
+}
+
+/** Ends public maintenance once the "back by" time passes, if auto-end is on. Returns true when it just ended. */
+function maintenance_tick(): bool
+{
+    if (!maintenance_on() || setting('maint_auto_end') !== '1') return false;
+    $until = strtotime(setting('maint_until'));
+    if (!$until || $until > time()) return false;
+    save_setting('maint_on', '0');
+    require_once __DIR__ . '/maintenance.php';
+    write_maintenance_files();
+    log_activity('maintenance.auto_end', 'Public maintenance ended automatically', null);
+    return true;
+}
+
+/** Signed-in staff get a cookie that lets them see the real website during maintenance. */
+function staff_bypass_cookie(): void
+{
+    if (headers_sent()) return;
+    $token = setting('maint_token');
+    $want = maintenance_on() && setting('maint_staff_bypass', '1') === '1' && $token !== '';
+    $have = ($_COOKIE['judes_bypass'] ?? '') === $token;
+    if ($want === $have) return;
+    setcookie('judes_bypass', $want ? $token : '', [
+        'expires' => $want ? time() + 12 * 3600 : time() - 3600,
+        'path' => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure' => (bool) config('secure_cookies'),
+    ]);
 }
 
 function client_ip(): string

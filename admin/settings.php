@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/includes/layout.php';
-require __DIR__ . '/includes/publisher.php';
+require_once __DIR__ . '/includes/publisher.php';
 require_admin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -148,7 +148,7 @@ render_header('Settings');
         <h3 class="panel-title"><i class="fas fa-shield-halved"></i> Security</h3>
         <form method="post" class="form-stack">
             <?= csrf_field() ?><input type="hidden" name="section" value="security">
-            <label class="check"><input type="checkbox" name="require_2fa_admins" value="1" <?= setting('require_2fa_admins', '1') === '1' ? 'checked' : '' ?>> Require two-step login for administrators</label>
+            <label class="check"><input type="checkbox" name="require_2fa_admins" value="1" <?= setting('require_2fa_admins', '1') === '1' ? 'checked' : '' ?>> Require two-step login for administrators and System admins</label>
             <p class="muted small">Administrators without it are taken to My profile to set it up before they can use the dashboard. Editors can turn it on for themselves.</p>
             <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save</button>
         </form>

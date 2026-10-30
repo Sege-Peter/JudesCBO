@@ -756,3 +756,44 @@ form > .form-subhead:first-of-type { margin-top: .4rem; padding-top: 0; border-t
     .stat-grid > :last-child:nth-child(odd) { grid-column: auto; }
     .partner-admin-grid, .team-admin-grid, .photo-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
 }
+
+/* ---------- Roles, sessions and maintenance ---------- */
+.role-developer { background: #1a202c; color: #fff; }
+.role-developer i { color: #68d391; }
+.role-admin { background: #e9f7ef; color: #276749; }
+.role-editor { background: #ebf4ff; color: #2b6cb0; }
+.role-help p { line-height: 1.55; }
+.role-help p + p { margin-top: 10px; }
+.role-help .pill { margin-right: 4px; }
+.role-form { padding: 4px 0 8px; margin-bottom: 6px; border-bottom: 1px solid var(--line); }
+.role-form label { display: flex; flex-direction: column; gap: 4px; font-size: .78rem; font-weight: 700; padding: 0 10px 6px; }
+.role-form select { padding-top: 7px; padding-bottom: 7px; }
+.online-dot { display: inline-block; width: 8px; height: 8px; margin-right: 3px; border-radius: 50%; background: #38a169; box-shadow: 0 0 0 3px rgba(56,161,105,0.18); vertical-align: middle; }
+.row-muted td { opacity: .55; }
+.icon-amber { background: #fffaeb; color: #b7791f; }
+.icon-purple { background: #f3efff; color: #6b46c1; }
+.text-amber { color: #b7791f; }
+.panel-warning { border: 1.5px solid #f6ad55; box-shadow: 0 0 0 4px rgba(246,173,85,0.12); }
+.maint-live { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 1rem; border-radius: 12px; background: #fffaeb; color: #744210; }
+.maint-live small { display: block; color: #975a16; }
+.pulse-dot { flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%; background: #dd6b20; animation: pulseDot 1.4s infinite; }
+@keyframes pulseDot { 0% { box-shadow: 0 0 0 0 rgba(221,107,32,0.5); } 70% { box-shadow: 0 0 0 9px rgba(221,107,32,0); } 100% { box-shadow: 0 0 0 0 rgba(221,107,32,0); } }
+.mode-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mode-switch .radio-card { margin-bottom: 0; }
+.mode-switch .radio-card:has(input[value="1"]:checked) { border-color: #dd6b20; background: #fffaf0; }
+.mode-switch .radio-card:has(input[value="1"]) input { accent-color: #dd6b20; }
+.field-checks { justify-content: flex-end; }
+.field-checks .check { margin-bottom: .5rem; }
+#add-my-ip { align-self: flex-start; margin: -.4rem 0 .4rem; }
+.tool-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1rem; }
+.panel-head-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: .8rem; }
+.panel-head-row .panel-title { margin-bottom: 0; }
+.sys-list-2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 2rem; }
+@media (max-width: 640px) {
+    /* User "..." menu opens full width under the card instead of off the screen edge */
+    .user-card-actions { position: relative; }
+    .user-card-actions .menu-details { position: static; }
+    .user-card-actions .menu-pop { left: 0; right: 0; width: auto; }
+    .mode-switch, .sys-list-2 { grid-template-columns: 1fr; }
+    .tool-row .btn, .panel-head-row form, .panel-head-row .btn { width: 100%; justify-content: center; }
+}
