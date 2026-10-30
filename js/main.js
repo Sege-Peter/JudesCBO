@@ -15,6 +15,7 @@ function setMobileNav(open) {
     navOverlay.classList.toggle('active', open);
     mobileNavToggle.setAttribute('aria-expanded', open);
     document.body.style.overflow = open ? 'hidden' : '';
+    document.body.classList.toggle('menu-open', open);
 }
 mobileNavToggle.addEventListener('click', () => setMobileNav(true));
 document.querySelector('.close-nav').addEventListener('click', () => setMobileNav(false));
@@ -411,4 +412,21 @@ if (programLinks.length) {
     }
     updateProgramNav();
     window.addEventListener('scroll', updateProgramNav, { passive: true });
+}
+
+// WhatsApp greeting: shows once per visit after a short delay
+const waGreeting = document.querySelector('.wa-greeting');
+if (waGreeting) {
+    let seen = false;
+    try { seen = sessionStorage.getItem('waGreetingSeen') === '1'; } catch {}
+    function hideGreeting() {
+        waGreeting.classList.remove('show');
+        try { sessionStorage.setItem('waGreetingSeen', '1'); } catch {}
+    }
+    if (!seen) {
+        setTimeout(() => waGreeting.classList.add('show'), 4000);
+        setTimeout(hideGreeting, 14000);
+    }
+    waGreeting.querySelector('.wa-greeting-close').addEventListener('click', hideGreeting);
+    document.querySelector('.whatsapp-float').addEventListener('click', hideGreeting);
 }
