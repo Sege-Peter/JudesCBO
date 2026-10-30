@@ -574,3 +574,10 @@ textarea { resize: vertical; }
     .event-row .row-actions { grid-column: 1 / -1; justify-content: flex-start; }
     .team-admin-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ---------- Drag-and-drop and paste feedback ---------- */
+.dropzone.drag, .member-photo-pick.drag { border-color: var(--green); background: #f0f7ea; box-shadow: 0 0 0 4px rgba(45,80,22,0.12); }
+.member-photo-pick.drag { border-style: solid; }
+.dropzone.pasted, .member-photo-pick.pasted { animation: pastePulse .9s var(--ease); }
+@keyframes pastePulse { 0% { box-shadow: 0 0 0 0 rgba(45,80,22,0.45); } 100% { box-shadow: 0 0 0 14px rgba(45,80,22,0); } }
+.ql-editor.ql-blank::before { pointer-events: none; }

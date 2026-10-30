@@ -156,7 +156,7 @@ function event_row(array $e): void
                 <label class="dropzone dropzone-sm" id="cover-drop">
                     <input type="file" name="image" accept="image/jpeg,image/png,image/webp" id="cover-input">
                     <img id="cover-preview" src="<?= $event['image'] ? '../' . h($event['image']) : '' ?>" alt="" <?= $event['image'] ? '' : 'hidden' ?>>
-                    <span class="dropzone-text" <?= $event['image'] ? 'hidden' : '' ?>><i class="fas fa-image"></i> Choose a photo or poster</span>
+                    <span class="dropzone-text" <?= $event['image'] ? 'hidden' : '' ?>><i class="fas fa-image"></i> Choose, drop or paste a photo or poster</span>
                 </label>
                 <?php if ($event['image']): ?><label class="check"><input type="checkbox" name="remove_image" value="1"> Remove image</label><?php endif; ?>
                 <label class="field">Image description<input type="text" name="image_alt" value="<?= h($event['image_alt']) ?>" maxlength="200"></label>

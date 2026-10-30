@@ -122,7 +122,7 @@ render_header($id ? 'Edit story' : 'New story', 'stories.php');
                 <?php /* Stored paths are relative to the site root; point them up a level for the preview here */ ?>
                 <div id="editor" class="rich-editor"><?= preg_replace('#src="(uploads|images)/#', 'src="../$1/', $story['body_html']) ?></div>
                 <input type="hidden" name="body_html" id="body_html">
-                <small class="hint">Use headings to break up long stories. Images you add are resized automatically.</small>
+                <small class="hint">Use headings to break up long stories. Add images with the image button, or drag them in or paste them (Ctrl+V). They're resized automatically.</small>
             </div>
         </section>
         <section class="panel">
@@ -160,7 +160,7 @@ render_header($id ? 'Edit story' : 'New story', 'stories.php');
             <label class="dropzone dropzone-sm" id="cover-drop">
                 <input type="file" name="cover" accept="image/jpeg,image/png,image/webp" id="cover-input">
                 <img id="cover-preview" src="<?= $story['cover_image'] ? '../' . h($story['cover_image']) : '' ?>" alt="" <?= $story['cover_image'] ? '' : 'hidden' ?>>
-                <span class="dropzone-text" <?= $story['cover_image'] ? 'hidden' : '' ?>><i class="fas fa-image"></i> Choose or drop a photo</span>
+                <span class="dropzone-text" <?= $story['cover_image'] ? 'hidden' : '' ?>><i class="fas fa-image"></i> Choose, drop or paste a photo</span>
             </label>
             <?php if ($story['cover_image']): ?>
                 <label class="check"><input type="checkbox" name="remove_cover" value="1"> Remove cover image</label>

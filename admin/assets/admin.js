@@ -136,3 +136,75 @@ function adminToast(message, type) {
         setTimeout(() => toast.remove(), 400);
     }, 3500);
 }
+
+// Image fields: drag-and-drop files onto them, or paste an image (Ctrl+V / Cmd+V) anywhere on the page
+(function () {
+    const zones = [...document.querySelectorAll('.dropzone, .member-photo-pick')].filter(z => z.querySelector('input[type="file"]'));
+    if (!zones.length) return;
+    let lastZone = null;
+
+    const isImage = f => f && /^image\//.test(f.type);
+    function named(file, i) {
+        // Clipboard images arrive as "image.png"; give them a unique, readable name
+        if (file.name && file.name !== 'image.png') return file;
+        const ext = (file.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+        return new File([file], `pasted-${Date.now()}-${i + 1}.${ext}`, { type: file.type });
+    }
+    function setFiles(input, files) {
+        files = files.filter(isImage).map(named);
+        if (!files.length) return 0;
+        const dt = new DataTransfer();
+        if (input.multiple) {
+            [...input.files].forEach(f => dt.items.add(f));
+            files.forEach(f => dt.items.add(f));
+        } else {
+            dt.items.add(files[files.length - 1]);
+        }
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        return files.length;
+    }
+
+    zones.forEach(zone => {
+        const input = zone.querySelector('input[type="file"]');
+        ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, e => {
+            e.preventDefault();
+            zone.classList.add('drag');
+        }));
+        ['dragleave', 'dragend'].forEach(ev => zone.addEventListener(ev, () => zone.classList.remove('drag')));
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('drag');
+            const added = setFiles(input, [...e.dataTransfer.files]);
+            if (!added && e.dataTransfer.files.length) adminToast('Only image files can be added here.', 'error');
+        });
+        ['mouseenter', 'focusin', 'click'].forEach(ev => zone.addEventListener(ev, () => { lastZone = zone; }));
+    });
+
+    // Stop a file dropped just outside a zone from opening in the browser and losing unsaved work
+    ['dragover', 'drop'].forEach(ev => window.addEventListener(ev, e => {
+        if (e.dataTransfer && [...e.dataTransfer.types].includes('Files') && !e.target.closest('.dropzone, .member-photo-pick, .ql-editor')) {
+            e.preventDefault();
+        }
+    }));
+
+    function targetZone() {
+        const dialog = document.querySelector('dialog[open]');
+        if (dialog) return zones.find(z => dialog.contains(z)) || null;
+        if (lastZone && lastZone.offsetParent) return lastZone;
+        return zones.find(z => z.offsetParent && !z.closest('dialog')) || null;
+    }
+
+    document.addEventListener('paste', e => {
+        if (e.target.closest && e.target.closest('.ql-editor')) return; // the story editor uploads its own pastes
+        const files = [...(e.clipboardData ? e.clipboardData.files : [])].filter(isImage);
+        if (!files.length) return;
+        const zone = targetZone();
+        if (!zone) return;
+        e.preventDefault();
+        const count = setFiles(zone.querySelector('input[type="file"]'), files);
+        zone.classList.add('pasted');
+        setTimeout(() => zone.classList.remove('pasted'), 900);
+        adminToast(count === 1 ? 'Image pasted.' : `${count} images pasted.`);
+    });
+})();

@@ -110,7 +110,7 @@ render_header('Gallery');
         <input type="hidden" name="action" value="upload">
         <label class="dropzone" id="dropzone">
             <input type="file" name="photos[]" id="photos" accept="image/jpeg,image/png,image/webp,image/gif" multiple required>
-            <span class="dropzone-text"><i class="fas fa-cloud-arrow-up"></i><strong>Drop photos here or click to choose</strong><small>JPG, PNG or WebP, up to <?= round(config('max_upload') / 1048576) ?> MB each. Photos are resized and optimised automatically.</small></span>
+            <span class="dropzone-text"><i class="fas fa-cloud-arrow-up"></i><strong>Drop photos here, paste with Ctrl+V, or click to choose</strong><small>JPG, PNG or WebP, up to <?= round(config('max_upload') / 1048576) ?> MB each. Photos are resized and optimised automatically.</small></span>
             <span class="upload-previews" id="upload-previews"></span>
         </label>
         <div class="upload-options">

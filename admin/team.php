@@ -125,7 +125,7 @@ render_header('Team');
                 <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" id="m-photo-input">
                 <img id="m-photo" src="" alt="" hidden><span id="m-photo-empty"><i class="fas fa-camera"></i></span>
             </label>
-            <div class="small muted">Square photos work best. Faces are shown in a circle.<label class="check" id="m-remove-wrap" hidden><input type="checkbox" name="remove_photo" value="1"> Remove photo</label></div>
+            <div class="small muted">Click, drop or paste (Ctrl+V) a photo. Square photos work best; faces are shown in a circle.<label class="check" id="m-remove-wrap" hidden><input type="checkbox" name="remove_photo" value="1"> Remove photo</label></div>
         </div>
         <div class="form-grid">
             <label class="field">Full name<input type="text" name="name" id="m-name" maxlength="120" required></label>

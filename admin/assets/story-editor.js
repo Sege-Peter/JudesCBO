@@ -21,33 +21,87 @@
         }
     });
 
+    const UPLOADING = 'Uploading image…';
+
+    // Uploads one image through the dashboard (resized, converted to WebP) and places it at `index`
+    async function uploadFile(file, index) {
+        const data = new FormData();
+        data.append('action', 'inline-image');
+        data.append('csrf', csrf);
+        data.append('image', file, file.name && file.name !== 'image.png' ? file.name : `pasted-${Date.now()}.png`);
+        quill.insertText(index, UPLOADING, { italic: true }, 'user');
+        try {
+            const res = await fetch('story-edit.php', { method: 'POST', body: data });
+            const json = await res.json();
+            quill.deleteText(index, UPLOADING.length, 'user');
+            if (!json.ok) throw new Error(json.error);
+            quill.insertEmbed(index, 'image', '../' + json.url, 'user');
+            quill.setSelection(index + 1, 0, 'user');
+        } catch (err) {
+            quill.deleteText(index, UPLOADING.length, 'user');
+            window.adminToast && adminToast(err.message || 'The image could not be uploaded.', 'error');
+        }
+    }
+
+    async function uploadFiles(files, index) {
+        for (const file of files) {
+            await uploadFile(file, index);
+            index += 1;
+        }
+    }
+
     function uploadImage() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/jpeg,image/png,image/webp';
-        input.onchange = async () => {
-            const file = input.files[0];
-            if (!file) return;
-            const data = new FormData();
-            data.append('action', 'inline-image');
-            data.append('csrf', csrf);
-            data.append('image', file);
-            const range = quill.getSelection(true);
-            quill.insertText(range.index, 'Uploading image…', { italic: true });
-            try {
-                const res = await fetch('story-edit.php', { method: 'POST', body: data });
-                const json = await res.json();
-                quill.deleteText(range.index, 'Uploading image…'.length);
-                if (!json.ok) throw new Error(json.error);
-                quill.insertEmbed(range.index, 'image', '../' + json.url);
-                quill.setSelection(range.index + 1);
-            } catch (err) {
-                quill.deleteText(range.index, 'Uploading image…'.length);
-                window.adminToast && adminToast(err.message || 'The image could not be uploaded.', 'error');
-            }
+        input.multiple = true;
+        input.onchange = () => {
+            if (input.files.length) uploadFiles([...input.files], quill.getSelection(true).index);
         };
         input.click();
     }
+
+    const imageFiles = list => [...(list || [])].filter(f => /^image\//.test(f.type));
+
+    // Paste a screenshot or copied image straight into the story
+    quill.root.addEventListener('paste', e => {
+        const files = imageFiles(e.clipboardData && e.clipboardData.files);
+        if (!files.length) return;
+        e.preventDefault();
+        e.stopPropagation();
+        uploadFiles(files, quill.getSelection(true).index);
+    }, true);
+
+    // Drop images where the pointer is
+    quill.root.addEventListener('drop', e => {
+        const files = imageFiles(e.dataTransfer && e.dataTransfer.files);
+        if (!files.length) return;
+        e.preventDefault();
+        e.stopPropagation();
+        let index = quill.getSelection(true).index;
+        const pos = document.caretPositionFromPoint ? document.caretPositionFromPoint(e.clientX, e.clientY) : null;
+        const range = pos ? null : (document.caretRangeFromPoint && document.caretRangeFromPoint(e.clientX, e.clientY));
+        const node = pos ? pos.offsetNode : range && range.startContainer;
+        if (node) {
+            const blot = Quill.find(node, true);
+            if (blot) index = blot.offset(quill.scroll) + (pos ? pos.offset : range.startOffset);
+        }
+        uploadFiles(files, Math.min(index, quill.getLength() - 1));
+    }, true);
+    quill.root.addEventListener('dragover', e => {
+        if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) e.preventDefault();
+    });
+
+    // Images pasted as embedded data (e.g. copied from a web page with the text) would be thrown away
+    // by the server's safety filter, so drop them here and tell the user how to add them properly
+    const Delta = Quill.import('delta');
+    quill.clipboard.addMatcher('IMG', (node, delta) => {
+        if (/^data:/i.test(node.getAttribute('src') || '')) {
+            adminToast('An embedded image was skipped. Copy the image on its own and paste it, or use the image button.', 'error');
+            return new Delta();
+        }
+        return delta;
+    });
 
     form.addEventListener('submit', () => {
         // Store image paths relative to the website root

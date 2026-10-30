@@ -2,7 +2,7 @@
 (function () {
     const csrf = document.querySelector('meta[name="csrf-token"]').content;
 
-    // Upload previews and drag-and-drop onto the drop zone
+    // Upload previews
     const input = document.getElementById('photos');
     const previews = document.getElementById('upload-previews');
     const zone = document.getElementById('dropzone');
@@ -22,14 +22,8 @@
         zone.classList.toggle('has-files', input.files.length > 0);
     }
     if (input) {
+        // Dropping and pasting are handled by admin.js, which fires "change" like a normal file pick
         input.addEventListener('change', showPreviews);
-        ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('drag'); }));
-        ['dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, () => zone.classList.remove('drag')));
-        zone.addEventListener('drop', e => {
-            e.preventDefault();
-            input.files = e.dataTransfer.files;
-            showPreviews();
-        });
         document.getElementById('upload-form').addEventListener('submit', e => {
             const btn = e.target.querySelector('[type="submit"]');
             btn.disabled = true;
