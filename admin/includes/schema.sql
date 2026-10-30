@@ -1,0 +1,115 @@
+CREATE TABLE IF NOT EXISTS users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    email VARCHAR(190) NOT NULL UNIQUE,
+    username VARCHAR(60) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('admin','editor') NOT NULL DEFAULT 'editor',
+    active TINYINT(1) NOT NULL DEFAULT 1,
+    last_login DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS login_attempts (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ip VARCHAR(45) NOT NULL,
+    username VARCHAR(60) NOT NULL,
+    attempted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (ip, attempted_at),
+    INDEX (username, attempted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS activity_log (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NULL,
+    action VARCHAR(80) NOT NULL,
+    details VARCHAR(500) NOT NULL DEFAULT '',
+    ip VARCHAR(45) NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS settings (
+    name VARCHAR(80) PRIMARY KEY,
+    value TEXT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS stories (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(120) NOT NULL UNIQUE,
+    title VARCHAR(200) NOT NULL,
+    category VARCHAR(60) NOT NULL DEFAULT 'News',
+    excerpt VARCHAR(400) NOT NULL DEFAULT '',
+    meta_description VARCHAR(170) NOT NULL DEFAULT '',
+    body_html MEDIUMTEXT NOT NULL,
+    cover_image VARCHAR(255) NULL,
+    cover_alt VARCHAR(200) NOT NULL DEFAULT '',
+    status ENUM('draft','published') NOT NULL DEFAULT 'draft',
+    published_at DATE NULL,
+    created_by INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX (status, published_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS gallery (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    image VARCHAR(255) NOT NULL,
+    thumb VARCHAR(255) NOT NULL,
+    caption VARCHAR(160) NOT NULL DEFAULT '',
+    alt VARCHAR(200) NOT NULL DEFAULT '',
+    album VARCHAR(60) NOT NULL DEFAULT 'General',
+    show_on_home TINYINT(1) NOT NULL DEFAULT 0,
+    sort_order INT NOT NULL DEFAULT 0,
+    width INT UNSIGNED NOT NULL DEFAULT 0,
+    height INT UNSIGNED NOT NULL DEFAULT 0,
+    uploaded_by INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS messages (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    email VARCHAR(190) NOT NULL,
+    phone VARCHAR(40) NOT NULL DEFAULT '',
+    topic VARCHAR(60) NOT NULL DEFAULT 'General enquiry',
+    message TEXT NOT NULL,
+    status ENUM('new','read','replied','closed') NOT NULL DEFAULT 'new',
+    internal_note TEXT NULL,
+    ip VARCHAR(45) NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    replied_at DATETIME NULL,
+    INDEX (status, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS subscribers (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(190) NOT NULL UNIQUE,
+    status ENUM('active','unsubscribed') NOT NULL DEFAULT 'active',
+    source VARCHAR(40) NOT NULL DEFAULT 'website',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS donations (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    donor_name VARCHAR(120) NOT NULL DEFAULT '',
+    phone VARCHAR(40) NOT NULL DEFAULT '',
+    amount DECIMAL(12,2) NOT NULL,
+    mpesa_code VARCHAR(20) NULL UNIQUE,
+    method ENUM('mpesa','bank','cash','other') NOT NULL DEFAULT 'mpesa',
+    cause VARCHAR(60) NOT NULL DEFAULT 'Where needed most',
+    received_at DATE NOT NULL,
+    note VARCHAR(300) NOT NULL DEFAULT '',
+    recorded_by INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (received_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS api_hits (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ip VARCHAR(45) NOT NULL,
+    endpoint VARCHAR(30) NOT NULL,
+    hit_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (ip, endpoint, hit_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

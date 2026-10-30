@@ -1,0 +1,5 @@
+Options -Indexes
+# Local server settings and notes stay private
+<FilesMatch "^(config\.local\.php|.*\.local\..*)$">
+    Require all denied
+</FilesMatch>

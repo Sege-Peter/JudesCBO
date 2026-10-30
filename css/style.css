@@ -2053,3 +2053,47 @@ h1, h2, h3, h4, h5 {
     .quick-card p { font-size: .82rem; }
     .quick-action { font-size: .82rem; margin-top: .7rem; }
 }
+
+/* ---------- Staff login links ---------- */
+.header-login {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+    background: rgba(45,80,22,0.08);
+    color: var(--green);
+    text-decoration: none;
+    transition: background .25s, color .25s;
+}
+.header-login:hover { background: var(--green); color: #fff; }
+.site-header.is-transparent:not(.scrolled) .header-login { background: rgba(255,255,255,0.15); color: #fff; }
+.mnav-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    color: var(--dark);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity .4s .35s, background .25s, border-color .25s;
+}
+.mobile-nav.active .mnav-login { opacity: 1; }
+.mnav-login i { color: var(--green); }
+.mnav-login:hover { background: #f5f7fa; border-color: #cbd5e0; }
+@media (max-width: 960px) {
+    .header-login { display: none; }
+}
+/* The full number is in the footer and on the contact page; the header keeps a compact call button */
+.header-phone span { display: none; }
+/* Six menu items plus actions need about 1100px; below that the hamburger menu takes over */
+@media (max-width: 1100px) {
+    .desktop-nav, .header-phone, .header-login { display: none; }
+    .mobile-nav-toggle { display: flex; }
+}
+.logo { flex-shrink: 0; }
+.logo-subtext { white-space: nowrap; }

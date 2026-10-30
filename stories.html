@@ -147,6 +147,7 @@
             </nav>
             <div class="header-actions">
                 <a href="tel:+254712109310" class="header-phone" aria-label="Call us"><i class="fas fa-phone"></i><span>+254 712 109310</span></a>
+                <a href="admin/login.php" class="header-login" aria-label="Staff login" title="Staff login"><i class="fas fa-user-lock"></i></a>
                 <a href="donate.html" class="header-donate"><i class="fas fa-heart"></i><span>Donate</span></a>
                 <button type="button" class="mobile-nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
                     <span></span><span></span><span></span>
@@ -194,6 +195,7 @@
             <a href="donate.html" class="mobile-donate"><i class="fas fa-heart"></i> Donate</a>
             <a href="https://wa.me/254712109310" class="mobile-wa" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>
         </div>
+        <a href="admin/login.php" class="mnav-login"><i class="fas fa-user-lock"></i> Staff login</a>
         <div class="mobile-nav-contact">
             <a href="tel:+254712109310"><i class="fas fa-phone"></i> +254 712 109310</a>
             <a href="mailto:info@judescbo.org"><i class="fas fa-envelope"></i> info@judescbo.org</a>
@@ -211,7 +213,8 @@
     <section class="blog" id="blog">
         <div class="container">
             <div class="story-grid">
-                <article class="story-card">
+                <!-- CMS:stories -->
+                <article class="story-card reveal">
                     <a href="blog-youth-health.html" class="story-thumb"><img src="images/hero-7.webp" alt="Young people gathered at a Tiko health outreach tent in Homa Bay County" loading="lazy"></a>
                     <div class="story-body">
                         <div class="story-meta"><span class="story-tag">Youth Health</span><time datetime="2023-08-20">August 20, 2023</time></div>
@@ -220,7 +223,7 @@
                         <a href="blog-youth-health.html" class="story-link">Read story <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </article>
-                <article class="story-card">
+                <article class="story-card reveal">
                     <a href="blog-disability-inclusion.html" class="story-thumb story-thumb--icon"><i class="fas fa-universal-access"></i></a>
                     <div class="story-body">
                         <div class="story-meta"><span class="story-tag">Disability Inclusion</span><time datetime="2023-03-12">March 12, 2023</time></div>
@@ -229,6 +232,7 @@
                         <a href="blog-disability-inclusion.html" class="story-link">Read story <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </article>
+                <!-- /CMS:stories -->
             </div>
         </div>
     </section>
@@ -291,7 +295,7 @@
             </div>
             <div class="footer-bottom">
                 <p>&copy; <span id="year"></span> Judes Community Based Organization. All rights reserved.</p>
-                <p class="footer-legal"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms &amp; Conditions</a></p>
+                <p class="footer-legal"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms &amp; Conditions</a><a href="admin/login.php">Staff login</a></p>
                 <p class="footer-credit">Website by <a href="https://skopedesigns.co.ke" target="_blank" rel="noopener">Skope Designs</a></p>
                 <a href="#" class="back-to-top">Back to top <i class="fas fa-arrow-up"></i></a>
             </div>

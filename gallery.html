@@ -147,6 +147,7 @@
             </nav>
             <div class="header-actions">
                 <a href="tel:+254712109310" class="header-phone" aria-label="Call us"><i class="fas fa-phone"></i><span>+254 712 109310</span></a>
+                <a href="admin/login.php" class="header-login" aria-label="Staff login" title="Staff login"><i class="fas fa-user-lock"></i></a>
                 <a href="donate.html" class="header-donate"><i class="fas fa-heart"></i><span>Donate</span></a>
                 <button type="button" class="mobile-nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
                     <span></span><span></span><span></span>
@@ -194,6 +195,7 @@
             <a href="donate.html" class="mobile-donate"><i class="fas fa-heart"></i> Donate</a>
             <a href="https://wa.me/254712109310" class="mobile-wa" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>
         </div>
+        <a href="admin/login.php" class="mnav-login"><i class="fas fa-user-lock"></i> Staff login</a>
         <div class="mobile-nav-contact">
             <a href="tel:+254712109310"><i class="fas fa-phone"></i> +254 712 109310</a>
             <a href="mailto:info@judescbo.org"><i class="fas fa-envelope"></i> info@judescbo.org</a>
@@ -213,13 +215,15 @@
     <section class="home-section gallery-page">
         <div class="container">
             <div class="masonry">
-                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-4.webp"><img src="images/hero-4.webp" alt="A large community gathering under the trees" loading="lazy"><span class="masonry-caption">Community gathering</span></button>
-                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-7.webp"><img src="images/hero-7.webp" alt="Young people at a Tiko health outreach tent" loading="lazy"><span class="masonry-caption">Youth health outreach with Tiko</span></button>
-                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-1.webp"><img src="images/hero-1.webp" alt="Children and caregivers supported by Judes CBO" loading="lazy"><span class="masonry-caption">Families we support</span></button>
-                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-2.webp"><img src="images/hero-2.webp" alt="A community dialogue session outdoors" loading="lazy"><span class="masonry-caption">Community dialogue</span></button>
-                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-5.webp"><img src="images/hero-5.webp" alt="An outreach event with tents and a crowd" loading="lazy"><span class="masonry-caption">Outreach event</span></button>
-                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-3.webp"><img src="images/hero-3.webp" alt="Young people seated at a community forum" loading="lazy"><span class="masonry-caption">Youth forum</span></button>
-                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-6.webp"><img src="images/hero-6.webp" alt="Young people at a community outreach" loading="lazy"><span class="masonry-caption">Community outreach</span></button>
+                <!-- CMS:gallery -->
+                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-4.webp"><img src="images/hero-4.webp" alt="A large community gathering under the trees" width="1400" height="647" loading="lazy"><span class="masonry-caption">Community gathering</span></button>
+                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-7.webp"><img src="images/hero-7.webp" alt="Young people at a Tiko health outreach tent" width="1400" height="1050" loading="lazy"><span class="masonry-caption">Youth health outreach with Tiko</span></button>
+                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-1.webp"><img src="images/hero-1.webp" alt="Children and caregivers supported by Judes CBO" width="1400" height="1050" loading="lazy"><span class="masonry-caption">Families we support</span></button>
+                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-2.webp"><img src="images/hero-2.webp" alt="A community dialogue session outdoors" width="1400" height="1051" loading="lazy"><span class="masonry-caption">Community dialogue</span></button>
+                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-5.webp"><img src="images/hero-5.webp" alt="An outreach event with tents and a crowd" width="1280" height="960" loading="lazy"><span class="masonry-caption">Outreach event</span></button>
+                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-3.webp"><img src="images/hero-3.webp" alt="Young people seated at a community forum" width="1040" height="780" loading="lazy"><span class="masonry-caption">Youth forum</span></button>
+                <button type="button" class="gallery-item masonry-item reveal" data-full="images/hero-6.webp"><img src="images/hero-6.webp" alt="Young people at a community outreach" width="1280" height="720" loading="lazy"><span class="masonry-caption">Community outreach</span></button>
+                <!-- /CMS:gallery -->
             </div>
         </div>
     </section>
@@ -305,7 +309,7 @@
             </div>
             <div class="footer-bottom">
                 <p>&copy; <span id="year"></span> Judes Community Based Organization. All rights reserved.</p>
-                <p class="footer-legal"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms &amp; Conditions</a></p>
+                <p class="footer-legal"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms &amp; Conditions</a><a href="admin/login.php">Staff login</a></p>
                 <p class="footer-credit">Website by <a href="https://skopedesigns.co.ke" target="_blank" rel="noopener">Skope Designs</a></p>
                 <a href="#" class="back-to-top">Back to top <i class="fas fa-arrow-up"></i></a>
             </div>

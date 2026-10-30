@@ -1,0 +1,3 @@
+admin/config.local.php
+admin/*.local.*
+*.tmp-*

@@ -1,0 +1,4 @@
+# GitHub Pages: publish the static website only; the PHP dashboard runs on PHP hosting
+exclude:
+  - admin
+  - README.md

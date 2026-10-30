@@ -1,0 +1,12 @@
+<?php
+require __DIR__ . '/includes/bootstrap.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
+    if (current_user()) {
+        log_activity('logout', 'Signed out');
+    }
+    $_SESSION = [];
+    session_destroy();
+}
+redirect('login.php');
