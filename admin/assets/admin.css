@@ -706,3 +706,53 @@ form > .form-subhead:first-of-type { margin-top: .4rem; padding-top: 0; border-t
 .form-subhead > i { color: var(--green); }
 .mpesa-chip { padding: 3px 8px; border-radius: 6px; background: #4caf50; color: #fff; font-size: .7rem; font-weight: 800; letter-spacing: 1px; }
 .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.2rem; }
+
+/* ---------- Phones ---------- */
+.show-touch { display: none; }
+@media (hover: none) and (pointer: coarse) {
+    .hide-touch { display: none; }
+    .show-touch { display: inline; }
+}
+.alert > span { flex: 1; min-width: 0; }
+#gen-pass { align-self: flex-start; margin: -.3rem 0 .9rem; text-align: left; }
+@media (max-width: 640px) {
+    .content { padding: 1rem .9rem 3rem; }
+    .alert { align-items: flex-start; font-size: .88rem; }
+    .alert > i { margin-top: 3px; }
+    /* An odd last stat card fills the row instead of sitting alone at half width */
+    .stat-grid > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .stat-body small, .stat-body span { line-height: 1.3; }
+    .welcome-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+    .welcome-actions .btn { justify-content: center; padding-left: 10px; padding-right: 10px; }
+    /* Card actions in an even 2-column grid */
+    .row-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+    .row-actions > form { display: contents; }
+    .row-actions .btn { width: 100%; justify-content: center; }
+    /* Tabs scroll sideways with a fade hinting there's more */
+    .tabs { overflow-x: auto; max-width: 100%; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
+    .tabs::-webkit-scrollbar { display: none; }
+    /* Filters: one field per row, buttons share a row */
+    .filter-bar { display: grid; grid-template-columns: 1fr 1fr; align-items: end; }
+    .filter-bar label { flex: none; min-width: 0; grid-column: 1 / -1; }
+    .filter-bar input, .filter-bar select { width: 100%; min-width: 0 !important; }
+    .filter-bar .btn { width: 100%; justify-content: center; }
+    /* Dialogs: use the full width and stack the photo row */
+    .modal { width: calc(100% - 20px); max-height: calc(100dvh - 20px); border-radius: 18px; }
+    .modal-body { padding: 1.1rem; }
+    .modal-head h3 { font-size: 1.05rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .member-photo-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .member-photo-row .check { margin-top: 8px; }
+    .modal-foot { flex-wrap: wrap; }
+    .modal-foot .btn { flex: 1 1 auto; justify-content: center; }
+    .modal-foot .push-left { flex-basis: 100%; order: 3; margin-right: 0; }
+    .form-actions .btn { flex: 1 1 100%; justify-content: center; }
+    .section-label { margin-top: 1.2rem; }
+    .partner-admin-card, .team-admin-card { padding: 1.2rem .7rem .9rem; }
+    .partner-admin-card strong, .team-admin-card strong { font-size: .92rem; line-height: 1.3; }
+    .partner-admin-card small { font-size: .78rem; }
+}
+@media (max-width: 360px) {
+    .stat-grid, .stat-grid-3 { grid-template-columns: 1fr; }
+    .stat-grid > :last-child:nth-child(odd) { grid-column: auto; }
+    .partner-admin-grid, .team-admin-grid, .photo-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+}

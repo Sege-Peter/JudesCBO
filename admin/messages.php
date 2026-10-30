@@ -72,8 +72,8 @@ $query = array_filter(['status' => $status, 'topic' => $topic, 'q' => $q]);
 render_header('Messages');
 
 if (setting('form_mode', 'formspree') !== 'builtin'): ?>
-    <div class="alert alert-info"><i class="fas fa-circle-info"></i> The website's contact form currently sends messages to Formspree, so new messages won't appear here.
-        <?php if (is_admin()): ?><a href="settings.php#forms">Switch to the built-in inbox</a> once the site is on PHP hosting.<?php else: ?>An administrator can switch to the built-in inbox in Settings.<?php endif; ?></div>
+    <div class="alert alert-info"><i class="fas fa-circle-info"></i><span>The website's contact form currently sends messages to Formspree, so new messages won't appear here.
+        <?php if (is_admin()): ?><a href="settings.php#forms">Switch to the built-in inbox</a> once the site is on PHP hosting.<?php else: ?>An administrator can switch to the built-in inbox in Settings.<?php endif; ?></span></div>
 <?php endif; ?>
 
 <div class="toolbar">
