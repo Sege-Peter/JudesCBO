@@ -139,16 +139,50 @@ function closeLightbox() {
 }
 if (lightbox) {
     const lightboxImg = lightbox.querySelector('img');
-    document.querySelectorAll('.gallery-item').forEach(item => {
+    const galleryItems = [...document.querySelectorAll('.gallery-item')];
+    const caption = lightbox.querySelector('.lightbox-caption');
+    let current = 0;
+    function showLightboxPhoto(i) {
+        current = (i + galleryItems.length) % galleryItems.length;
+        const item = galleryItems[current];
+        lightboxImg.src = item.dataset.full;
+        lightboxImg.alt = item.querySelector('img').alt;
+        if (caption) caption.textContent = `${item.querySelector('img').alt} (${current + 1} of ${galleryItems.length})`;
+    }
+    galleryItems.forEach((item, i) => {
         item.addEventListener('click', () => {
-            lightboxImg.src = item.dataset.full;
-            lightboxImg.alt = item.querySelector('img').alt;
+            showLightboxPhoto(i);
             lightbox.classList.add('open');
             lightbox.querySelector('.lightbox-close').focus();
         });
     });
+    // Previous / next buttons, arrow keys and swipe
+    if (galleryItems.length > 1) {
+        [['prev', 'fa-chevron-left', 'Previous photo', -1], ['next', 'fa-chevron-right', 'Next photo', 1]].forEach(([cls, icon, label, step]) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `lightbox-nav lightbox-${cls}`;
+            btn.setAttribute('aria-label', label);
+            btn.innerHTML = `<i class="fas ${icon}"></i>`;
+            btn.addEventListener('click', () => showLightboxPhoto(current + step));
+            lightbox.appendChild(btn);
+        });
+        document.addEventListener('keydown', e => {
+            if (!lightbox.classList.contains('open')) return;
+            if (e.key === 'ArrowLeft') showLightboxPhoto(current - 1);
+            if (e.key === 'ArrowRight') showLightboxPhoto(current + 1);
+        });
+        let touchX = null;
+        lightbox.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+        lightbox.addEventListener('touchend', e => {
+            if (touchX === null) return;
+            const dx = e.changedTouches[0].clientX - touchX;
+            if (Math.abs(dx) > 50) showLightboxPhoto(current + (dx < 0 ? 1 : -1));
+            touchX = null;
+        });
+    }
     lightbox.addEventListener('click', e => {
-        if (e.target !== lightboxImg) closeLightbox();
+        if (e.target === lightbox || e.target.closest('.lightbox-close')) closeLightbox();
     });
 }
 
@@ -355,4 +389,26 @@ if (subscribeForm) {
         const input = form.querySelector('input[type="email"]');
         input.placeholder = "Thanks! You're subscribed.";
     });
+}
+
+// Programs page: highlight the program currently in view in the sticky menu
+const programLinks = document.querySelectorAll('.program-nav a');
+if (programLinks.length) {
+    const programSections = [...programLinks].map(link => document.querySelector(link.getAttribute('href')));
+    function updateProgramNav() {
+        let current = -1;
+        programSections.forEach((section, i) => {
+            if (section.getBoundingClientRect().top < window.innerHeight * 0.4) current = i;
+        });
+        programLinks.forEach((link, i) => link.classList.toggle('active', i === current));
+        if (current >= 0) {
+            const active = programLinks[current];
+            const bar = active.parentElement;
+            if (bar.scrollWidth > bar.clientWidth) {
+                bar.scrollTo({ left: active.offsetLeft - bar.clientWidth / 2 + active.offsetWidth / 2, behavior: 'smooth' });
+            }
+        }
+    }
+    updateProgramNav();
+    window.addEventListener('scroll', updateProgramNav, { passive: true });
 }
