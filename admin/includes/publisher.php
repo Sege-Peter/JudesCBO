@@ -19,6 +19,8 @@ const CATEGORY_ICONS = [
     'News' => 'fa-newspaper',
 ];
 
+const ERROR_PAGES = ['400.html', '401.html', '403.html', '404.html', '500.html', '502.html', '503.html'];
+
 const STATIC_PAGES = [
     'index.html' => ['1.0', 'monthly'], 'about.html' => ['0.8', 'yearly'], 'programs.html' => ['0.9', 'monthly'],
     'stories.html' => ['0.7', 'weekly'], 'gallery.html' => ['0.6', 'monthly'], 'donate.html' => ['0.9', 'monthly'],
@@ -158,19 +160,21 @@ function render_gallery_page(): string
 /* ---------- Story pages ---------- */
 
 /**
- * Social networks want a 1200x630 JPG for link previews (WebP isn't reliably supported),
- * so make one from the story's cover and reuse it until the cover changes.
+ * Link-preview card for a story: the cover photo, the branded overlay
+ * (admin/assets/og-story-overlay.png) and the story title, as a 1200x630 JPG.
+ * Social networks don't reliably show WebP, so this is always a JPG.
  */
 function story_share_image(array $s): string
 {
     if (!$s['cover_image'] || !function_exists('imagejpeg')) {
-        return 'images/og-image.jpg';
+        return 'images/brand/og-stories.jpg';
     }
     $src = site_path($s['cover_image']);
     if (!is_file($src)) {
-        return 'images/og-image.jpg';
+        return 'images/brand/og-stories.jpg';
     }
-    $relative = 'uploads/og/' . $s['slug'] . '-' . substr(md5($s['cover_image']), 0, 8) . '.jpg';
+    // A new file name whenever the cover or title changes, so apps that cache previews pick it up
+    $relative = 'uploads/og/' . $s['slug'] . '-' . substr(md5($s['cover_image'] . '|' . $s['title'] . '|v2'), 0, 8) . '.jpg';
     $dest = site_path($relative);
     if (is_file($dest)) {
         return $relative;
@@ -183,26 +187,85 @@ function story_share_image(array $s): string
         default => false,
     };
     if (!$img) {
-        return 'images/og-image.jpg';
+        return 'images/brand/og-stories.jpg';
     }
-    // Centre-crop to 1200x630
+    // Centre-crop the cover to 1200x630
     [$w, $h] = [imagesx($img), imagesy($img)];
     $ratio = 1200 / 630;
     [$cw, $ch] = $w / $h > $ratio ? [(int) ($h * $ratio), $h] : [$w, (int) ($w / $ratio)];
-    $out = imagecreatetruecolor(1200, 630);
-    imagecopyresampled($out, $img, 0, 0, (int) (($w - $cw) / 2), (int) (($h - $ch) / 2), 1200, 630, $cw, $ch);
+    $card = imagecreatetruecolor(1200, 630);
+    imagecopyresampled($card, $img, 0, 0, (int) (($w - $cw) / 2), (int) (($h - $ch) / 2), 1200, 630, $cw, $ch);
+    imagedestroy($img);
+
+    $overlayPath = dirname(__DIR__) . '/assets/og-story-overlay.png';
+    if (is_file($overlayPath) && ($overlay = @imagecreatefrompng($overlayPath))) {
+        imagealphablending($card, true);
+        imagecopy($card, $overlay, 0, 0, 0, 0, 1200, 630);
+        imagedestroy($overlay);
+    }
+
+    $font = share_card_font();
+    if ($font && function_exists('imagettftext')) {
+        $white = imagecolorallocate($card, 255, 255, 255);
+        $size = mb_strlen($s['title']) > 48 ? 34 : 40; // points
+        $lines = wrap_for_image($s['title'], $font, $size, 820);
+        if (count($lines) > 3) {
+            $lines = array_slice($lines, 0, 3);
+            $lines[2] = rtrim(mb_substr($lines[2], 0, max(0, mb_strlen($lines[2]) - 1))) . '…';
+        }
+        $y = 268 + (int) ($size * 1.33);
+        foreach ($lines as $line) {
+            imagettftext($card, $size, 0, 70, $y, $white, $font, $line);
+            $y += (int) ($size * 1.33 * 1.18);
+        }
+    }
+
     if (!is_dir(dirname($dest))) {
         mkdir(dirname($dest), 0755, true);
     }
-    // Remove share images made from this story's previous covers
     foreach (glob(site_path('uploads/og/' . $s['slug'] . '-*.jpg')) ?: [] as $old) {
         @unlink($old);
     }
-    imageinterlace($out, true);
-    imagejpeg($out, $dest, 80);
-    imagedestroy($img);
-    imagedestroy($out);
+    imageinterlace($card, true);
+    imagejpeg($card, $dest, 84);
+    imagedestroy($card);
     return $relative;
+}
+
+/** A bold sans-serif font available on this server, for card titles. */
+function share_card_font(): ?string
+{
+    $candidates = array_merge(glob(dirname(__DIR__) . '/assets/fonts/*.ttf') ?: [], [
+        '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf',
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+        '/usr/share/fonts/dejavu-sans-fonts/DejaVuSans-Bold.ttf',
+        '/usr/share/fonts/liberation/LiberationSans-Bold.ttf',
+        '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+        'C:/Windows/Fonts/segoeuib.ttf',
+        'C:/Windows/Fonts/arialbd.ttf',
+    ]);
+    foreach ($candidates as $path) {
+        if (@is_file($path)) return $path;
+    }
+    return null;
+}
+
+function wrap_for_image(string $text, string $font, float $size, int $maxWidth): array
+{
+    $lines = [];
+    $line = '';
+    foreach (preg_split('/\s+/', trim($text)) as $word) {
+        $test = $line === '' ? $word : "$line $word";
+        $box = imagettfbbox($size, 0, $font, $test);
+        if ($box[2] - $box[0] > $maxWidth && $line !== '') {
+            $lines[] = $line;
+            $line = $word;
+        } else {
+            $line = $test;
+        }
+    }
+    if ($line !== '') $lines[] = $line;
+    return $lines;
 }
 
 /** One block element per line so the generated pages stay readable. */
@@ -292,6 +355,8 @@ function render_story_page(array $s, ?array $next, array $shell): string
     <meta property="og:description" content="{$e($desc)}">
     <meta property="og:url" content="{$e($url)}">
     <meta property="og:image" content="{$e($image)}">
+    <meta property="og:image:secure_url" content="{$e($image)}">
+    <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="{$e($imageAlt)}">
@@ -303,8 +368,10 @@ function render_story_page(array $s, ?array $next, array $shell): string
     <meta name="twitter:image" content="{$e($image)}">
     <meta name="twitter:image:alt" content="{$e($imageAlt)}">
     <!-- Icons and theme -->
-    <link rel="icon" href="jude-logo.png" type="image/png">
-    <link rel="apple-touch-icon" href="jude-logo.png">
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" href="images/icons/favicon-32.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="images/icons/apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
     <meta name="theme-color" content="#1a365d">
     <!-- Fonts, icons and styles -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -447,6 +514,24 @@ function publish_site(): array
 
     write_atomic(site_path('sitemap.xml'), render_sitemap($stories));
     $changed[] = 'sitemap.xml';
+
+    // Error pages load styles through <base href>, so keep it on the current address
+    foreach (ERROR_PAGES as $file) {
+        if (!is_file(site_path($file))) continue;
+        $html = file_get_contents(site_path($file));
+        $updated = preg_replace('#<base href="[^"]*">#', '<base href="' . h(site_url()) . '">', $html, 1);
+        if ($updated !== null && $updated !== $html) {
+            write_atomic(site_path($file), $updated);
+            $changed[] = $file;
+        }
+    }
+    write_atomic(site_path('robots.txt'), "User-agent: *
+Allow: /
+Disallow: /admin/
+
+Sitemap: " . site_url('sitemap.xml') . "
+");
+    $changed[] = 'robots.txt';
 
     save_setting('last_published', date('Y-m-d H:i:s'));
     return array_values(array_unique($changed));

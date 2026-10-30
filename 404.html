@@ -3,41 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Not Found | Judes CBO</title>
-    <meta name="description" content="The page you are looking for could not be found.">
+    <title>Page not found | Judes CBO</title>
     <meta name="robots" content="noindex, follow">
-    <meta name="author" content="Judes Community Based Organization">
     <base href="https://sege-peter.github.io/JudesCBO/">
-    <!-- Open Graph / social sharing -->
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Judes CBO">
-    <meta property="og:locale" content="en_KE">
-    <meta property="og:title" content="Page Not Found | Judes CBO">
-    <meta property="og:description" content="The page you are looking for could not be found.">
-    <meta property="og:url" content="https://sege-peter.github.io/JudesCBO/404.html">
-    <meta property="og:image" content="https://sege-peter.github.io/JudesCBO/images/og-image.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Judes CBO community members in Homa Bay County">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Page Not Found | Judes CBO">
-    <meta name="twitter:description" content="The page you are looking for could not be found.">
-    <meta name="twitter:image" content="https://sege-peter.github.io/JudesCBO/images/og-image.jpg">
-    <meta name="twitter:image:alt" content="Judes CBO community members in Homa Bay County">
-    <!-- Icons and theme -->
-    <link rel="icon" href="jude-logo.png" type="image/png">
-    <link rel="apple-touch-icon" href="jude-logo.png">
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" href="images/icons/favicon-32.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="images/icons/apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
     <meta name="theme-color" content="#1a365d">
-    <!-- Fonts, icons and styles -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>document.documentElement.classList.add('js');</script>
 </head>
-<body>
+<body class="error-page">
     <!-- Header -->
     <header class="site-header" id="site-header">
         <div class="container header-container">
@@ -115,19 +96,36 @@
             <span><i class="fas fa-location-dot"></i> Oyugis, Homa Bay County</span>
         </div>
     </nav>
-    <!-- Not Found -->
-    <section class="page-banner">
-        <div class="container">
-            <h1>Page not found</h1>
-            <p>Sorry, we couldn't find that page. It may have moved.</p>
+    <!-- Error -->
+    <section class="error-hero">
+        <div class="container error-inner">
+            <span class="error-icon hero-anim" style="--d:.05s"><i class="fas fa-map-signs"></i></span>
+            <p class="error-code hero-anim" style="--d:.15s">404</p>
+            <h1 class="error-title hero-anim" style="--d:.25s">Page not found</h1>
+            <p class="error-lead hero-anim" style="--d:.35s">We couldn't find the page you were looking for.</p>
+            <p class="error-detail hero-anim" style="--d:.42s">It may have moved, or the link may be out of date. Try one of these instead:</p>
+            <div class="error-actions hero-anim" style="--d:.5s">
+                <a href="index.html" class="hero-btn primary btn-shine"><i class="fas fa-house"></i> Home page</a>
+                <button type="button" class="hero-btn secondary error-retry" onclick="history.length > 1 ? history.back() : location.assign('index.html')"><i class="fas fa-arrow-left"></i> Go back</button>
+                <a href="https://wa.me/254712109310" class="hero-btn secondary" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp us</a>
+            </div>
+            <div class="error-links">
+                <a href="programs.html"><i class="fas fa-hand-holding-heart"></i><span>Our programs</span></a>
+                <a href="stories.html"><i class="fas fa-book-open"></i><span>Stories</span></a>
+                <a href="gallery.html"><i class="fas fa-images"></i><span>Gallery</span></a>
+                <a href="donate.html"><i class="fas fa-heart"></i><span>Donate</span></a>
+            </div>
         </div>
     </section>
-    <section class="features">
-        <div class="container" style="text-align:center">
-            <a href="index.html" class="hero-btn primary">Go to the home page</a>
-            <a href="stories.html" class="hero-btn secondary" style="color:var(--dark);border-color:var(--dark)">Read our stories</a>
-        </div>
-    </section>
+    <script>
+    if (/\/admin(\/|$)/.test(location.pathname)) {
+        document.querySelector('.error-code').textContent = 'Staff';
+        document.querySelector('.error-title').textContent = 'Staff dashboard coming soon';
+        document.querySelector('.error-lead').textContent = 'The Judes CBO staff dashboard will be available here once the website moves to its new hosting.';
+        document.querySelector('.error-detail').textContent = 'Need something in the meantime? Contact the team on WhatsApp or by phone.';
+        document.title = 'Staff dashboard coming soon | Judes CBO';
+    }
+    </script>
     <!-- Footer -->
     <footer class="site-footer">
         <div class="container">

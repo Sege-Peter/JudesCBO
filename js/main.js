@@ -432,3 +432,10 @@ if (waGreeting) {
     waGreeting.querySelector('.wa-greeting-close').addEventListener('click', hideGreeting);
     document.querySelector('.whatsapp-float').addEventListener('click', hideGreeting);
 }
+
+// Offline support: cache the site's files and show offline.html when there's no connection
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+}

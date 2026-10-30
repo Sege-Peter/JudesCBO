@@ -2097,3 +2097,63 @@ h1, h2, h3, h4, h5 {
 }
 .logo { flex-shrink: 0; }
 .logo-subtext { white-space: nowrap; }
+
+/* ---------- Error pages ---------- */
+.error-hero {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    padding: 140px 0 80px;
+    background:
+        radial-gradient(ellipse at 10% 0%, rgba(45,80,22,0.6), transparent 55%),
+        radial-gradient(ellipse at 95% 100%, rgba(229,62,62,0.22), transparent 50%),
+        #0f2440;
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+}
+.error-inner { max-width: 720px; }
+.error-icon {
+    width: 84px; height: 84px;
+    margin: 0 auto 1rem;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 26px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #ecc94b;
+    font-size: 2.1rem;
+}
+.error-code {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(4.5rem, 16vw, 8rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, #fff 30%, #68d391);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.error-title { color: #fff; font-size: clamp(1.7rem, 5vw, 2.4rem); margin: .4rem 0 .8rem; }
+.error-lead { font-size: 1.15rem; color: #fff; margin-bottom: .4rem; }
+.error-detail { margin-bottom: 2rem; }
+.error-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.error-retry { font-family: inherit; }
+.error-links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 2.5rem; }
+.error-links a {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 1.1rem .6rem;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background .3s, transform .3s var(--ease-out);
+}
+.error-links a i { color: #ecc94b; font-size: 1.3rem; }
+.error-links a:hover { background: rgba(255,255,255,0.14); transform: translateY(-3px); }
+@media (max-width: 600px) {
+    .error-hero { padding: 110px 0 60px; }
+    .error-links { grid-template-columns: 1fr 1fr; }
+    .error-actions .hero-btn { width: 100%; justify-content: center; }
+}

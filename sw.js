@@ -1,0 +1,58 @@
+// Judes CBO service worker: pages come from the network first (always fresh),
+// static files from the cache first, and offline.html when there's no connection.
+const VERSION = 'judes-v1';
+const CORE = [
+    './', 'index.html', 'offline.html', 'css/style.css', 'js/main.js',
+    'favicon.ico', 'images/icons/icon-192.png', 'images/icons/favicon-32.png', 'jude-logo.png'
+];
+
+self.addEventListener('install', event => {
+    event.waitUntil(caches.open(VERSION).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting()));
+});
+
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys()
+            .then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k))))
+            .then(() => self.clients.claim())
+    );
+});
+
+self.addEventListener('fetch', event => {
+    const request = event.request;
+    if (request.method !== 'GET') return;
+    const url = new URL(request.url);
+    // Never cache the staff dashboard or form endpoints
+    if (url.pathname.includes('/admin/')) return;
+
+    if (request.mode === 'navigate') {
+        event.respondWith(
+            fetch(request)
+                .then(response => {
+                    if (response.ok) {
+                        const copy = response.clone();
+                        caches.open(VERSION).then(cache => cache.put(request, copy));
+                    }
+                    return response;
+                })
+                .catch(() => caches.match(request).then(hit => hit || caches.match('offline.html')))
+        );
+        return;
+    }
+
+    // Styles, scripts, images and fonts: serve from cache, refresh in the background
+    if (/\.(css|js|png|jpe?g|webp|svg|ico|woff2?)$/i.test(url.pathname) || url.host.includes('fonts.g') || url.host === 'cdnjs.cloudflare.com') {
+        event.respondWith(
+            caches.match(request).then(hit => {
+                const network = fetch(request).then(response => {
+                    if (response.ok || response.type === 'opaque') {
+                        const copy = response.clone();
+                        caches.open(VERSION).then(cache => cache.put(request, copy));
+                    }
+                    return response;
+                }).catch(() => hit);
+                return hit || network;
+            })
+        );
+    }
+});

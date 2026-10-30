@@ -1,0 +1,28 @@
+{
+  "name": "Judes Community Based Organization",
+  "short_name": "Judes CBO",
+  "description": "Empowering women, youth and persons with disabilities in Oyugis, Homa Bay County, Kenya.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a365d",
+  "icons": [
+    {
+      "src": "images/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
