@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sege-peter.github.io/JudesCBO/sitemap.xml

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found | Judes CBO</title>
+    <meta name="description" content="The page you are looking for could not be found.">
+    <meta name="robots" content="noindex, follow">
+    <meta name="author" content="Judes Community Based Organization">
+    <base href="https://sege-peter.github.io/JudesCBO/">
+    <!-- Open Graph / social sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Judes CBO">
+    <meta property="og:locale" content="en_KE">
+    <meta property="og:title" content="Page Not Found | Judes CBO">
+    <meta property="og:description" content="The page you are looking for could not be found.">
+    <meta property="og:url" content="https://sege-peter.github.io/JudesCBO/404.html">
+    <meta property="og:image" content="https://sege-peter.github.io/JudesCBO/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Judes CBO community members in Homa Bay County">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Page Not Found | Judes CBO">
+    <meta name="twitter:description" content="The page you are looking for could not be found.">
+    <meta name="twitter:image" content="https://sege-peter.github.io/JudesCBO/images/og-image.jpg">
+    <meta name="twitter:image:alt" content="Judes CBO community members in Homa Bay County">
+    <!-- Icons and theme -->
+    <link rel="icon" href="jude-logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="jude-logo.png">
+    <meta name="theme-color" content="#1a365d">
+    <!-- Fonts, icons and styles -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="site-header" id="site-header">
+        <div class="container header-container">
+            <a href="index.html" class="logo" aria-label="Judes CBO home">
+                <span class="logo-img"><img src="jude-logo.png" alt=""></span>
+                <span class="logo-words">
+                    <span class="logo-text">JUDES CBO</span>
+                    <span class="logo-subtext">Empowerment for Development</span>
+                </span>
+            </a>
+            <nav class="desktop-nav" aria-label="Main navigation">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="programs.html">Programs</a></li>
+                    <li><a href="stories.html">Stories</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <a href="tel:+254712109310" class="header-phone" aria-label="Call us"><i class="fas fa-phone"></i><span>+254 712 109310</span></a>
+                <button type="button" class="header-donate" onclick="openMpesaPopup()"><i class="fas fa-heart"></i><span>Donate</span></button>
+                <button type="button" class="mobile-nav-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <!-- Mobile Navigation -->
+    <div class="nav-overlay"></div>
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+        <div class="mobile-nav-head">
+            <span class="logo-text">JUDES CBO</span>
+            <button type="button" class="close-nav" aria-label="Close navigation"><i class="fas fa-times"></i></button>
+        </div>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-house"></i> Home</a></li>
+            <li><a href="about.html"><i class="fas fa-circle-info"></i> About</a></li>
+            <li><a href="programs.html"><i class="fas fa-hand-holding-heart"></i> Programs</a></li>
+            <li><a href="stories.html"><i class="fas fa-book-open"></i> Stories</a></li>
+            <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
+        </ul>
+        <button type="button" class="mobile-donate" onclick="openMpesaPopup()"><i class="fas fa-heart"></i> Donate</button>
+        <div class="mobile-nav-contact">
+            <a href="tel:+254712109310"><i class="fas fa-phone"></i> +254 712 109310</a>
+            <a href="mailto:info@judescbo.org"><i class="fas fa-envelope"></i> info@judescbo.org</a>
+        </div>
+    </nav>
+    <!-- Not Found -->
+    <section class="page-banner">
+        <div class="container">
+            <h1>Page not found</h1>
+            <p>Sorry, we couldn't find that page. It may have moved.</p>
+        </div>
+    </section>
+    <section class="features">
+        <div class="container" style="text-align:center">
+            <a href="index.html" class="hero-btn primary">Go to the home page</a>
+            <a href="stories.html" class="hero-btn secondary" style="color:var(--dark);border-color:var(--dark)">Read our stories</a>
+        </div>
+    </section>
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-newsletter">
+                <div>
+                    <h3>Stay in the loop</h3>
+                    <p>Get updates on our programs, events and stories from Homa Bay.</p>
+                </div>
+                <form id="subscribe-form" class="subscribe-form" action="https://formspree.io/f/mjkelgrq" method="POST" autocomplete="off">
+                    <input type="hidden" name="_subject" value="Newsletter signup">
+                    <input type="hidden" name="form" value="newsletter">
+                    <input type="email" id="subscriber-email" name="email" placeholder="Your email address" aria-label="Email address" required>
+                    <button type="submit">Subscribe <i class="fas fa-arrow-right"></i></button>
+                </form>
+            </div>
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html" class="footer-logo">
+                        <span class="logo-img"><img src="jude-logo.png" alt=""></span>
+                        <span class="logo-text">JUDES CBO</span>
+                    </a>
+                    <p>A grassroots community-based organization empowering women, youth and persons with disabilities in Oyugis, Homa Bay County since 2018.</p>
+                    <div class="footer-actions">
+                        <button type="button" class="footer-chip donate" onclick="openMpesaPopup()"><i class="fas fa-heart"></i> Donate</button>
+                        <a href="https://wa.me/254712109310" class="footer-chip" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Explore</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="programs.html">Programs</a></li>
+                        <li><a href="stories.html">Stories</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Programs</h4>
+                    <ul class="footer-links">
+                        <li><a href="programs.html#sgbv">Ending SGBV</a></li>
+                        <li><a href="programs.html#aysrh">Youth Health (AYSRH)</a></li>
+                        <li><a href="programs.html#mental-health">Mental Health</a></li>
+                        <li><a href="programs.html#disability">Disability Inclusion</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul class="footer-contact">
+                        <li><i class="fas fa-location-dot"></i> Oyugis Town, Homa Bay County, Kenya</li>
+                        <li><i class="fas fa-phone"></i> <a href="tel:+254712109310">+254 712 109310</a></li>
+                        <li><i class="fas fa-envelope"></i> <a href="mailto:info@judescbo.org">info@judescbo.org</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="year"></span> Judes Community Based Organization. All rights reserved.</p>
+                <p class="footer-credit">Website by <a href="https://skopedesigns.co.ke" target="_blank" rel="noopener">Skope Designs</a></p>
+                <a href="#" class="back-to-top">Back to top <i class="fas fa-arrow-up"></i></a>
+            </div>
+        </div>
+    </footer>
+    <!-- M-Pesa Popup Modal -->
+    <div id="mpesaPopup" class="popup" tabindex="-1" aria-modal="true" role="dialog">
+        <div class="popup-content">
+            <button type="button" class="close" aria-label="Close" onclick="closeMpesaPopup()">&times;</button>
+            <h3>Support Our Work</h3>
+            <!-- TODO: add the official M-Pesa Paybill/Till number and account name here -->
+            <p>Thank you for choosing to support Judes CBO. Reach out and we'll share our M-Pesa donation details.</p>
+            <a href="https://wa.me/254712109310?text=Hello%20Judes%20CBO!%20I%20would%20like%20to%20make%20a%20donation." class="donate-btn" target="_blank" rel="noopener">
+                <i class="fab fa-whatsapp"></i> WhatsApp Us
+            </a>
+            <a href="tel:+254712109310" class="donate-btn"><i class="fas fa-phone"></i> Call +254 712 109310</a>
+            <br>
+            <button type="button" class="cancel-btn" onclick="closeMpesaPopup()">Close</button>
+        </div>
+    </div>
+    <!-- WhatsApp Floating Icon -->
+    <a href="https://wa.me/254712109310?text=Hello%20Judes%20CBO!%20I%20would%20like%20to%20know%20more%20about%20your%20programs."
+       class="whatsapp-float" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">
+       <i class="fab fa-whatsapp"></i>
+    </a>
+    <script src="js/main.js"></script>
+</body>
+</html>
