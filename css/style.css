@@ -219,7 +219,7 @@ h1, h2, h3, h4, h5 {
     .hero-title { font-size: 2.2rem; }
 }
 @media (max-width: 600px) {
-    .container { padding: 0 8px; }
+    .container { padding: 0 16px; }
     .hero-title { font-size: 1.3rem; }
     .hero-subtitle { font-size: 1rem; }
     .features, .blog, .contact { padding: 2.5rem 0; }
@@ -664,7 +664,8 @@ h1, h2, h3, h4, h5 {
     .footer-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 600px) {
-    .logo-subtext { display: none; }
+    .logo-subtext { font-size: .7rem; letter-spacing: .2px; }
+    .logo { gap: 9px; }
     .logo-text { font-size: 1.1rem; }
     .logo-img { width: 44px; height: 44px; }
     .header-donate { padding: 10px 14px; }
@@ -2003,3 +2004,57 @@ h1, h2, h3, h4, h5 {
 
 /* Keep side-sliding reveals from causing sideways scroll before they animate in */
 .donate-main, .contact.home-section { overflow-x: clip; }
+
+/* ---------- Phone header: keep the tagline on one line ---------- */
+@media (max-width: 600px) {
+    .header-container { gap: 10px; }
+    .logo { min-width: 0; }
+    .logo-words { min-width: 0; }
+    .logo-subtext { white-space: nowrap; }
+    .header-actions { gap: 8px; }
+    .header-donate { width: 42px; height: 42px; padding: 0; justify-content: center; }
+    .mobile-nav-toggle { width: 42px; height: 42px; padding: 0 10px; }
+}
+@media (max-width: 374px) {
+    .logo-img, .site-header.scrolled .logo-img { width: 38px; height: 38px; }
+    .logo { gap: 7px; }
+    .logo-text { font-size: .98rem; letter-spacing: .5px; }
+    .logo-subtext { font-size: .62rem; letter-spacing: 0; }
+    .header-donate { width: 38px; height: 38px; }
+    .mobile-nav-toggle { width: 38px; height: 38px; padding: 0 9px; }
+    .mobile-nav-toggle span { width: 18px; }
+    .mobile-nav-toggle span:nth-child(2) { width: 12px; }
+    .mobile-nav-toggle span:nth-child(3) { width: 15px; }
+}
+@media (max-width: 340px) {
+    .logo-subtext { font-size: .58rem; }
+    .logo-text { font-size: .92rem; }
+}
+@media (max-width: 600px) {
+    .about-tabs { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; gap: 4px; }
+    .about-tab { padding: 9px 6px; font-size: .8rem; }
+    .gallery-grid { grid-auto-flow: dense; }
+    .impact-item p { font-size: .88rem; }
+}
+/* The CTA box doubles as the container, so keep it off the screen edges below desktop width */
+.cta-inner { width: calc(100% - 40px); }
+@media (max-width: 600px) {
+    .cta-inner { width: calc(100% - 32px); }
+    .cta-actions { width: 100%; }
+    .cta-pill { flex: 1 1 auto; justify-content: center; }
+}
+.mpesa-steps li p { margin: 0; }
+.mpesa-number strong { white-space: nowrap; }
+@media (max-width: 400px) {
+    .mpesa-number { padding: 1rem; }
+    .mpesa-number strong { font-size: 1.2rem; }
+    .copy-btn { padding: 8px 12px; }
+}
+@media (max-width: 600px) {
+    .quick-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .quick-card { padding: 1.2rem 1rem; }
+    .quick-icon { width: 44px; height: 44px; margin-bottom: .8rem; font-size: 1.1rem; }
+    .quick-card h3 { font-size: 1rem; }
+    .quick-card p { font-size: .82rem; }
+    .quick-action { font-size: .82rem; margin-top: .7rem; }
+}
