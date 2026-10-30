@@ -9,203 +9,192 @@
     <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="icon" href="images/icons/favicon-32.png" type="image/png" sizes="32x32">
     <link rel="apple-touch-icon" href="images/icons/apple-touch-icon.png">
-    <link rel="manifest" href="site.webmanifest">
-    <meta name="theme-color" content="#1a365d">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <meta name="theme-color" content="#0b1d35">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <script>document.documentElement.classList.add('js');</script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --navy: #0b1d35; --leaf: #68d391; --amber: #f6ad55; --red: #e53e3e; --glass: rgba(255,255,255,0.07); --line: rgba(255,255,255,0.14); }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        [hidden] { display: none !important; }
+        body {
+            min-height: 100vh; min-height: 100dvh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 32px 16px;
+            font-family: 'Raleway', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: rgba(255,255,255,0.8); text-align: center;
+            background: var(--navy);
+            overflow-x: hidden;
+        }
+        h1, .brand, .code, .btn, .tile, .retry-text b { font-family: 'Montserrat', system-ui, sans-serif; }
+        a { color: inherit; }
+
+        /* Moving aurora and drifting particles (same as the maintenance page) */
+        .sky { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
+        .sky::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px); background-size: 26px 26px; mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%); -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%); }
+        .blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; animation: drift 18s ease-in-out infinite alternate; }
+        .b1 { width: 520px; height: 520px; left: -140px; top: -160px; background: #2d5016; }
+        .b2 { width: 420px; height: 420px; right: -120px; top: 20%; background: #1a365d; animation-duration: 22s; animation-delay: -6s; }
+        .b3 { width: 380px; height: 380px; left: 30%; bottom: -200px; background: #9b2c2c; opacity: .32; animation-duration: 26s; animation-delay: -12s; }
+        @keyframes drift { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(60px, 40px) scale(1.12); } 100% { transform: translate(-40px, 70px) scale(.95); } }
+        .particles i { position: absolute; bottom: -20px; width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.35); animation: float 16s linear infinite; }
+        .particles i:nth-child(odd) { background: rgba(104,211,145,0.45); width: 4px; height: 4px; }
+        .particles i:nth-child(3n) { background: rgba(246,173,85,0.45); }
+        .particles i:nth-child(1) { left: 8%; animation-duration: 14s; }
+        .particles i:nth-child(2) { left: 20%; animation-duration: 19s; animation-delay: -4s; }
+        .particles i:nth-child(3) { left: 32%; animation-duration: 12s; animation-delay: -9s; }
+        .particles i:nth-child(4) { left: 44%; animation-duration: 21s; animation-delay: -2s; }
+        .particles i:nth-child(5) { left: 56%; animation-duration: 15s; animation-delay: -11s; }
+        .particles i:nth-child(6) { left: 68%; animation-duration: 18s; animation-delay: -6s; }
+        .particles i:nth-child(7) { left: 80%; animation-duration: 13s; animation-delay: -1s; }
+        .particles i:nth-child(8) { left: 92%; animation-duration: 20s; animation-delay: -14s; }
+        @keyframes float { 0% { transform: translateY(0); opacity: 0; } 10%, 90% { opacity: 1; } 100% { transform: translateY(-110vh) translateX(30px); opacity: 0; } }
+
+        .rise { opacity: 0; transform: translateY(18px); animation: rise .8s cubic-bezier(.2,.8,.2,1) var(--d, 0s) forwards; }
+        @keyframes rise { to { opacity: 1; transform: none; } }
+
+        .brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 24px; color: #fff; font-weight: 700; letter-spacing: 1.5px; font-size: 14px; text-decoration: none; }
+        .brand img { width: 40px; height: 40px; padding: 4px; border-radius: 12px; background: #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+
+        .card { position: relative; width: 100%; max-width: 620px; padding: 34px 32px 30px; border-radius: 28px; background: var(--glass); border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+        .card::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: linear-gradient(135deg, rgba(104,211,145,0.6), transparent 35%, transparent 65%, rgba(246,173,85,0.5)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+
+        /* The code: the middle 0 is an animated badge */
+        .code { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 14px; font-size: clamp(76px, 20vw, 118px); font-weight: 800; line-height: 1; letter-spacing: -3px; }
+        .code > span { background: linear-gradient(160deg, #fff 35%, #9ae6b4); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .code > span:last-child { background: linear-gradient(160deg, #fff 35%, #fbd38d); -webkit-background-clip: text; background-clip: text; }
+        .orb { position: relative; display: grid; place-items: center; width: .86em; height: .86em; margin: 0 4px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.22), rgba(255,255,255,0.05) 60%); border: 1px solid rgba(255,255,255,0.22); box-shadow: 0 0 40px rgba(104,211,145,0.25), inset 0 0 24px rgba(255,255,255,0.06); animation: bob 4s ease-in-out infinite; }
+        .orb::before { content: ""; position: absolute; inset: -9px; border-radius: 50%; border: 2px dashed rgba(104,211,145,0.45); animation: spin 14s linear infinite; }
+        .orb::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--amber); animation: spin 2.8s linear infinite; }
+        .orb i { font-size: .36em; color: #fbd38d; letter-spacing: 0; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3)); }
+        @keyframes bob { 50% { transform: translateY(-8px); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .a-wobble i { animation: wobble 3.2s ease-in-out infinite; }
+        @keyframes wobble { 0%, 100% { transform: rotate(-25deg); } 30% { transform: rotate(160deg); } 55% { transform: rotate(95deg); } 75% { transform: rotate(130deg); } }
+        .a-shake i { animation: shake 2.6s ease-in-out infinite; }
+        @keyframes shake { 0%, 60%, 100% { transform: rotate(0); } 65% { transform: rotate(-14deg); } 72% { transform: rotate(12deg); } 79% { transform: rotate(-8deg); } 86% { transform: rotate(4deg); } }
+        .a-turn i { animation: turn 2.8s ease-in-out infinite; }
+        @keyframes turn { 0%, 30% { transform: rotate(0); } 50%, 80% { transform: rotate(-90deg); } 100% { transform: rotate(0); } }
+        .a-pulse i { animation: pulse 1.8s ease-in-out infinite; }
+        @keyframes pulse { 50% { transform: scale(1.15); color: #feb2b2; } }
+        .a-spin i { animation: spin 5s linear infinite; }
+        .a-unplug i { animation: unplug 2.4s ease-in-out infinite; }
+        @keyframes unplug { 0%, 100% { transform: translate(0, 0) rotate(45deg); } 40%, 60% { transform: translate(6px, -6px) rotate(45deg); opacity: .55; } }
+        .a-tap i { animation: tap 2.4s ease-in-out infinite; }
+        @keyframes tap { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-22deg); } 35% { transform: rotate(6deg); } 50% { transform: rotate(0); } }
+
+        .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; margin-bottom: 12px; border-radius: 999px; background: rgba(246,173,85,0.14); border: 1px solid rgba(246,173,85,0.3); color: #fbd38d; font-size: 12.5px; font-weight: 600; letter-spacing: .4px; }
+        .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
+        h1 { color: #fff; font-size: clamp(26px, 6vw, 36px); font-weight: 800; line-height: 1.15; letter-spacing: -.4px; margin-bottom: 12px; }
+        .lead { font-size: 16.5px; line-height: 1.6; color: #fff; max-width: 470px; margin: 0 auto 6px; }
+        .detail { font-size: 15px; line-height: 1.6; max-width: 470px; margin: 0 auto; }
+
+        .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 24px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 11px 18px; border-radius: 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: #fff; font: inherit; font-family: 'Montserrat', system-ui, sans-serif; font-weight: 700; font-size: 14px; text-decoration: none; cursor: pointer; transition: transform .25s, background .25s, border-color .25s; }
+        .btn:hover { transform: translateY(-3px); background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.32); }
+        .btn-primary { background: var(--red); border-color: var(--red); }
+        .btn-primary:hover { background: #c53030; border-color: #c53030; }
+        .btn-wa { background: #25d366; border-color: #25d366; }
+        .btn-wa:hover { background: #1fb457; border-color: #1fb457; }
+        .btn:focus-visible, .tile:focus-visible, .search input:focus-visible, .suggest a:focus-visible { outline: 3px solid var(--leaf); outline-offset: 2px; }
+
+        /* 404: what was asked for, a best guess and a page finder */
+        .asked { display: inline-block; max-width: 100%; margin: 14px auto 0; padding: 6px 12px; border-radius: 10px; background: rgba(0,0,0,0.28); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; color: #feb2b2; overflow-wrap: anywhere; }
+        .guess { margin-top: 14px; font-size: 15px; }
+        .guess a { color: #9ae6b4; font-weight: 700; }
+        .search { position: relative; max-width: 440px; margin: 22px auto 0; text-align: left; }
+        .search i { position: absolute; left: 16px; top: 15px; color: rgba(255,255,255,0.5); pointer-events: none; }
+        .search input { width: 100%; height: 48px; padding: 0 16px 0 44px; border-radius: 14px; background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.16); color: #fff; font: inherit; font-size: 15px; }
+        .search input::placeholder { color: rgba(255,255,255,0.5); }
+        .suggest { list-style: none; margin-top: 8px; border-radius: 14px; overflow: hidden; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+        .suggest:empty { display: none; }
+        .suggest a { display: flex; align-items: center; gap: 12px; padding: 11px 14px; text-decoration: none; color: #fff; font-size: 14.5px; }
+        .suggest a:hover, .suggest a:focus { background: rgba(255,255,255,0.08); }
+        .suggest i { position: static; width: 18px; text-align: center; color: #fbd38d; }
+        .suggest small { display: block; color: rgba(255,255,255,0.6); font-size: 12.5px; }
+        .suggest .none { padding: 12px 14px; font-size: 14px; }
+
+        .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 24px; }
+        .tile { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 6px; border-radius: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; transition: background .25s, transform .25s; }
+        .tile i { font-size: 19px; color: #fbd38d; }
+        .tile:hover { background: rgba(255,255,255,0.12); transform: translateY(-3px); }
+
+        /* 502 and 503: try again on their own */
+        .retry { display: inline-flex; align-items: center; gap: 12px; margin-top: 20px; padding: 10px 16px 10px 10px; border-radius: 16px; background: rgba(0,0,0,0.26); border: 1px solid rgba(255,255,255,0.08); text-align: left; }
+        .ring { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
+        .ring svg { transform: rotate(-90deg); }
+        .ring circle { fill: none; stroke-width: 4; }
+        .ring .bg { stroke: rgba(255,255,255,0.12); }
+        .ring .fg { stroke: var(--leaf); stroke-linecap: round; stroke-dasharray: 113.1; transition: stroke-dashoffset 1s linear; }
+        .ring b { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-family: 'Montserrat', sans-serif; font-size: 14px; font-variant-numeric: tabular-nums; }
+        .retry-text { font-size: 13.5px; line-height: 1.45; }
+        .retry-text b { display: block; color: #fff; font-size: 14px; }
+        .retry-text button { padding: 0; background: none; border: 0; color: #9ae6b4; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+
+        footer { margin-top: 24px; font-size: 12.5px; line-height: 1.8; opacity: .6; }
+        footer a { text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 520px) {
+            body { padding: 22px 16px; }
+            .card { padding: 28px 18px 24px; border-radius: 24px; }
+            .tiles { grid-template-columns: 1fr 1fr; }
+            .actions .btn { flex: 1 1 100%; }
+            .orb::before { inset: -6px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            .rise { opacity: 1; transform: none; }
+            .particles { display: none; }
+        }
+    </style>
 </head>
 <body class="error-page">
-    <!-- Header -->
-    <header class="site-header" id="site-header">
-        <div class="container header-container">
-            <a href="./" class="logo" aria-label="Judes CBO home">
-                <span class="logo-img"><img src="jude-logo.png" alt=""></span>
-                <span class="logo-words">
-                    <span class="logo-text">JUDES CBO</span>
-                    <span class="logo-subtext">Empowerment for Development</span>
-                </span>
-            </a>
-            <nav class="desktop-nav" aria-label="Main navigation">
-                <ul>
-                    <li><a href="./">Home</a></li>
-                    <li><a href="about">About</a></li>
-                    <li><a href="programs">Programs</a></li>
-                    <li><a href="stories">Stories</a></li>
-                    <li><a href="events">Events</a></li>
-                    <li><a href="gallery">Gallery</a></li>
-                    <li><a href="contact">Contact</a></li>
-                </ul>
-            </nav>
-            <div class="header-actions">
-                <a href="tel:+254712109310" class="header-phone" aria-label="Call us"><i class="fas fa-phone"></i><span>+254 712 109310</span></a>
-                <a href="admin/login" class="header-login" aria-label="Staff login" title="Staff login"><i class="fas fa-user-lock"></i></a>
-                <a href="donate" class="header-donate"><i class="fas fa-heart"></i><span>Donate</span></a>
-                <button type="button" class="mobile-nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
-                    <span></span><span></span><span></span>
-                </button>
-            </div>
-        </div>
-    </header>
-    <!-- Mobile Navigation -->
-    <div class="nav-overlay"></div>
-    <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
-        <span class="mnav-eyebrow">Menu</span>
-        <ul>
-            <li><a href="./">
-                <span class="mnav-icon"><i class="fas fa-house"></i></span>
-                <span class="mnav-text"><strong>Home</strong><small>Welcome to Judes CBO</small></span>
-                <i class="fas fa-chevron-right mnav-arrow"></i>
-            </a></li>
-            <li><a href="about">
-                <span class="mnav-icon"><i class="fas fa-circle-info"></i></span>
-                <span class="mnav-text"><strong>About</strong><small>Our story, mission and values</small></span>
-                <i class="fas fa-chevron-right mnav-arrow"></i>
-            </a></li>
-            <li><a href="programs">
-                <span class="mnav-icon"><i class="fas fa-hand-holding-heart"></i></span>
-                <span class="mnav-text"><strong>Programs</strong><small>What we do in Homa Bay</small></span>
-                <i class="fas fa-chevron-right mnav-arrow"></i>
-            </a></li>
-            <li><a href="stories">
-                <span class="mnav-icon"><i class="fas fa-book-open"></i></span>
-                <span class="mnav-text"><strong>Stories</strong><small>News and updates</small></span>
-                <i class="fas fa-chevron-right mnav-arrow"></i>
-            </a></li>
-            <li><a href="events">
-                <span class="mnav-icon"><i class="fas fa-calendar-days"></i></span>
-                <span class="mnav-text"><strong>Events</strong><small>Outreaches and meetings</small></span>
-                <i class="fas fa-chevron-right mnav-arrow"></i>
-            </a></li>
-            <li><a href="gallery">
-                <span class="mnav-icon"><i class="fas fa-images"></i></span>
-                <span class="mnav-text"><strong>Gallery</strong><small>Our work in pictures</small></span>
-                <i class="fas fa-chevron-right mnav-arrow"></i>
-            </a></li>
-            <li><a href="contact">
-                <span class="mnav-icon"><i class="fas fa-envelope"></i></span>
-                <span class="mnav-text"><strong>Contact</strong><small>Get in touch with our team</small></span>
-                <i class="fas fa-chevron-right mnav-arrow"></i>
-            </a></li>
-        </ul>
-        <div class="mnav-actions">
-            <a href="donate" class="mobile-donate"><i class="fas fa-heart"></i> Donate</a>
-            <a href="https://wa.me/254712109310" class="mobile-wa" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-        </div>
-        <a href="admin/login" class="mnav-login"><i class="fas fa-user-lock"></i> Staff login</a>
-        <div class="mobile-nav-contact">
-            <a href="tel:+254712109310"><i class="fas fa-phone"></i> +254 712 109310</a>
-            <a href="mailto:info@judescbo.org"><i class="fas fa-envelope"></i> info@judescbo.org</a>
-            <span><i class="fas fa-location-dot"></i> Oyugis, Homa Bay County</span>
-        </div>
-    </nav>
-    <!-- Error -->
-    <section class="error-hero">
-        <div class="container error-inner">
-            <span class="error-icon hero-anim" style="--d:.05s"><i class="fas fa-ban"></i></span>
-            <p class="error-code hero-anim" style="--d:.15s">403</p>
-            <h1 class="error-title hero-anim" style="--d:.25s">Access denied</h1>
-            <p class="error-lead hero-anim" style="--d:.35s">You don't have permission to view this page.</p>
-            <p class="error-detail hero-anim" style="--d:.42s">If you think this is a mistake, please let us know.</p>
-            <div class="error-actions hero-anim" style="--d:.5s">
-                <a href="./" class="hero-btn primary btn-shine"><i class="fas fa-house"></i> Home page</a>
-                <button type="button" class="hero-btn secondary error-retry" onclick="history.length > 1 ? history.back() : location.assign('./')"><i class="fas fa-arrow-left"></i> Go back</button>
-                <a href="https://wa.me/254712109310" class="hero-btn secondary" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp us</a>
-            </div>
-            <div class="error-links">
-                <a href="programs"><i class="fas fa-hand-holding-heart"></i><span>Our programs</span></a>
-                <a href="stories"><i class="fas fa-book-open"></i><span>Stories</span></a>
-                <a href="gallery"><i class="fas fa-images"></i><span>Gallery</span></a>
-                <a href="donate"><i class="fas fa-heart"></i><span>Donate</span></a>
-            </div>
-        </div>
-    </section>
-    <!-- Footer -->
-    <footer class="site-footer">
-        <div class="container">
-            <div class="footer-newsletter">
-                <div>
-                    <h3>Stay in the loop</h3>
-                    <p>Get updates on our programs, events and stories from Homa Bay.</p>
-                </div>
-                <form id="subscribe-form" class="subscribe-form" action="https://formspree.io/f/mjkelgrq" method="POST" autocomplete="off">
-                    <input type="hidden" name="_subject" value="Newsletter signup">
-                    <input type="hidden" name="form" value="newsletter">
-                    <input type="email" id="subscriber-email" name="email" placeholder="Your email address" aria-label="Email address" required>
-                    <button type="submit">Subscribe <i class="fas fa-arrow-right"></i></button>
-                </form>
-            </div>
-            <div class="footer-grid">
-                <div class="footer-brand">
-                    <a href="./" class="footer-logo">
-                        <span class="logo-img"><img src="jude-logo.png" alt=""></span>
-                        <span class="logo-text">JUDES CBO</span>
-                    </a>
-                    <p>A grassroots community-based organization empowering women, youth and persons with disabilities in Oyugis, Homa Bay County since 2018.</p>
-                    <div class="footer-actions">
-                        <a href="donate" class="footer-chip donate"><i class="fas fa-heart"></i> Donate</a>
-                        <a href="https://wa.me/254712109310" class="footer-chip" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-                    </div>
-                </div>
-                <div class="footer-col">
-                    <h4>Explore</h4>
-                    <ul class="footer-links">
-                        <li><a href="./">Home</a></li>
-                        <li><a href="about">About</a></li>
-                        <li><a href="programs">Programs</a></li>
-                        <li><a href="stories">Stories</a></li>
-                        <li><a href="gallery">Gallery</a></li>
-                        <li><a href="events">Events</a></li>
-                        <li><a href="team">Team</a></li>
-                        <li><a href="contact">Contact</a></li>
-                        <li><a href="donate">Donate</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Programs</h4>
-                    <ul class="footer-links">
-                        <li><a href="programs#sgbv">Ending SGBV</a></li>
-                        <li><a href="programs#aysrh">Youth Health (AYSRH)</a></li>
-                        <li><a href="programs#mental-health">Mental Health</a></li>
-                        <li><a href="programs#disability">Disability Inclusion</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Contact</h4>
-                    <ul class="footer-contact">
-                        <li><i class="fas fa-location-dot"></i> Oyugis Town, Homa Bay County, Kenya</li>
-                        <li><i class="fas fa-phone"></i> <a href="tel:+254712109310">+254 712 109310</a></li>
-                        <li><i class="fas fa-envelope"></i> <a href="mailto:info@judescbo.org">info@judescbo.org</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; <span id="year"></span> Judes Community Based Organization. All rights reserved.</p>
-                <p class="footer-legal"><a href="privacy">Privacy Policy</a><a href="terms">Terms &amp; Conditions</a><a href="admin/login">Staff login</a></p>
-                <p class="footer-credit">Website by <a href="https://skopedesigns.co.ke" target="_blank" rel="noopener">Skope Designs</a></p>
-                <a href="#" class="back-to-top">Back to top <i class="fas fa-arrow-up"></i></a>
-            </div>
-        </div>
-    </footer>
-    <!-- WhatsApp Floating Button -->
-    <div class="wa-widget">
-        <div class="wa-greeting" role="status">
-            <button type="button" class="wa-greeting-close" aria-label="Dismiss message"><i class="fas fa-times"></i></button>
-            <span class="wa-greeting-avatar"><img src="jude-logo.png" alt=""></span>
-            <div>
-                <strong>Judes CBO</strong>
-                <span>Hi there! Questions about our work? Chat with us on WhatsApp.</span>
-            </div>
-        </div>
-        <a href="https://wa.me/254712109310?text=Hello%20Judes%20CBO!%20I%20would%20like%20to%20know%20more%20about%20your%20programs."
-           class="whatsapp-float" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">
-            <span class="wa-icon"><i class="fab fa-whatsapp"></i></span>
-            <span class="wa-label">Chat with us</span>
-        </a>
+    <div class="sky" aria-hidden="true">
+        <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+        <div class="particles"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     </div>
-    <script src="js/main.js"></script>
+
+    <a href="./" class="brand rise"><img src="jude-logo.png" alt="">JUDES CBO</a>
+
+    <main class="card">
+        <div class="code rise" style="--d:.1s" role="img" aria-label="Error 403">
+            <span>4</span><span class="orb a-shake"><i class="fas fa-lock"></i></span><span>3</span>
+        </div>
+        <div class="rise" style="--d:.22s">
+            <span class="pill">Error 403</span>
+            <h1>Access denied</h1>
+            <p class="lead">You don't have permission to view this page.</p>
+            <p class="detail">If you think this is a mistake, please let us know.</p>
+        </div>
+            <div class="actions rise" style="--d:.35s">
+                <a href="./" class="btn btn-primary"><i class="fas fa-house"></i> Home page</a>
+                <button type="button" class="btn" onclick="history.length > 1 ? history.back() : location.assign('./')"><i class="fas fa-arrow-left"></i> Go back</button>
+                <a href="https://wa.me/254712109310?text=Hello%20Judes%20CBO%2C%20your%20website%20showed%20an%20error%20403." class="btn btn-wa" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp us</a>
+            </div>
+            <nav class="tiles rise" style="--d:.5s" aria-label="Popular pages">
+                <a class="tile" href="programs"><i class="fas fa-hand-holding-heart"></i>Programs</a>
+                <a class="tile" href="stories"><i class="fas fa-book-open"></i>Stories</a>
+                <a class="tile" href="gallery"><i class="fas fa-images"></i>Gallery</a>
+                <a class="tile" href="donate"><i class="fas fa-heart"></i>Donate</a>
+            </nav>
+    </main>
+
+    <footer class="rise" style="--d:.6s">
+        <a href="tel:+254712109310">+254 712 109310</a> · <a href="mailto:info@judescbo.org">info@judescbo.org</a><br>
+        Judes Community Based Organization · Oyugis, Homa Bay County
+    </footer>
+    <script>
+    // If the browser refuses <base> (a security header, or www vs no-www), point links at the site's folder on this address
+    (function () {
+        var base = document.querySelector('base');
+        if (!base || document.baseURI.indexOf(base.getAttribute('href')) === 0) return;
+        var root = location.origin + new URL(base.getAttribute('href')).pathname;
+        document.querySelectorAll('a[href], img[src], link[rel~="icon"]').forEach(function (el) {
+            var attr = el.tagName === 'IMG' ? 'src' : 'href', v = el.getAttribute(attr);
+            if (!/^([a-z]+:|#|\/)/i.test(v)) el.setAttribute(attr, new URL(v, root).href);
+        });
+    })();
+    </script>
 </body>
 </html>

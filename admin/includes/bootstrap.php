@@ -55,6 +55,74 @@ function h(?string $value): string
     return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+/** Stops with a styled error page, or plain text for scripts and API calls. */
+function error_page(int $code, string $title, string $message, string $icon = 'fa-circle-exclamation'): never
+{
+    if (!headers_sent()) http_response_code($code);
+    $api = str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/api/') || str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')
+        || isset($_SERVER['HTTP_X_CSRF_TOKEN']) || PHP_SAPI === 'cli';
+    if ($api) {
+        if (!headers_sent()) header('Content-Type: text/plain; charset=utf-8');
+        exit($message);
+    }
+    if (!headers_sent()) header('Content-Type: text/html; charset=utf-8');
+    $back = $code === 403 ? '<a class="btn primary" href="index.php"><i class="fas fa-gauge"></i> Dashboard</a>'
+        : '<button type="button" class="btn primary" onclick="location.reload()"><i class="fas fa-rotate-right"></i> Try again</button>';
+    ?><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title><?= h($title) ?> | Judes CBO dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 32px 16px; text-align: center;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: rgba(255,255,255,0.8);
+        background: radial-gradient(ellipse at 10% 0%, rgba(45,80,22,0.7), transparent 55%), radial-gradient(ellipse at 95% 100%, rgba(155,44,44,0.35), transparent 50%), #0b1d35; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; color: #fff; font-weight: 700; letter-spacing: 1.4px; font-size: 13px; }
+    .brand img { width: 36px; height: 36px; padding: 3px; border-radius: 10px; background: #fff; }
+    .card { width: 100%; max-width: 480px; padding: 32px 26px 28px; border-radius: 24px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 30px 70px rgba(0,0,0,0.35); }
+    .icon { width: 76px; height: 76px; margin: 0 auto 16px; display: grid; place-items: center; border-radius: 50%; background: rgba(246,173,85,0.12); border: 1px solid rgba(246,173,85,0.35); color: #fbd38d; font-size: 30px; animation: bob 4s ease-in-out infinite; }
+    @keyframes bob { 50% { transform: translateY(-6px); } }
+    .code { display: inline-block; margin-bottom: 10px; padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,0.08); font-size: 12px; font-weight: 600; letter-spacing: .5px; }
+    h1 { color: #fff; font-size: 26px; line-height: 1.2; margin-bottom: 10px; }
+    p { font-size: 15.5px; line-height: 1.6; }
+    .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 24px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font: inherit; font-weight: 700; font-size: 14px; text-decoration: none; cursor: pointer; }
+    .btn:hover { background: rgba(255,255,255,0.16); }
+    .btn.primary { background: #e53e3e; border-color: #e53e3e; }
+    .btn.primary:hover { background: #c53030; }
+    .btn:focus-visible { outline: 3px solid #68d391; outline-offset: 2px; }
+    @media (max-width: 480px) { .btn { flex: 1 1 100%; justify-content: center; } }
+    @media (prefers-reduced-motion: reduce) { .icon { animation: none; } }
+</style>
+</head>
+<body>
+<span class="brand"><img src="../jude-logo.png" alt="">JUDES CBO</span>
+<main class="card">
+    <div class="icon"><i class="fas <?= h($icon) ?>"></i></div>
+    <span class="code">Error <?= $code ?></span>
+    <h1><?= h($title) ?></h1>
+    <p><?= h($message) ?></p>
+    <div class="actions">
+        <?= $back ?>
+        <button type="button" class="btn" onclick="history.length > 1 ? history.back() : location.assign('index.php')"><i class="fas fa-arrow-left"></i> Go back</button>
+    </div>
+</main>
+</body>
+</html>
+<?php
+    exit;
+}
+
+// Unexpected errors (for example the database being down) get a friendly page; the details go to the PHP error log
+set_exception_handler(function (Throwable $e): void {
+    error_log('Judes CBO dashboard: ' . $e);
+    error_page(500, 'Something went wrong', 'The dashboard ran into a problem. Please try again in a moment. If it keeps happening, tell the website administrator.', 'fa-gear');
+});
+
 function redirect(string $to): never
 {
     header('Location: ' . $to);
@@ -112,8 +180,7 @@ function require_csrf(): void
 {
     $sent = $_POST['csrf'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
     if (!is_string($sent) || !hash_equals(csrf_token(), $sent)) {
-        http_response_code(400);
-        exit('Your session expired. Go back, refresh the page and try again.');
+        error_page(400, 'Your session expired', 'Go back, refresh the page and try again.', 'fa-clock-rotate-left');
     }
 }
 
@@ -379,8 +446,7 @@ function require_admin(): array
 {
     $user = require_login();
     if (!in_array($user['role'], ['admin', 'developer'], true)) {
-        http_response_code(403);
-        exit('Only administrators can open this page.');
+        error_page(403, 'Administrators only', 'Only administrators can open this page. Ask an administrator if you need access.', 'fa-lock');
     }
     return $user;
 }
@@ -389,8 +455,7 @@ function require_developer(): array
 {
     $user = require_login();
     if ($user['role'] !== 'developer') {
-        http_response_code(403);
-        exit('Only System admins can open this page.');
+        error_page(403, 'System admins only', 'Only System admins can open this page.', 'fa-lock');
     }
     return $user;
 }
@@ -566,7 +631,5 @@ migrate();
 
 // Addresses blocked on the Security page get nothing from the dashboard or its forms
 if (ip_blocked(client_ip())) {
-    http_response_code(403);
-    header('Content-Type: text/plain; charset=utf-8');
-    exit('Access from your network has been blocked. If this is a mistake, contact the website administrator.');
+    error_page(403, 'Access blocked', 'Access from your network has been blocked. If this is a mistake, contact the website administrator.', 'fa-ban');
 }

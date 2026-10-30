@@ -9,8 +9,7 @@ $db = db();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
     if (!is_admin()) {
-        http_response_code(403);
-        exit('Only administrators can change these settings.');
+        error_page(403, 'Administrators only', 'Only administrators can change these settings.', 'fa-lock');
     }
     $action = $_POST['action'] ?? '';
     if ($action === 'settings') {
