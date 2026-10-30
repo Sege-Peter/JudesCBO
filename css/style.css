@@ -2360,5 +2360,24 @@ a.marquee-logo, a.partner-tile { text-decoration: none; }
 .copy-btn-sm:hover { background: rgba(26,54,93,0.16); }
 .copy-btn-sm.copied { color: #fff; }
 @media (max-width: 480px) {
+    .donate-card, .mpesa-card { padding: 1.3rem 1.1rem; border-radius: 20px; }
+    .mpesa-head { margin-bottom: 1.1rem; gap: 10px; }
+    .mpesa-head h3 { font-size: 1.15rem; line-height: 1.25; white-space: nowrap; }
+    .mpesa-badge { flex-shrink: 0; white-space: nowrap; padding: 5px 10px; font-size: .8rem; }
+    .mpesa-tabs { gap: 4px; padding: 4px; }
     .mpesa-tab { padding: 9px 4px; font-size: .8rem; white-space: nowrap; }
+    .mpesa-number { padding: .85rem 1rem; margin-bottom: 1rem; border-radius: 14px; }
+    .mpesa-method .mpesa-number + .mpesa-number { margin-top: -0.4rem; }
+    .mpesa-label { font-size: .68rem; letter-spacing: .6px; white-space: nowrap; }
+    .mpesa-number strong { font-size: 1.2rem; }
+    .mpesa-steps li { gap: 10px; padding: .45rem 0; font-size: .95rem; }
+    .mpesa-confirm { padding-left: 1rem; padding-right: 1rem; font-size: .95rem; }
+    .mpesa-note { font-size: .85rem; }
+    .way-card { padding: 1.6rem 1.3rem; }
+}
+@media (max-width: 360px) {
+    .mpesa-number { gap: .6rem; }
+    .mpesa-number strong { font-size: 1.05rem; }
+    .copy-btn { padding: 7px 10px; font-size: .82rem; }
+    .mpesa-tab { font-size: .74rem; }
 }

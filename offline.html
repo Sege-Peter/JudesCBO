@@ -78,10 +78,21 @@
 
         footer { margin-top: 26px; text-align: center; font-size: 13px; opacity: .6; line-height: 1.6; }
         [hidden] { display: none !important; }
+        @media (max-width: 480px) {
+            body { padding-top: 28px; }
+            .badge, .logo { width: 96px; height: 96px; }
+            .logo { border-radius: 28px; }
+            .logo img { width: 72px; height: 72px; }
+            .lead { font-size: 15px; }
+            .actions .btn { flex: 1 1 0; padding: 12px 14px; }
+            .panel { padding: 16px; border-radius: 18px; }
+            .give-row { padding: 11px 12px; }
+        }
         @media (max-width: 380px) {
             .contact { grid-template-columns: 1fr; }
             .actions .btn { flex: 1 1 100%; }
             .give-row strong { font-size: 18px; }
+            .panel h2 { font-size: 16px; }
         }
         @media (prefers-reduced-motion: reduce) { .dot, .spin { animation: none; } }
     </style>
