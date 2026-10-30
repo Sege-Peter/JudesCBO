@@ -16,11 +16,13 @@ function setMobileNav(open) {
     mobileNavToggle.setAttribute('aria-expanded', open);
     document.body.style.overflow = open ? 'hidden' : '';
     document.body.classList.toggle('menu-open', open);
+    mobileNavToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    if (open) siteHeader.classList.add('scrolled');
+    else updateHeader();
 }
-mobileNavToggle.addEventListener('click', () => setMobileNav(true));
-document.querySelector('.close-nav').addEventListener('click', () => setMobileNav(false));
+mobileNavToggle.addEventListener('click', () => setMobileNav(!mobileNav.classList.contains('active')));
 navOverlay.addEventListener('click', () => setMobileNav(false));
-document.querySelectorAll('.mobile-nav a, .mobile-nav .mobile-donate').forEach(link => {
+document.querySelectorAll('.mobile-nav a').forEach(link => {
     link.addEventListener('click', () => setMobileNav(false));
 });
 
