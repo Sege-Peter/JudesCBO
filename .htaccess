@@ -15,17 +15,21 @@ RewriteEngine On
 
 # Clean URLs: /about serves about.html, and old /about.html links redirect to /about
 # (GET only so form posts are never redirected; the staff dashboard has its own rules)
-RewriteCond %{REQUEST_METHOD} =GET
+RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
 RewriteCond %{REQUEST_URI} !/admin/
 RewriteCond %{THE_REQUEST} \s([^\s?]*?/)index\.html[\s?]
 RewriteRule ^ %1 [R=301,L,NE]
-RewriteCond %{REQUEST_METHOD} =GET
+RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
 RewriteCond %{REQUEST_URI} !/admin/
 RewriteCond %{THE_REQUEST} \s([^\s?]+?)\.html[\s?]
 RewriteRule ^ %1 [R=301,L,NE]
+# /about/ (trailing slash) -> /about, so relative links to styles and images keep working
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{THE_REQUEST} ^(?:GET|HEAD)\s([^\s?]+?)/[\s?]
+RewriteRule ^(.+)/$ %1 [R=301,L,NE]
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}.html -f
-RewriteRule ^(.+?)/?$ $1.html [L]
+RewriteRule ^(.+?)$ $1.html [L]
 
 # Uncomment once the SSL certificate is active to send every visitor to HTTPS
 # RewriteCond %{HTTPS} !=on

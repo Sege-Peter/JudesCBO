@@ -514,3 +514,63 @@ textarea { resize: vertical; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- Two-step login ---------- */
+.twofa-panel { scroll-margin-top: 90px; }
+.twofa-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 1.2rem; }
+.twofa-head h3 { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; margin-bottom: 4px; }
+.twofa-setup { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.twofa-step { display: flex; gap: 12px; }
+.twofa-step > div { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.step-num { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--green); color: #fff; font-weight: 700; font-family: 'Montserrat', sans-serif; }
+.qr-box { width: 190px; height: 190px; padding: 8px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.qr-box svg { width: 100%; height: 100%; display: block; }
+.secret-key { display: inline-block; font-size: .95rem; letter-spacing: 1px; padding: 8px 12px; word-break: break-all; }
+.twofa-confirm { display: flex; gap: 8px; flex-wrap: wrap; }
+.code-input { font-family: 'Montserrat', monospace; font-size: 1.3rem !important; letter-spacing: 6px; text-align: center; max-width: 200px; }
+.code-input-wide { max-width: none; letter-spacing: 3px; font-size: 1.1rem !important; }
+.auth-card .code-input { max-width: none; padding: 12px !important; }
+.code-input-sm { font-size: .9rem !important; letter-spacing: 2px; max-width: 130px; padding: 7px 10px !important; }
+.twofa-manage { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: .8rem; }
+.inline-code-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.recovery-box { padding: 1.2rem; margin-bottom: 1.2rem; border-radius: 14px; background: #fffaeb; border: 1px solid #f6e05e; }
+.recovery-box h4 { display: flex; align-items: center; gap: 8px; margin-bottom: .4rem; }
+.recovery-codes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 1rem 0; list-style: none; }
+.recovery-codes code { display: block; padding: 8px; text-align: center; font-size: 1rem; letter-spacing: 1px; background: #fff; border: 1px solid #f6e05e; }
+@media (max-width: 760px) {
+    .twofa-setup { grid-template-columns: 1fr; }
+}
+@media print {
+    .sidebar, .topbar, .twofa-manage, .btn-row, form { display: none !important; }
+    .main { margin: 0; }
+}
+
+/* ---------- Events and team (dashboard) ---------- */
+.section-label { font-size: .8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin: 1.6rem 0 .8rem; }
+.event-row { display: grid; grid-template-columns: 70px 1fr auto; gap: 1.1rem; align-items: center; margin-bottom: 10px; padding: 1rem; }
+.event-date { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 74px; border-radius: 14px; background: linear-gradient(160deg, var(--blue), var(--green)); color: #fff; line-height: 1.1; }
+.event-date strong { font-size: 1.6rem; }
+.event-date span { font-weight: 700; text-transform: uppercase; font-size: .78rem; }
+.event-date small { font-size: .68rem; opacity: .75; }
+.event-info h3 { font-size: 1.02rem; margin: 2px 0; }
+.event-info h3 a { color: var(--dark); text-decoration: none; }
+.event-info h3 a:hover { color: var(--green); }
+.event-info p i { color: var(--green); }
+.team-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.team-admin-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 1.4rem 1rem 1rem; text-align: center; background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+.team-admin-card.is-hidden { opacity: .6; }
+.team-admin-card small { color: var(--muted); margin-bottom: 6px; }
+.team-admin-card .btn { margin-top: 6px; }
+.drag-handle { position: absolute; top: 10px; left: 10px; color: #cbd5e0; cursor: grab; padding: 4px; }
+.team-admin-photo { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; margin-bottom: 6px; }
+.team-admin-initials { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--blue), var(--green)); color: #fff; font-family: 'Montserrat', sans-serif; font-size: 1.8rem; font-weight: 700; }
+.member-photo-row { display: flex; align-items: center; gap: 14px; margin-bottom: 1rem; }
+.member-photo-pick { position: relative; flex-shrink: 0; width: 84px; height: 84px; border-radius: 50%; overflow: hidden; background: #f1f5f9; border: 2px dashed #cbd5e0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.4rem; cursor: pointer; }
+.member-photo-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.member-photo-pick img { width: 100%; height: 100%; object-fit: cover; }
+.push-left { margin-right: auto; }
+@media (max-width: 640px) {
+    .event-row { grid-template-columns: 60px 1fr; }
+    .event-row .row-actions { grid-column: 1 / -1; justify-content: flex-start; }
+    .team-admin-grid { grid-template-columns: 1fr 1fr; }
+}

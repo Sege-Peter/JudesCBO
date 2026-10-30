@@ -133,3 +133,38 @@ CREATE TABLE IF NOT EXISTS password_resets (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+;
+
+CREATE TABLE IF NOT EXISTS events (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(120) NOT NULL UNIQUE,
+    title VARCHAR(200) NOT NULL,
+    summary VARCHAR(300) NOT NULL DEFAULT '',
+    description TEXT NOT NULL,
+    starts_at DATETIME NOT NULL,
+    ends_at DATETIME NULL,
+    venue VARCHAR(200) NOT NULL DEFAULT '',
+    ward VARCHAR(100) NOT NULL DEFAULT '',
+    category VARCHAR(60) NOT NULL DEFAULT 'Outreach',
+    image VARCHAR(255) NULL,
+    image_alt VARCHAR(200) NOT NULL DEFAULT '',
+    status ENUM('draft','published') NOT NULL DEFAULT 'published',
+    created_by INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX (status, starts_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS team_members (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    role VARCHAR(120) NOT NULL DEFAULT '',
+    team_group VARCHAR(40) NOT NULL DEFAULT 'Leadership',
+    bio VARCHAR(600) NOT NULL DEFAULT '',
+    photo VARCHAR(255) NULL,
+    linkedin VARCHAR(255) NOT NULL DEFAULT '',
+    visible TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (team_group, sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci

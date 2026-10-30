@@ -1,6 +1,6 @@
 // Judes CBO service worker: pages come from the network first (always fresh),
 // static files from the cache first, and the offline page when there's no connection.
-const VERSION = 'judes-v2';
+const VERSION = 'judes-v3';
 const CORE = [
     './', 'offline', 'css/style.css', 'js/main.js',
     'favicon.ico', 'images/icons/icon-192.png', 'images/icons/favicon-32.png', 'jude-logo.png'
@@ -40,8 +40,24 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // Styles, scripts, images and fonts: serve from cache, refresh in the background
-    if (/\.(css|js|png|jpe?g|webp|svg|ico|woff2?)$/i.test(url.pathname) || url.host.includes('fonts.g') || url.host === 'cdnjs.cloudflare.com') {
+    // Our own styles and scripts: network first so updates show straight away, cache when offline
+    if (url.origin === location.origin && /\.(css|js)$/i.test(url.pathname)) {
+        event.respondWith(
+            fetch(request)
+                .then(response => {
+                    if (response.ok) {
+                        const copy = response.clone();
+                        caches.open(VERSION).then(cache => cache.put(request, copy));
+                    }
+                    return response;
+                })
+                .catch(() => caches.match(request))
+        );
+        return;
+    }
+
+    // Images, fonts and icon libraries: serve from cache, refresh in the background
+    if (/\.(png|jpe?g|webp|svg|ico|woff2?)$/i.test(url.pathname) || url.host.includes('fonts.g') || url.host === 'cdnjs.cloudflare.com') {
         event.respondWith(
             caches.match(request).then(hit => {
                 const network = fetch(request).then(response => {

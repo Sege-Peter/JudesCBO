@@ -98,9 +98,16 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
-/** Adds tables introduced after the first install. Safe to run repeatedly. */
+function column_exists(string $table, string $column): bool
+{
+    $stmt = db()->prepare('SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?');
+    $stmt->execute([$table, $column]);
+    return (int) $stmt->fetchColumn() > 0;
+}
+
+/** Adds tables and columns introduced after the first install. Safe to run repeatedly. */
 function migrate(): void
 {
     try {
@@ -112,6 +119,19 @@ function migrate(): void
     foreach (array_filter(array_map('trim', explode(';', file_get_contents(__DIR__ . '/schema.sql')))) as $sql) {
         db()->exec($sql);
     }
+    // Version 3: two-step login
+    $columns = [
+        'totp_secret' => 'VARCHAR(64) NULL',
+        'totp_enabled' => 'TINYINT(1) NOT NULL DEFAULT 0',
+        'totp_last_step' => 'BIGINT NOT NULL DEFAULT 0',
+        'recovery_codes' => 'TEXT NULL',
+    ];
+    foreach ($columns as $name => $type) {
+        if (!column_exists('users', $name)) {
+            db()->exec("ALTER TABLE users ADD COLUMN $name $type");
+        }
+    }
+    db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('require_2fa_admins', '1')");
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
 
@@ -192,7 +212,7 @@ function current_user(): ?array
     }
     if (!empty($_SESSION['user_id'])) {
         $_SESSION['last_seen'] = time();
-        $stmt = db()->prepare('SELECT id, name, email, username, role, active FROM users WHERE id = ?');
+        $stmt = db()->prepare('SELECT id, name, email, username, role, active, totp_enabled FROM users WHERE id = ?');
         $stmt->execute([$_SESSION['user_id']]);
         $row = $stmt->fetch();
         $user = ($row && (int) $row['active'] === 1) ? $row : null;
@@ -206,7 +226,28 @@ function require_login(): array
     if (!$user) {
         redirect('login.php');
     }
+    // Administrators must turn on two-step login before using the dashboard (when required in Settings)
+    if ($user['role'] === 'admin' && !(int) $user['totp_enabled'] && setting('require_2fa_admins', '1') === '1'
+        && !in_array(basename($_SERVER['SCRIPT_NAME']), ['profile.php', 'logout.php'], true)) {
+        flash('info', 'Administrators need two-step login. Set it up below to continue.');
+        redirect('profile.php#two-step');
+    }
     return $user;
+}
+
+/** Finishes signing in once the password (and two-step code, if on) are confirmed. */
+function complete_login(int $userId, bool $remember, string $note): never
+{
+    session_regenerate_id(true);
+    unset($_SESSION['pending_2fa']);
+    $_SESSION['user_id'] = $userId;
+    $_SESSION['last_seen'] = time();
+    if ($remember) {
+        issue_remember_token($userId);
+    }
+    db()->prepare('UPDATE users SET last_login = NOW() WHERE id = ?')->execute([$userId]);
+    log_activity('login', $note . ($remember ? ' (remember me)' : ''), $userId);
+    redirect('index.php');
 }
 
 function require_admin(): array

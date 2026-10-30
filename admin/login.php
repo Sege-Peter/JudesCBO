@@ -24,23 +24,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ((int) $stmt->fetchColumn() >= MAX_ATTEMPTS) {
         $error = 'Too many failed attempts. Please wait ' . LOCK_MINUTES . ' minutes and try again.';
     } else {
-        $stmt = db()->prepare('SELECT id, password_hash, active FROM users WHERE username = ? OR email = ?');
+        $stmt = db()->prepare('SELECT id, password_hash, active, totp_enabled FROM users WHERE username = ? OR email = ?');
         $stmt->execute([$username, $username]);
         $user = $stmt->fetch();
         if ($user && (int) $user['active'] === 1 && password_verify($password, $user['password_hash'])) {
-            session_regenerate_id(true);
-            $_SESSION['user_id'] = (int) $user['id'];
-            $_SESSION['last_seen'] = time();
             if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
                 db()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([password_hash($password, PASSWORD_DEFAULT), $user['id']]);
             }
-            if ($remember) {
-                issue_remember_token((int) $user['id']);
-            }
-            db()->prepare('UPDATE users SET last_login = NOW() WHERE id = ?')->execute([$user['id']]);
             db()->prepare('DELETE FROM login_attempts WHERE username = ?')->execute([$username]);
-            log_activity('login', $remember ? 'Signed in (remember me)' : 'Signed in', (int) $user['id']);
-            redirect('index.php');
+            if ((int) $user['totp_enabled'] === 1) {
+                // Password is right; now ask for the code from the authenticator app
+                session_regenerate_id(true);
+                $_SESSION['pending_2fa'] = ['user_id' => (int) $user['id'], 'remember' => $remember, 'at' => time(), 'tries' => 0];
+                redirect('login-2fa.php');
+            }
+            complete_login((int) $user['id'], $remember, 'Signed in');
         }
         db()->prepare('INSERT INTO login_attempts (ip, username) VALUES (?, ?)')->execute([$ip, $username]);
         $error = 'Incorrect username or password.';

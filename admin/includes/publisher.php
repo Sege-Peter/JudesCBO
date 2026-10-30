@@ -9,6 +9,8 @@ declare(strict_types=1);
  * (blog-<slug>.html) are generated in full from the Stories page's header and footer.
  */
 
+require_once __DIR__ . '/publisher-extra.php';
+
 const CATEGORY_ICONS = [
     'Youth Health' => 'fa-heartbeat',
     'Disability Inclusion' => 'fa-universal-access',
@@ -25,6 +27,7 @@ const STATIC_PAGES = [
     'index.html' => ['1.0', 'monthly'], 'about.html' => ['0.8', 'yearly'], 'programs.html' => ['0.9', 'monthly'],
     'stories.html' => ['0.7', 'weekly'], 'gallery.html' => ['0.6', 'monthly'], 'donate.html' => ['0.9', 'monthly'],
     'contact.html' => ['0.6', 'yearly'], 'privacy.html' => ['0.3', 'yearly'], 'terms.html' => ['0.3', 'yearly'],
+    'events.html' => ['0.8', 'weekly'], 'team.html' => ['0.6', 'monthly'],
 ];
 
 function site_path(string $file): string
@@ -506,6 +509,8 @@ function publish_site(): array
         write_atomic(site_path($file), $html);
         $changed[] = $file;
     }
+
+    $changed = array_merge($changed, publish_events($shell), publish_team());
 
     // Form endpoints on every page
     foreach (glob(site_path('*.html')) as $path) {

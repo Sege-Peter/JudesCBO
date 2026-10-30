@@ -30,6 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         save_setting('notify_email', $notify);
         log_activity('settings.forms', 'Form handling: ' . $mode);
         publish_with_feedback($mode === 'builtin' ? 'Website forms now send to the built-in inbox.' : 'Website forms now send to Formspree.');
+    } elseif ($section === 'security') {
+        save_setting('require_2fa_admins', !empty($_POST['require_2fa_admins']) ? '1' : '0');
+        log_activity('settings.security', 'Two-step login for administrators: ' . (!empty($_POST['require_2fa_admins']) ? 'required' : 'optional'));
+        flash('success', 'Security settings saved.');
     } elseif ($section === 'publish') {
         try {
             $files = publish_site();
@@ -74,6 +78,16 @@ render_header('Settings');
             <label class="field">Formspree address<input type="url" name="formspree_url" value="<?= h(setting('formspree_url', 'https://formspree.io/f/mjkelgrq')) ?>"></label>
             <label class="field">Email me about new messages <small>Built-in inbox only. Leave blank to turn off.</small><input type="email" name="notify_email" value="<?= h(setting('notify_email')) ?>" placeholder="you@example.com"></label>
             <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save and update website</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h3 class="panel-title"><i class="fas fa-shield-halved"></i> Security</h3>
+        <form method="post" class="form-stack">
+            <?= csrf_field() ?><input type="hidden" name="section" value="security">
+            <label class="check"><input type="checkbox" name="require_2fa_admins" value="1" <?= setting('require_2fa_admins', '1') === '1' ? 'checked' : '' ?>> Require two-step login for administrators</label>
+            <p class="muted small">Administrators without it are taken to My profile to set it up before they can use the dashboard. Editors can turn it on for themselves.</p>
+            <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save</button>
         </form>
     </section>
 

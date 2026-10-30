@@ -1,7 +1,13 @@
 <?php
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/includes/layout.php';
+require __DIR__ . '/includes/publisher.php';
 $user = require_login();
+
+// Keep date-based pages fresh (finished events move to "Past") with a rebuild once a day
+if (substr(setting('last_published'), 0, 10) !== date('Y-m-d')) {
+    try { publish_site(); } catch (Throwable $e) { /* shown on next manual rebuild */ }
+}
 
 $db = db();
 $stats = [

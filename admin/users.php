@@ -62,6 +62,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 log_activity('user.' . ($new ? 'activate' : 'deactivate'), $target['username']);
                 flash('success', $target['name'] . ($new ? ' can log in again.' : ' can no longer log in.'));
             }
+        } elseif ($action === 'reset-2fa') {
+            db()->prepare('UPDATE users SET totp_secret = NULL, totp_enabled = 0, totp_last_step = 0, recovery_codes = NULL WHERE id = ?')->execute([$id]);
+            revoke_all_tokens($id);
+            log_activity('user.reset_2fa', $target['username']);
+            flash('success', 'Two-step login reset for ' . $target['name'] . '. They\'ll set it up again at their next login.');
         } elseif ($action === 'reset') {
             $password = (string) ($_POST['password'] ?? '');
             if (strlen($password) < 10) {
@@ -95,6 +100,7 @@ render_header('Users');
                     <div class="user-card-actions">
                         <span class="pill pill-<?= $u['role'] === 'admin' ? 'replied' : 'read' ?>"><?= h(ucfirst($u['role'])) ?></span>
                         <?php if (!(int) $u['active']): ?><span class="pill pill-closed">Deactivated</span><?php endif; ?>
+                        <span class="pill <?= (int) $u['totp_enabled'] ? 'pill-published' : 'pill-draft' ?>" title="Two-step login"><i class="fas fa-shield-halved"></i>&nbsp;<?= (int) $u['totp_enabled'] ? '2-step on' : '2-step off' ?></span>
                         <details class="menu-details">
                             <summary class="icon-btn" aria-label="Manage <?= h($u['name']) ?>"><i class="fas fa-ellipsis"></i></summary>
                             <div class="menu-pop">
@@ -104,6 +110,10 @@ render_header('Users');
                                 <?php if ((int) $u['id'] !== (int) $me['id']): ?>
                                     <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $u['id'] ?>"><input type="hidden" name="action" value="toggle">
                                         <button><i class="fas <?= (int) $u['active'] ? 'fa-user-slash' : 'fa-user-check' ?>"></i> <?= (int) $u['active'] ? 'Deactivate' : 'Reactivate' ?></button></form>
+                                <?php endif; ?>
+                                <?php if ((int) $u['totp_enabled'] && (int) $u['id'] !== (int) $me['id']): ?>
+                                    <form method="post" data-confirm="Reset two-step login for <?= h($u['name']) ?>? Use this if they lost their phone and recovery codes."><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $u['id'] ?>"><input type="hidden" name="action" value="reset-2fa">
+                                        <button><i class="fas fa-shield-halved"></i> Reset two-step login</button></form>
                                 <?php endif; ?>
                                 <form method="post" class="reset-form"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $u['id'] ?>"><input type="hidden" name="action" value="reset">
                                     <label>New password<input type="password" name="password" minlength="10" required autocomplete="new-password"></label>

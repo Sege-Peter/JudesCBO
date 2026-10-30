@@ -439,3 +439,21 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
         navigator.serviceWorker.register('sw.js').catch(() => {});
     });
 }
+
+// Events page: move events that have finished since the last rebuild into "Past events"
+const upcomingList = document.getElementById('events-upcoming');
+const pastList = document.getElementById('events-past');
+if (upcomingList && pastList) {
+    const now = Date.now();
+    upcomingList.querySelectorAll('.event-card[data-ends]').forEach(card => {
+        if (Date.parse(card.dataset.ends) < now) {
+            card.querySelectorAll('.event-actions').forEach(a => a.remove());
+            const placeholder = pastList.querySelector('.events-none');
+            if (placeholder) placeholder.remove();
+            pastList.prepend(card);
+        }
+    });
+    if (!upcomingList.querySelector('.event-card') && !upcomingList.querySelector('.events-empty')) {
+        upcomingList.insertAdjacentHTML('afterbegin', '<div class="events-empty"><i class="far fa-calendar"></i><p>No upcoming events right now. Check back soon.</p></div>');
+    }
+}

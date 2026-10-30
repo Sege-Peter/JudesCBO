@@ -7,6 +7,8 @@ function nav_items(): array
         ['index.php', 'Dashboard', 'fa-gauge-high'],
         ['stories.php', 'Stories', 'fa-newspaper'],
         ['gallery.php', 'Gallery', 'fa-images'],
+        ['events.php', 'Events', 'fa-calendar-days'],
+        ['team.php', 'Team', 'fa-people-group'],
         ['messages.php', 'Messages', 'fa-inbox'],
         ['subscribers.php', 'Subscribers', 'fa-envelope-open-text'],
         ['donations.php', 'Donations', 'fa-hand-holding-dollar'],
