@@ -40,7 +40,7 @@ updateProgress();
 window.addEventListener('scroll', updateProgress, { passive: true });
 
 // Scroll reveal: cards on inner pages are tagged automatically, unless they're already on screen
-document.querySelectorAll('.feature-card, .story-card, .partner-card, .contact-info, .contact-form, .article-content, .article-cta').forEach(el => {
+document.querySelectorAll('.feature-card, .story-card, .partner-card, .article-content, .article-cta').forEach(el => {
     if (!el.classList.contains('reveal') && el.getBoundingClientRect().top > window.innerHeight) {
         el.classList.add('reveal');
     }
@@ -279,3 +279,80 @@ document.querySelectorAll('.copy-btn').forEach(btn => {
         }, 2000);
     });
 });
+
+// Forms send to Formspree in the background and show the result inline
+function ajaxForm(form, onSuccess) {
+    form.addEventListener('submit', async e => {
+        e.preventDefault();
+        let valid = true;
+        form.querySelectorAll('[required]').forEach(input => {
+            const ok = input.checkValidity();
+            const field = input.closest('.field');
+            if (field) field.classList.toggle('invalid', !ok);
+            if (!ok && valid) {
+                input.focus();
+                valid = false;
+            }
+        });
+        const status = form.querySelector('.form-status');
+        if (!valid) {
+            if (status) {
+                status.className = 'form-status error';
+                status.textContent = 'Please fill in the highlighted fields.';
+            }
+            return;
+        }
+        const button = form.querySelector('[type="submit"]');
+        const label = button.querySelector('.btn-label') || button;
+        const original = label.textContent;
+        button.disabled = true;
+        label.textContent = 'Sending...';
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: { Accept: 'application/json' }
+            });
+            if (!response.ok) throw new Error('Request failed');
+            form.reset();
+            onSuccess(form, status);
+        } catch {
+            if (status) {
+                status.className = 'form-status error';
+                status.textContent = 'Sorry, your message could not be sent. Please try again, or reach us on WhatsApp at +254 712 109310.';
+            }
+        } finally {
+            button.disabled = false;
+            label.textContent = original;
+        }
+    });
+}
+const contactForm = document.getElementById('contact-form');
+if (contactForm) {
+    const reason = document.getElementById('reason');
+    const subject = document.getElementById('form-subject');
+    reason.addEventListener('change', () => { subject.value = `Website enquiry: ${reason.value}`; });
+    contactForm.querySelectorAll('[required]').forEach(input => {
+        input.addEventListener('input', () => input.closest('.field').classList.remove('invalid'));
+    });
+    // "Volunteer with us" / "Discuss a partnership" links preselect the topic
+    document.querySelectorAll('[data-reason]').forEach(link => {
+        link.addEventListener('click', () => {
+            reason.value = link.dataset.reason;
+            reason.dispatchEvent(new Event('change'));
+            setTimeout(() => document.getElementById('name').focus({ preventScroll: true }), 600);
+        });
+    });
+    ajaxForm(contactForm, (form, status) => {
+        subject.value = 'Website enquiry: General enquiry';
+        status.className = 'form-status success';
+        status.textContent = "Thank you! Your message has been sent. We'll get back to you soon.";
+    });
+}
+const subscribeForm = document.getElementById('subscribe-form');
+if (subscribeForm) {
+    ajaxForm(subscribeForm, form => {
+        const input = form.querySelector('input[type="email"]');
+        input.placeholder = "Thanks! You're subscribed.";
+    });
+}
