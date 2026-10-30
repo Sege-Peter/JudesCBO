@@ -2325,3 +2325,40 @@ select option:checked { font-weight: 700; color: var(--green); }
     background-size: 12px 8px;
 }
 .field select:hover, .field select:focus { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%232d5016' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+
+/* ---------- Partners and ways to give (managed from the dashboard) ---------- */
+a.marquee-logo, a.partner-tile { text-decoration: none; }
+.partner-name-only { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--dark); font-size: 1rem; text-align: center; line-height: 1.3; }
+.marquee-logo .partner-name-only { opacity: .75; }
+.partner-tile .partner-name-only { min-height: 80px; display: flex; align-items: center; }
+.mpesa-tabs { display: flex; gap: 6px; padding: 5px; margin-bottom: 1.2rem; border-radius: 14px; background: #f1f5f9; }
+.mpesa-tab {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: .92rem;
+    cursor: pointer;
+    transition: background .25s, color .25s, box-shadow .25s;
+}
+.mpesa-tab:hover { color: var(--dark); }
+.mpesa-tab.active { background: #fff; color: #2e7d32; box-shadow: 0 4px 12px rgba(15,36,64,0.08); }
+.mpesa-tab:focus-visible { outline: 2px solid #4caf50; outline-offset: 2px; }
+.mpesa-method .mpesa-number + .mpesa-number { margin-top: -0.6rem; }
+.mpesa-method[hidden] { display: none; }
+.mpesa-empty { margin-bottom: 1.4rem; }
+.bank-details { margin: 0 0 1.2rem; font-size: .93rem; }
+.bank-details div { display: flex; flex-direction: column; padding: .45rem 0; border-bottom: 1px dashed #e2e8f0; }
+.bank-details div:last-child { border-bottom: none; }
+.bank-details dt { font-size: .74rem; text-transform: uppercase; letter-spacing: 1px; color: #718096; }
+.bank-details dd { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; font-weight: 700; color: var(--dark); word-break: break-word; }
+.copy-btn-sm { flex-shrink: 0; padding: 4px 10px; font-size: .78rem; background: rgba(26,54,93,0.08); color: var(--blue); }
+.copy-btn-sm:hover { background: rgba(26,54,93,0.16); }
+.copy-btn-sm.copied { color: #fff; }
+@media (max-width: 480px) {
+    .mpesa-tab { padding: 9px 4px; font-size: .8rem; white-space: nowrap; }
+}

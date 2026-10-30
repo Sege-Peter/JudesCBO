@@ -684,3 +684,25 @@ input[type="time"]:not(.has-value)::-webkit-datetime-edit { color: #a0aec0; font
 input[type="date"]:invalid, input[type="time"]:invalid { box-shadow: none; }
 /* Compact versions in filter bars */
 .filter-bar input[type="date"] { min-height: 38px; padding-top: 7px; padding-bottom: 7px; min-width: 165px; }
+
+/* ---------- Partners ---------- */
+.partner-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.partner-admin-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 1.4rem 1rem 1rem; text-align: center; background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+.partner-admin-card.is-hidden { opacity: .6; }
+.partner-admin-card small { color: var(--muted); margin-bottom: 6px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.partner-admin-card .btn { margin-top: 6px; }
+.partner-admin-logo { display: flex; align-items: center; justify-content: center; width: 100%; height: 84px; margin-bottom: 8px; padding: 10px; border-radius: 12px; background: #f7fafc; color: #cbd5e0; font-size: 1.6rem; }
+.partner-admin-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.member-photo-pick.logo-pick { width: 150px; height: 84px; border-radius: 14px; }
+.member-photo-pick.logo-pick img { object-fit: contain; padding: 8px; }
+@media (max-width: 600px) {
+    .partner-admin-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---------- Ways to give (settings) ---------- */
+.form-subhead { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 1.4rem 0 .8rem; padding-top: 1.1rem; border-top: 1px solid var(--line); font-size: .95rem; color: var(--dark); }
+form > .form-subhead:first-of-type { margin-top: .4rem; padding-top: 0; border-top: none; }
+.form-subhead small { font-weight: 500; color: var(--muted); font-size: .8rem; }
+.form-subhead > i { color: var(--green); }
+.mpesa-chip { padding: 3px 8px; border-radius: 6px; background: #4caf50; color: #fff; font-size: .7rem; font-weight: 800; letter-spacing: 1px; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.2rem; }

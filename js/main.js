@@ -299,6 +299,31 @@ if (donateCard) {
     updateDonation();
 }
 
+// Donate page: switch between M-Pesa options (Paybill, Till, Send Money)
+document.querySelectorAll('.mpesa-tabs').forEach(list => {
+    const tabs = [...list.querySelectorAll('.mpesa-tab')];
+    const select = tab => {
+        tabs.forEach(t => {
+            const on = t === tab;
+            t.classList.toggle('active', on);
+            t.setAttribute('aria-selected', on ? 'true' : 'false');
+            t.tabIndex = on ? 0 : -1;
+            document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+        });
+    };
+    tabs.forEach((tab, i) => {
+        tab.tabIndex = i === 0 ? 0 : -1;
+        tab.addEventListener('click', () => select(tab));
+        tab.addEventListener('keydown', e => {
+            const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+            if (!step) return;
+            const next = tabs[(i + step + tabs.length) % tabs.length];
+            select(next);
+            next.focus();
+        });
+    });
+});
+
 // Copy-to-clipboard buttons
 document.querySelectorAll('.copy-btn').forEach(btn => {
     btn.addEventListener('click', async () => {

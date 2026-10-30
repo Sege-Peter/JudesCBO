@@ -30,6 +30,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         save_setting('notify_email', $notify);
         log_activity('settings.forms', 'Form handling: ' . $mode);
         publish_with_feedback($mode === 'builtin' ? 'Website forms now send to the built-in inbox.' : 'Website forms now send to Formspree.');
+    } elseif ($section === 'giving') {
+        $digits = fn(string $key): string => preg_replace('/\D+/', '', (string) ($_POST[$key] ?? ''));
+        $phone = $digits('mpesa_phone');
+        if (preg_match('/^254(\d{9})$/', $phone, $m)) $phone = '0' . $m[1];
+        $values = [
+            'mpesa_paybill' => $digits('mpesa_paybill'),
+            'mpesa_account' => post_str('mpesa_account', 40),
+            'mpesa_till' => $digits('mpesa_till'),
+            'mpesa_phone' => $phone,
+            'mpesa_name' => post_str('mpesa_name', 80),
+            'bank_name' => post_str('bank_name', 80),
+            'bank_branch' => post_str('bank_branch', 80),
+            'bank_account_name' => post_str('bank_account_name', 120),
+            'bank_account_number' => post_str('bank_account_number', 40),
+            'bank_swift' => strtoupper(preg_replace('/\s+/', '', post_str('bank_swift', 20))),
+            'give_online_url' => post_str('give_online_url', 255),
+            'give_online_label' => post_str('give_online_label', 40),
+        ];
+        $errors = [];
+        if ($values['mpesa_paybill'] !== '' && !preg_match('/^\d{5,7}$/', $values['mpesa_paybill'])) $errors[] = 'A Paybill business number has 5 to 7 digits.';
+        if ($values['mpesa_till'] !== '' && !preg_match('/^\d{5,8}$/', $values['mpesa_till'])) $errors[] = 'A till number has 5 to 8 digits.';
+        if ($values['mpesa_phone'] !== '' && !preg_match('/^0[17]\d{8}$/', $values['mpesa_phone'])) $errors[] = 'Enter the M-Pesa phone number like 0712 345 678.';
+        if ($values['bank_swift'] !== '' && !preg_match('/^[A-Z0-9]{8}([A-Z0-9]{3})?$/', $values['bank_swift'])) $errors[] = 'A SWIFT code has 8 or 11 letters and numbers.';
+        if ($values['give_online_url'] !== '' && !preg_match('#^https://[^\s]+$#i', $values['give_online_url'])) $errors[] = 'The online giving link must start with https://';
+        if ($errors) {
+            foreach ($errors as $e) flash('error', $e);
+            redirect('settings.php#giving');
+        }
+        foreach ($values as $key => $value) save_setting($key, $value);
+        log_activity('settings.giving', 'Donation details updated');
+        publish_with_feedback('Donation details updated on the Donate page.');
+        redirect('settings.php#giving');
     } elseif ($section === 'security') {
         save_setting('require_2fa_admins', !empty($_POST['require_2fa_admins']) ? '1' : '0');
         log_activity('settings.security', 'Two-step login for administrators: ' . (!empty($_POST['require_2fa_admins']) ? 'required' : 'optional'));
@@ -60,6 +92,37 @@ render_header('Settings');
             <label class="field">Core programs<input type="number" name="stat_programs" value="<?= h(setting('stat_programs', '4')) ?>" min="0"></label>
             <label class="field">Partners<input type="number" name="stat_partners" value="<?= h(setting('stat_partners', '4')) ?>" min="0"></label>
             <button class="btn btn-primary span-2"><i class="fas fa-floppy-disk"></i> Save and update website</button>
+        </form>
+    </section>
+
+    <section class="panel span-2" id="giving">
+        <h3 class="panel-title"><i class="fas fa-hand-holding-heart"></i> Ways to give</h3>
+        <p class="muted">Shown on the website's Donate page. Fill in what you have and leave the rest blank. If more than one M-Pesa option is filled in, donors can pick between them.</p>
+        <form method="post">
+            <?= csrf_field() ?><input type="hidden" name="section" value="giving">
+            <h4 class="form-subhead"><span class="mpesa-chip">M-PESA</span> Lipa na M-Pesa</h4>
+            <div class="form-grid">
+                <label class="field">Paybill business number<input type="text" name="mpesa_paybill" value="<?= h(setting('mpesa_paybill')) ?>" inputmode="numeric" maxlength="10" placeholder="e.g. 247247"></label>
+                <label class="field">Paybill account number <small>leave blank to let donors use their name</small><input type="text" name="mpesa_account" value="<?= h(setting('mpesa_account')) ?>" maxlength="40" placeholder="e.g. DONATION"></label>
+                <label class="field">Till number <small>Buy Goods</small><input type="text" name="mpesa_till" value="<?= h(setting('mpesa_till')) ?>" inputmode="numeric" maxlength="10" placeholder="e.g. 123456"></label>
+                <label class="field">Send Money phone number<input type="tel" name="mpesa_phone" value="<?= h(format_phone_ke(setting('mpesa_phone', '0712109310'))) ?>" maxlength="16" placeholder="0712 345 678"></label>
+                <label class="field span-2">Name M-Pesa shows donors <small>so they can check before entering their PIN</small><input type="text" name="mpesa_name" value="<?= h(setting('mpesa_name')) ?>" maxlength="80" placeholder="e.g. JUDES COMMUNITY BASED ORGANISATION"></label>
+            </div>
+            <h4 class="form-subhead"><i class="fas fa-building-columns"></i> Bank transfer <small>leave the account number blank to show "email us" instead</small></h4>
+            <div class="form-grid">
+                <label class="field">Bank<input type="text" name="bank_name" value="<?= h(setting('bank_name')) ?>" maxlength="80" placeholder="e.g. Equity Bank"></label>
+                <label class="field">Branch<input type="text" name="bank_branch" value="<?= h(setting('bank_branch')) ?>" maxlength="80" placeholder="e.g. Oyugis"></label>
+                <label class="field">Account name<input type="text" name="bank_account_name" value="<?= h(setting('bank_account_name')) ?>" maxlength="120"></label>
+                <label class="field">Account number<input type="text" name="bank_account_number" value="<?= h(setting('bank_account_number')) ?>" maxlength="40"></label>
+                <label class="field">SWIFT code <small>for transfers from abroad</small><input type="text" name="bank_swift" value="<?= h(setting('bank_swift')) ?>" maxlength="20" placeholder="e.g. EQBLKENA"></label>
+            </div>
+            <h4 class="form-subhead"><i class="fas fa-globe-africa"></i> Give from abroad <small>optional online giving link, e.g. PayPal, GlobalGiving or a card donation page</small></h4>
+            <div class="form-grid">
+                <label class="field">Link<input type="url" name="give_online_url" value="<?= h(setting('give_online_url')) ?>" maxlength="255" placeholder="https://"></label>
+                <label class="field">Button text<input type="text" name="give_online_label" value="<?= h(setting('give_online_label')) ?>" maxlength="40" placeholder="Give online"></label>
+            </div>
+            <div class="form-actions"><button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save and update website</button>
+                <a href="../donate#give" target="_blank" rel="noopener" class="btn btn-light"><i class="fas fa-eye"></i> View Donate page</a></div>
         </form>
     </section>
 

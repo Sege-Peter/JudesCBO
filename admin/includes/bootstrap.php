@@ -98,7 +98,7 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 function column_exists(string $table, string $column): bool
 {
@@ -132,6 +132,17 @@ function migrate(): void
         }
     }
     db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('require_2fa_admins', '1')");
+    // Version 4: partners managed from the dashboard, starting with the logos already on the website
+    if ((int) db()->query('SELECT COUNT(*) FROM partners')->fetchColumn() === 0) {
+        $seed = [
+            ['Triggerise (Tiko Africa)', 'images/partners/tiko.svg', ''],
+            ['Ministry of Health, Kenya', 'images/partners/moh.png', ''],
+            ['Homa Bay County', 'images/partners/homabay-county.png', ''],
+            ['Dutch Flower Foundation', 'images/partners/dutch-flower-foundation.png', ''],
+        ];
+        $stmt = db()->prepare('INSERT INTO partners (name, logo, url, sort_order) VALUES (?, ?, ?, ?)');
+        foreach ($seed as $i => $p) $stmt->execute([...$p, $i + 1]);
+    }
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
 
@@ -282,7 +293,7 @@ function log_activity(string $action, string $details = '', ?int $userId = null)
 
 /* ---------- Settings ---------- */
 
-function setting(string $key, string $default = ''): string
+function &settings_cache(): array
 {
     static $cache = null;
     if ($cache === null) {
@@ -291,13 +302,20 @@ function setting(string $key, string $default = ''): string
             $cache[$row['name']] = $row['value'];
         }
     }
-    return $cache[$key] ?? $default;
+    return $cache;
+}
+
+function setting(string $key, string $default = ''): string
+{
+    return settings_cache()[$key] ?? $default;
 }
 
 function save_setting(string $key, string $value): void
 {
     $stmt = db()->prepare('INSERT INTO settings (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)');
     $stmt->execute([$key, $value]);
+    $cache = &settings_cache();
+    $cache[$key] = $value; // so a publish later in this request sees the new value
 }
 
 /* ---------- Small helpers ---------- */

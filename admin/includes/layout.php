@@ -9,6 +9,7 @@ function nav_items(): array
         ['gallery.php', 'Gallery', 'fa-images'],
         ['events.php', 'Events', 'fa-calendar-days'],
         ['team.php', 'Team', 'fa-people-group'],
+        ['partners.php', 'Partners', 'fa-handshake'],
         ['messages.php', 'Messages', 'fa-inbox'],
         ['subscribers.php', 'Subscribers', 'fa-envelope-open-text'],
         ['donations.php', 'Donations', 'fa-hand-holding-dollar'],

@@ -262,30 +262,34 @@
                 </div>
             </div>
 
+            <!-- CMS:donate-mpesa -->
             <div class="mpesa-card reveal reveal-right">
                 <div class="mpesa-head">
                     <span class="mpesa-badge">M-PESA</span>
                     <h3>Send Money</h3>
                 </div>
-                <div class="mpesa-number">
-                    <div>
-                        <span class="mpesa-label">Send to</span>
-                        <strong>0712 109 310</strong>
+                <div class="mpesa-method" id="mpesa-send">
+                    <div class="mpesa-number">
+                        <div>
+                            <span class="mpesa-label">Send to</span>
+                            <strong>0712 109 310</strong>
+                        </div>
+                        <button type="button" class="copy-btn" data-copy="0712109310"><i class="far fa-copy"></i> <span>Copy</span></button>
                     </div>
-                    <button type="button" class="copy-btn" data-copy="0712109310"><i class="far fa-copy"></i> <span>Copy</span></button>
+                    <ol class="mpesa-steps">
+                        <li><span>1</span><p>Open <strong>M-PESA</strong> on your phone or the M-PESA app</p></li>
+                        <li><span>2</span><p>Select <strong>Send Money</strong></p></li>
+                        <li><span>3</span><p>Enter phone number <strong>0712 109 310</strong></p></li>
+                        <li><span>4</span><p>Enter amount <strong>KES <span class="step-amount">1,000</span></strong></p></li>
+                        <li><span>5</span><p>Enter your PIN and confirm. Check the recipient name before you send.</p></li>
+                    </ol>
                 </div>
-                <ol class="mpesa-steps">
-                    <li><span>1</span><p>Open <strong>M-PESA</strong> on your phone or the M-PESA app</p></li>
-                    <li><span>2</span><p>Select <strong>Send Money</strong></p></li>
-                    <li><span>3</span><p>Enter phone number <strong>0712 109 310</strong></p></li>
-                    <li><span>4</span><p>Enter amount <strong>KES <span class="step-amount">1,000</span></strong></p></li>
-                    <li><span>5</span><p>Enter your PIN and confirm. Check the recipient name before you send.</p></li>
-                </ol>
                 <a href="#" id="confirm-donation" class="hero-btn primary btn-shine mpesa-confirm" target="_blank" rel="noopener">
                     <i class="fab fa-whatsapp"></i> I've donated, let us know
                 </a>
                 <p class="mpesa-note"><i class="fas fa-circle-info"></i> Send us your M-Pesa confirmation code on WhatsApp so we can thank you and confirm we received your gift.</p>
             </div>
+            <!-- /CMS:donate-mpesa -->
         </div>
     </section>
 
@@ -298,18 +302,22 @@
                 <p>Not using M-Pesa, or want to give in another way? Here's how.</p>
             </div>
             <div class="ways-grid">
+                <!-- CMS:donate-bank -->
                 <div class="way-card reveal">
                     <span class="way-icon"><i class="fas fa-building-columns"></i></span>
                     <h3>Bank Transfer</h3>
                     <p>For larger gifts and organisations. Email us and we'll send our bank account details.</p>
                     <a href="mailto:info@judescbo.org?subject=Bank%20transfer%20donation%20to%20Judes%20CBO" class="text-link">Request bank details <i class="fas fa-arrow-right"></i></a>
                 </div>
+                <!-- /CMS:donate-bank -->
+                <!-- CMS:donate-abroad -->
                 <div class="way-card reveal">
                     <span class="way-icon"><i class="fas fa-globe-africa"></i></span>
                     <h3>Give from Abroad</h3>
                     <p>Supporting us from outside Kenya? Contact us and we'll share the best way to send your gift internationally.</p>
                     <a href="mailto:info@judescbo.org?subject=International%20donation%20to%20Judes%20CBO" class="text-link">Ask about international giving <i class="fas fa-arrow-right"></i></a>
                 </div>
+                <!-- /CMS:donate-abroad -->
                 <div class="way-card reveal">
                     <span class="way-icon"><i class="fas fa-box-open"></i></span>
                     <h3>Donate Items</h3>

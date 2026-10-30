@@ -232,3 +232,232 @@ function publish_team(): array
     write_atomic(site_path('team.html'), replace_region($html, 'team', indent_block($inner, 12), 'team.html'));
     return ['team.html'];
 }
+
+/* ---------- Partners ---------- */
+
+function publish_partners(): array
+{
+    $partners = db()->query('SELECT * FROM partners WHERE visible = 1 ORDER BY sort_order, id')->fetchAll();
+    $logo = fn(array $p, string $alt, bool $lazy = true): string => $p['logo']
+        ? '<img src="' . h($p['logo']) . '" alt="' . h($alt) . '"' . ($lazy ? ' loading="lazy"' : '') . '>'
+        : '<span class="partner-name-only">' . h($p['name']) . '</span>';
+    $wrap = fn(array $p, string $class, string $inner, string $extra = ''): string => $p['url']
+        ? '<a href="' . h($p['url']) . '" class="' . $class . '" target="_blank" rel="noopener"' . $extra . '>' . $inner . '</a>'
+        : '<span class="' . $class . '">' . $inner . '</span>';
+
+    $home = '';
+    $about = '';
+    if ($partners) {
+        // Homepage: scrolling logo strip; the hidden second copy makes the loop seamless
+        $group = fn(bool $copy): string => implode("\n", array_map(
+            fn($p) => $copy ? $wrap($p, 'marquee-logo', $logo($p, '', false), ' tabindex="-1"') : $wrap($p, 'marquee-logo', $logo($p, $p['name'], false)),
+            $partners
+        ));
+        $home = '<section class="home-partners" id="partners">' . "\n"
+            . '    <div class="container">' . "\n"
+            . '        <div class="section-head reveal">' . "\n"
+            . '            <span class="eyebrow">Working together</span>' . "\n"
+            . '            <h2>Our Collaborative Partners</h2>' . "\n"
+            . "        </div>\n    </div>\n"
+            . '    <div class="marquee reveal" aria-label="Partner logos">' . "\n"
+            . '        <div class="marquee-track">' . "\n"
+            . '            <div class="marquee-group">' . "\n" . indent_block($group(false), 16) . "\n            </div>\n"
+            . '            <div class="marquee-group" aria-hidden="true">' . "\n" . indent_block($group(true), 16) . "\n            </div>\n"
+            . "        </div>\n    </div>\n</section>";
+
+        $tiles = implode("\n", array_map(fn($p) => $wrap($p, 'partner-tile reveal', $logo($p, $p['name'] . ' logo') . ($p['logo'] ? '<span>' . h($p['name']) . '</span>' : '')), $partners));
+        $about = '<section class="home-section about-partners" id="partners">' . "\n"
+            . '    <div class="container">' . "\n"
+            . '        <div class="section-head reveal">' . "\n"
+            . '            <span class="eyebrow">Working together</span>' . "\n"
+            . '            <h2>Our Collaborative Partners</h2>' . "\n"
+            . '            <p>We work alongside government, county and international partners to reach more people.</p>' . "\n"
+            . "        </div>\n"
+            . '        <div class="partner-logo-grid">' . "\n" . indent_block($tiles, 12) . "\n        </div>\n"
+            . "    </div>\n</section>";
+    }
+
+    $changed = [];
+    foreach (['index.html' => ['home-partners', $home], 'about.html' => ['about-partners', $about]] as $file => [$region, $inner]) {
+        $html = file_get_contents(site_path($file));
+        if (!str_contains($html, "<!-- CMS:$region -->")) continue;
+        write_atomic(site_path($file), replace_region($html, $region, indent_block($inner, 4), $file));
+        $changed[] = $file;
+    }
+    return $changed;
+}
+
+/* ---------- Ways to give (donate page) ---------- */
+
+function format_phone_ke(string $phone): string
+{
+    return preg_match('/^(\d{4})(\d{3})(\d{3})$/', $phone, $m) ? "$m[1] $m[2] $m[3]" : $phone;
+}
+
+/** The M-Pesa options that have been filled in, Paybill first. */
+function mpesa_methods(): array
+{
+    $name = setting('mpesa_name');
+    $check = $name !== ''
+        ? 'Check the name shows <strong>' . h($name) . '</strong>, then enter your PIN and confirm.'
+        : 'Enter your PIN and confirm. Check the recipient name before you send.';
+    $amount = 'Enter amount <strong>KES <span class="step-amount">1,000</span></strong>';
+    $methods = [];
+    if (($paybill = setting('mpesa_paybill')) !== '') {
+        $account = setting('mpesa_account');
+        $numbers = [['Business number', $paybill, $paybill]];
+        if ($account !== '') $numbers[] = ['Account number', $account, $account];
+        $methods[] = ['paybill', 'Paybill', $numbers, [
+            'Open <strong>M-PESA</strong> and select <strong>Lipa na M-PESA</strong>',
+            'Select <strong>Pay Bill</strong>',
+            'Enter business number <strong>' . h($paybill) . '</strong>',
+            'Enter account number <strong>' . ($account !== '' ? h($account) : 'your name') . '</strong>',
+            $amount, $check,
+        ]];
+    }
+    if (($till = setting('mpesa_till')) !== '') {
+        $methods[] = ['till', 'Till number', [['Till number', $till, $till]], [
+            'Open <strong>M-PESA</strong> and select <strong>Lipa na M-PESA</strong>',
+            'Select <strong>Buy Goods and Services</strong>',
+            'Enter till number <strong>' . h($till) . '</strong>',
+            $amount, $check,
+        ]];
+    }
+    if (($phone = setting('mpesa_phone', '0712109310')) !== '') {
+        $methods[] = ['send', 'Send Money', [['Send to', format_phone_ke($phone), $phone]], [
+            'Open <strong>M-PESA</strong> on your phone or the M-PESA app',
+            'Select <strong>Send Money</strong>',
+            'Enter phone number <strong>' . h(format_phone_ke($phone)) . '</strong>',
+            $amount, $check,
+        ]];
+    }
+    return $methods;
+}
+
+function render_mpesa_card(): string
+{
+    $methods = mpesa_methods();
+    $out = '<div class="mpesa-card reveal reveal-right">' . "\n";
+    if (!$methods) {
+        return $out . '    <div class="mpesa-head"><span class="mpesa-badge">M-PESA</span><h3>Coming soon</h3></div>' . "\n"
+            . "    <p class=\"mpesa-empty\">Our M-Pesa details are being updated. Message us on WhatsApp and we'll share how to give.</p>\n"
+            . '    <a href="https://wa.me/254712109310?text=' . rawurlencode('Hello Judes CBO! I would like to make a donation.') . '" class="hero-btn primary btn-shine mpesa-confirm" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Ask on WhatsApp</a>' . "\n"
+            . '</div>';
+    }
+    $tabs = count($methods) > 1;
+    $out .= '    <div class="mpesa-head">' . "\n"
+        . '        <span class="mpesa-badge">M-PESA</span>' . "\n"
+        . '        <h3>' . h($tabs ? 'Lipa na M-PESA' : $methods[0][1]) . "</h3>\n"
+        . "    </div>\n";
+    if ($tabs) {
+        $out .= '    <div class="mpesa-tabs" role="tablist" aria-label="Ways to pay with M-Pesa">' . "\n";
+        foreach ($methods as $i => [$key, $label]) {
+            $out .= '        <button type="button" role="tab" class="mpesa-tab' . ($i === 0 ? ' active' : '') . '" id="mpesa-tab-' . $key . '" aria-controls="mpesa-' . $key . '" aria-selected="' . ($i === 0 ? 'true' : 'false') . '">' . h($label) . "</button>\n";
+        }
+        $out .= "    </div>\n";
+    }
+    foreach ($methods as $i => [$key, , $numbers, $steps]) {
+        $out .= '    <div class="mpesa-method" id="mpesa-' . $key . '"' . ($tabs ? ' role="tabpanel" aria-labelledby="mpesa-tab-' . $key . '"' : '') . ($i > 0 ? ' hidden' : '') . ">\n";
+        foreach ($numbers as [$caption, $shown, $copy]) {
+            $out .= '        <div class="mpesa-number">' . "\n"
+                . "            <div>\n"
+                . '                <span class="mpesa-label">' . h($caption) . "</span>\n"
+                . '                <strong>' . h($shown) . "</strong>\n"
+                . "            </div>\n"
+                . '            <button type="button" class="copy-btn" data-copy="' . h($copy) . '"><i class="far fa-copy"></i> <span>Copy</span></button>' . "\n"
+                . "        </div>\n";
+        }
+        $out .= '        <ol class="mpesa-steps">' . "\n";
+        foreach ($steps as $n => $step) {
+            $out .= '            <li><span>' . ($n + 1) . '</span><p>' . $step . "</p></li>\n";
+        }
+        $out .= "        </ol>\n    </div>\n";
+    }
+    return $out
+        . '    <a href="#" id="confirm-donation" class="hero-btn primary btn-shine mpesa-confirm" target="_blank" rel="noopener">' . "\n"
+        . "        <i class=\"fab fa-whatsapp\"></i> I've donated, let us know\n"
+        . "    </a>\n"
+        . '    <p class="mpesa-note"><i class="fas fa-circle-info"></i> Send us your M-Pesa confirmation code on WhatsApp so we can thank you and confirm we received your gift.</p>' . "\n"
+        . '</div>';
+}
+
+function render_bank_card(): string
+{
+    $email = setting('org_email', 'info@judescbo.org');
+    $out = '<div class="way-card reveal">' . "\n"
+        . '    <span class="way-icon"><i class="fas fa-building-columns"></i></span>' . "\n"
+        . "    <h3>Bank Transfer</h3>\n";
+    if (setting('bank_account_number') === '') {
+        return $out . "    <p>For larger gifts and organisations. Email us and we'll send our bank account details.</p>\n"
+            . '    <a href="mailto:' . h($email) . '?subject=Bank%20transfer%20donation%20to%20Judes%20CBO" class="text-link">Request bank details <i class="fas fa-arrow-right"></i></a>' . "\n"
+            . '</div>';
+    }
+    $rows = array_filter([
+        'Bank' => setting('bank_name'),
+        'Branch' => setting('bank_branch'),
+        'Account name' => setting('bank_account_name'),
+        'Account number' => setting('bank_account_number'),
+        'SWIFT code' => setting('bank_swift'),
+    ], fn($v) => $v !== '');
+    $out .= "    <p>For larger gifts and organisations.</p>\n    <dl class=\"bank-details\">\n";
+    foreach ($rows as $label => $value) {
+        $copy = in_array($label, ['Account number', 'SWIFT code'], true)
+            ? ' <button type="button" class="copy-btn copy-btn-sm" data-copy="' . h($value) . '" aria-label="Copy ' . h($label) . '"><i class="far fa-copy"></i> <span>Copy</span></button>'
+            : '';
+        $out .= '        <div><dt>' . h($label) . '</dt><dd><span>' . h($value) . '</span>' . $copy . "</dd></div>\n";
+    }
+    return $out . "    </dl>\n"
+        . '    <a href="mailto:' . h($email) . '?subject=Bank%20transfer%20to%20Judes%20CBO" class="text-link">Email us after you send <i class="fas fa-arrow-right"></i></a>' . "\n"
+        . '</div>';
+}
+
+function render_abroad_card(): string
+{
+    $email = setting('org_email', 'info@judescbo.org');
+    $link = setting('give_online_url');
+    $out = '<div class="way-card reveal">' . "\n"
+        . '    <span class="way-icon"><i class="fas fa-globe-africa"></i></span>' . "\n"
+        . "    <h3>Give from Abroad</h3>\n";
+    if ($link === '') {
+        return $out . "    <p>Supporting us from outside Kenya? Contact us and we'll share the best way to send your gift internationally.</p>\n"
+            . '    <a href="mailto:' . h($email) . '?subject=International%20donation%20to%20Judes%20CBO" class="text-link">Ask about international giving <i class="fas fa-arrow-right"></i></a>' . "\n"
+            . '</div>';
+    }
+    return $out . "    <p>Supporting us from outside Kenya? Give securely online, or email us about an international bank transfer.</p>\n"
+        . '    <a href="' . h($link) . '" class="text-link" target="_blank" rel="noopener">' . h(setting('give_online_label') ?: 'Give online') . ' <i class="fas fa-arrow-right"></i></a>' . "\n"
+        . '</div>';
+}
+
+/** The M-Pesa box on the offline page: numbers only, since the M-Pesa SIM menu works without data. */
+function render_offline_give(): string
+{
+    $rows = [];
+    foreach (mpesa_methods() as [, $label, $numbers]) {
+        [$caption, $shown, $copy] = $numbers[0];
+        $extra = isset($numbers[1]) ? '<em>' . h($numbers[1][0]) . ': ' . h($numbers[1][1]) . '</em>' : '';
+        $rows[] = '    <div class="give-row"><div><small>' . h($label === 'Send Money' ? 'Send Money to' : $label) . '</small><strong>' . h($shown) . '</strong>' . $extra . '</div><button type="button" class="copy" data-copy="' . h($copy) . '">Copy</button></div>';
+    }
+    return $rows
+        ? '<div class="give-list">' . "\n" . implode("\n", $rows) . "\n</div>"
+        : "<p class=\"give-empty\">Call or text us and we'll share how to give.</p>";
+}
+
+function publish_giving(): array
+{
+    if (!is_file(site_path('donate.html'))) return [];
+    $html = file_get_contents(site_path('donate.html'));
+    if (!str_contains($html, '<!-- CMS:donate-mpesa -->')) return [];
+    $html = replace_region($html, 'donate-mpesa', indent_block(render_mpesa_card(), 12), 'donate.html');
+    $html = replace_region($html, 'donate-bank', indent_block(render_bank_card(), 16), 'donate.html');
+    $html = replace_region($html, 'donate-abroad', indent_block(render_abroad_card(), 16), 'donate.html');
+    write_atomic(site_path('donate.html'), $html);
+    $changed = ['donate.html'];
+    if (is_file(site_path('offline.html'))) {
+        $offline = file_get_contents(site_path('offline.html'));
+        if (str_contains($offline, '<!-- CMS:offline-give -->')) {
+            write_atomic(site_path('offline.html'), replace_region($offline, 'offline-give', indent_block(render_offline_give(), 12), 'offline.html'));
+            $changed[] = 'offline.html';
+        }
+    }
+    return $changed;
+}

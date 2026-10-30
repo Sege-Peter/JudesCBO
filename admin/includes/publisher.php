@@ -510,7 +510,7 @@ function publish_site(): array
         $changed[] = $file;
     }
 
-    $changed = array_merge($changed, publish_events($shell), publish_team());
+    $changed = array_merge($changed, publish_events($shell), publish_team(), publish_partners(), publish_giving());
 
     // Form endpoints on every page
     foreach (glob(site_path('*.html')) as $path) {
