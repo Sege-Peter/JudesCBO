@@ -20,6 +20,8 @@ $config = [
     'secure_cookies' => false,
     // Required to run install.php on a live server: open install.php?key=<this value>. Not needed on localhost.
     'install_key' => '',
+    // Address of the dashboard, used in password-reset emails, e.g. https://www.judescbo.org/admin/
+    'admin_url' => '',
 ];
 
 $local = __DIR__ . '/config.local.php';

@@ -290,15 +290,27 @@ textarea { resize: vertical; }
 .slug-field:focus-within { border-color: var(--green); box-shadow: 0 0 0 4px rgba(45,80,22,0.1); }
 
 /* ---------- Auth pages ---------- */
-.auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: var(--navy); background-image: radial-gradient(ellipse at 15% 10%, rgba(45,80,22,0.7), transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(229,62,62,0.25), transparent 50%); }
-.auth-card { width: 100%; max-width: 420px; padding: 2.4rem 2rem; border-radius: 24px; background: #fff; box-shadow: 0 30px 70px rgba(0,0,0,0.35); animation: slideIn .6s var(--ease); }
-.auth-logo { display: block; width: 72px; height: 72px; margin: 0 auto 1rem; border-radius: 50%; object-fit: contain; padding: 6px; box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
-.auth-card h1 { text-align: center; font-size: 1.6rem; }
-.auth-sub { text-align: center; color: var(--muted); margin: .3rem 0 1.6rem; }
-.auth-card .form-stack label { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1rem; font-weight: 700; font-size: .86rem; color: var(--dark); }
+.auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; background: var(--navy); background-image: radial-gradient(ellipse at 15% 10%, rgba(45,80,22,0.7), transparent 55%), radial-gradient(ellipse at 90% 100%, rgba(229,62,62,0.25), transparent 50%); }
+.auth-card { width: 100%; max-width: 360px; padding: 1.8rem 1.6rem 1.5rem; border-radius: 20px; background: #fff; box-shadow: 0 24px 60px rgba(0,0,0,0.35); animation: slideIn .6s var(--ease); }
+.auth-logo { display: block; width: 56px; height: 56px; margin: 0 auto .8rem; border-radius: 16px; object-fit: contain; padding: 6px; background: #fff; box-shadow: 0 6px 16px rgba(15,36,64,0.12); }
+.auth-icon { width: 52px; height: 52px; margin: 0 auto .8rem; display: flex; align-items: center; justify-content: center; border-radius: 16px; background: var(--green-soft); color: var(--green); font-size: 1.3rem; }
+.auth-card h1 { text-align: center; font-size: 1.3rem; }
+.auth-sub { text-align: center; color: var(--muted); font-size: .88rem; margin: .2rem 0 1.2rem; }
+.auth-note { font-size: .84rem; color: var(--muted); background: #f8fafc; border-radius: 10px; padding: 10px 12px; margin-bottom: 1rem; }
+.auth-card .alert { font-size: .85rem; padding: 10px 14px; }
+.auth-card .form-stack label { display: flex; flex-direction: column; gap: 5px; margin-bottom: .85rem; font-weight: 700; font-size: .82rem; color: var(--dark); }
 .auth-card .form-stack label small { font-weight: 500; color: var(--muted); }
-.auth-foot { text-align: center; margin-top: 1.4rem; }
+.auth-card input[type="text"], .auth-card input[type="password"] { padding: 9px 12px; font-size: .92rem; }
+.auth-card .input-icon > i ~ input { padding-left: 38px; }
+.auth-card .btn-block { padding: 10px 16px; }
+.auth-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: -.1rem 0 1rem; }
+.auth-row .check { margin: 0; font-size: .84rem; flex-direction: row !important; gap: 8px !important; font-weight: 600 !important; }
+.auth-row .check input { width: 16px; height: 16px; }
+.auth-link { font-size: .84rem; font-weight: 700; color: var(--green); text-decoration: none; }
+.auth-link:hover { text-decoration: underline; }
+.auth-foot { text-align: center; margin-top: 1.1rem; font-size: .85rem; }
 .auth-foot a { color: var(--muted); font-weight: 600; text-decoration: none; }
+.auth-foot a:hover { color: var(--green); }
 
 /* ---------- Stories ---------- */
 .story-list { display: flex; flex-direction: column; gap: 12px; }

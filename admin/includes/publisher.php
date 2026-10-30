@@ -71,6 +71,12 @@ function story_file(array $story): string
     return 'blog-' . $story['slug'] . '.html';
 }
 
+/** Clean link to a story (no .html); the server maps it to the file. */
+function story_href(array $story): string
+{
+    return 'blog-' . $story['slug'];
+}
+
 function story_date(array $story): string
 {
     return date('F j, Y', strtotime($story['published_at'] ?: 'today'));
@@ -80,7 +86,7 @@ function story_date(array $story): string
 
 function render_story_card(array $s): string
 {
-    $file = h(story_file($s));
+    $file = h(story_href($s));
     $thumb = $s['cover_image']
         ? '<a href="' . $file . '" class="story-thumb"><img src="' . h($s['cover_image']) . '" alt="' . h($s['cover_alt'] ?: $s['title']) . '" loading="lazy"></a>'
         : '<a href="' . $file . '" class="story-thumb story-thumb--icon"><i class="fas ' . h(CATEGORY_ICONS[$s['category']] ?? 'fa-newspaper') . '"></i></a>';
@@ -299,8 +305,7 @@ function page_shell(): array
 
 function render_story_page(array $s, ?array $next, array $shell): string
 {
-    $file = story_file($s);
-    $url = site_url($file);
+    $url = site_url(story_href($s));
     $title = $s['title'] . ' | Judes CBO';
     $desc = $s['meta_description'] ?: mb_substr(strip_tags($s['excerpt']), 0, 160);
     $image = site_url(story_share_image($s));
@@ -311,7 +316,7 @@ function render_story_page(array $s, ?array $next, array $shell): string
         $shell['org'],
         ['@type' => 'BreadcrumbList', '@id' => $url . '#breadcrumb', 'itemListElement' => [
             ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => site_url()],
-            ['@type' => 'ListItem', 'position' => 2, 'name' => 'Stories', 'item' => site_url('stories.html')],
+            ['@type' => 'ListItem', 'position' => 2, 'name' => 'Stories', 'item' => site_url('stories')],
             ['@type' => 'ListItem', 'position' => 3, 'name' => $s['title'], 'item' => $url],
         ]],
         ['@type' => 'WebPage', '@id' => $url . '#webpage', 'url' => $url, 'name' => $title, 'description' => $desc,
@@ -331,7 +336,7 @@ function render_story_page(array $s, ?array $next, array $shell): string
     $shareText = rawurlencode($s['title']);
     $shareUrl = rawurlencode($url);
     $nextHtml = $next
-        ? "            <div class=\"article-next\">\n                <span>Read next</span>\n                <a href=\"" . h(story_file($next)) . '"><strong>' . h($next['title']) . "</strong> <i class=\"fas fa-arrow-right\"></i></a>\n            </div>\n"
+        ? "            <div class=\"article-next\">\n                <span>Read next</span>\n                <a href=\"" . h(story_href($next)) . '"><strong>' . h($next['title']) . "</strong> <i class=\"fas fa-arrow-right\"></i></a>\n            </div>\n"
         : '';
     $body = indent_block(tidy_story_html($s['body_html']), 12);
 
@@ -390,7 +395,7 @@ $jsonLd
 {$shell['header']}    <!-- Article -->
     <section class="article-hero">
         <div class="container article-narrow">
-            <a href="stories.html" class="article-back"><i class="fas fa-arrow-left"></i> All stories</a>
+            <a href="stories" class="article-back"><i class="fas fa-arrow-left"></i> All stories</a>
             <span class="story-tag">{$e($s['category'])}</span>
             <h1>{$e($s['title'])}</h1>
             <div class="article-meta"><i class="far fa-calendar"></i> <time datetime="{$e($s['published_at'])}">{$e(story_date($s))}</time> &middot; Judes CBO</div>
@@ -413,8 +418,8 @@ $body
                     <p>Your support helps us reach more young people and families in Homa Bay County.</p>
                 </div>
                 <div class="article-cta-actions">
-                    <a href="donate.html" class="header-donate"><i class="fas fa-heart"></i><span>Donate</span></a>
-                    <a href="contact.html" class="footer-chip">Get involved</a>
+                    <a href="donate" class="header-donate"><i class="fas fa-heart"></i><span>Donate</span></a>
+                    <a href="contact" class="footer-chip">Get involved</a>
                 </div>
             </div>
 $nextHtml        </div>
@@ -430,12 +435,12 @@ function render_sitemap(array $stories): string
     $today = date('Y-m-d');
     $rows = [];
     foreach (STATIC_PAGES as $file => [$priority, $freq]) {
-        $loc = $file === 'index.html' ? site_url() : site_url($file);
+        $loc = $file === 'index.html' ? site_url() : site_url(substr($file, 0, -5));
         $rows[] = "  <url>\n    <loc>" . h($loc) . "</loc>\n    <lastmod>$today</lastmod>\n    <changefreq>$freq</changefreq>\n    <priority>$priority</priority>\n  </url>";
     }
     foreach ($stories as $s) {
         $mod = date('Y-m-d', strtotime($s['updated_at']));
-        $rows[] = "  <url>\n    <loc>" . h(site_url(story_file($s))) . "</loc>\n    <lastmod>$mod</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.6</priority>\n  </url>";
+        $rows[] = "  <url>\n    <loc>" . h(site_url(story_href($s))) . "</loc>\n    <lastmod>$mod</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.6</priority>\n  </url>";
     }
     return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" . implode("\n", $rows) . "\n</urlset>\n";
 }

@@ -1,8 +1,8 @@
 // Judes CBO service worker: pages come from the network first (always fresh),
-// static files from the cache first, and offline.html when there's no connection.
-const VERSION = 'judes-v1';
+// static files from the cache first, and the offline page when there's no connection.
+const VERSION = 'judes-v2';
 const CORE = [
-    './', 'index.html', 'offline.html', 'css/style.css', 'js/main.js',
+    './', 'offline', 'css/style.css', 'js/main.js',
     'favicon.ico', 'images/icons/icon-192.png', 'images/icons/favicon-32.png', 'jude-logo.png'
 ];
 
@@ -35,7 +35,7 @@ self.addEventListener('fetch', event => {
                     }
                     return response;
                 })
-                .catch(() => caches.match(request).then(hit => hit || caches.match('offline.html')))
+                .catch(() => caches.match(request).then(hit => hit || caches.match('offline')))
         );
         return;
     }

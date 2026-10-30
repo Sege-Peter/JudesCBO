@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $new = (int) $target['active'] === 1 ? 0 : 1;
                 db()->prepare('UPDATE users SET active = ? WHERE id = ?')->execute([$new, $id]);
+                if (!$new) revoke_all_tokens($id);
                 log_activity('user.' . ($new ? 'activate' : 'deactivate'), $target['username']);
                 flash('success', $target['name'] . ($new ? ' can log in again.' : ' can no longer log in.'));
             }
@@ -67,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 flash('error', 'The new password must be at least 10 characters.');
             } else {
                 db()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([password_hash($password, PASSWORD_DEFAULT), $id]);
+                revoke_all_tokens($id);
                 log_activity('user.reset_password', $target['username']);
                 flash('success', 'Password reset for ' . $target['name'] . '. Share it with them privately.');
             }

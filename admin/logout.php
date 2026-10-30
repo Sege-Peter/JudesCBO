@@ -6,6 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (current_user()) {
         log_activity('logout', 'Signed out');
     }
+    forget_remember_token();
     $_SESSION = [];
     session_destroy();
 }

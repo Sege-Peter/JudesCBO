@@ -96,9 +96,86 @@ function require_csrf(): void
     }
 }
 
+/* ---------- Database upgrades ---------- */
+
+const SCHEMA_VERSION = 2;
+
+/** Adds tables introduced after the first install. Safe to run repeatedly. */
+function migrate(): void
+{
+    try {
+        $version = (int) (db()->query("SELECT value FROM settings WHERE name = 'schema_version'")->fetchColumn() ?: 1);
+    } catch (PDOException $e) {
+        return; // not installed yet
+    }
+    if ($version >= SCHEMA_VERSION) return;
+    foreach (array_filter(array_map('trim', explode(';', file_get_contents(__DIR__ . '/schema.sql')))) as $sql) {
+        db()->exec($sql);
+    }
+    db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
+}
+
 /* ---------- Auth ---------- */
 
 const SESSION_IDLE_LIMIT = 2 * 60 * 60; // log out after 2 hours of inactivity
+const REMEMBER_DAYS = 30;
+const REMEMBER_COOKIE = 'judes_remember';
+
+function set_remember_cookie(string $value, int $expires): void
+{
+    setcookie(REMEMBER_COOKIE, $value, [
+        'expires' => $expires,
+        'path' => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure' => (bool) config('secure_cookies'),
+    ]);
+}
+
+/** "Remember me": a selector/validator token; only a hash of the validator is stored. */
+function issue_remember_token(int $userId): void
+{
+    $selector = bin2hex(random_bytes(12));
+    $validator = bin2hex(random_bytes(32));
+    $expires = time() + REMEMBER_DAYS * 86400;
+    db()->prepare('INSERT INTO auth_tokens (user_id, selector, validator_hash, expires_at) VALUES (?, ?, ?, FROM_UNIXTIME(?))')
+        ->execute([$userId, $selector, hash('sha256', $validator), $expires]);
+    set_remember_cookie("$selector:$validator", $expires);
+}
+
+function forget_remember_token(): void
+{
+    $cookie = $_COOKIE[REMEMBER_COOKIE] ?? '';
+    if (is_string($cookie) && str_contains($cookie, ':')) {
+        db()->prepare('DELETE FROM auth_tokens WHERE selector = ?')->execute([explode(':', $cookie)[0]]);
+    }
+    set_remember_cookie('', time() - 3600);
+}
+
+/** Signs this account out on every device (after a password change or reset). */
+function revoke_all_tokens(int $userId): void
+{
+    db()->prepare('DELETE FROM auth_tokens WHERE user_id = ?')->execute([$userId]);
+}
+
+function login_from_remember_cookie(): void
+{
+    $cookie = $_COOKIE[REMEMBER_COOKIE] ?? '';
+    if (!is_string($cookie) || !preg_match('/^([a-f0-9]{24}):([a-f0-9]{64})$/', $cookie, $m)) return;
+    $stmt = db()->prepare('SELECT t.id, t.user_id, t.validator_hash FROM auth_tokens t JOIN users u ON u.id = t.user_id WHERE t.selector = ? AND t.expires_at > NOW() AND u.active = 1');
+    $stmt->execute([$m[1]]);
+    $row = $stmt->fetch();
+    if (!$row || !hash_equals($row['validator_hash'], hash('sha256', $m[2]))) {
+        set_remember_cookie('', time() - 3600);
+        return;
+    }
+    // Replace the token on every use so a copied cookie stops working
+    db()->prepare('DELETE FROM auth_tokens WHERE id = ?')->execute([$row['id']]);
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = (int) $row['user_id'];
+    $_SESSION['last_seen'] = time();
+    issue_remember_token((int) $row['user_id']);
+}
 
 function current_user(): ?array
 {
@@ -107,11 +184,13 @@ function current_user(): ?array
         return $user;
     }
     $user = null;
+    if (!empty($_SESSION['user_id']) && time() - ($_SESSION['last_seen'] ?? 0) > SESSION_IDLE_LIMIT) {
+        unset($_SESSION['user_id']);
+    }
+    if (empty($_SESSION['user_id'])) {
+        login_from_remember_cookie();
+    }
     if (!empty($_SESSION['user_id'])) {
-        if (time() - ($_SESSION['last_seen'] ?? 0) > SESSION_IDLE_LIMIT) {
-            session_unset();
-            return null;
-        }
         $_SESSION['last_seen'] = time();
         $stmt = db()->prepare('SELECT id, name, email, username, role, active FROM users WHERE id = ?');
         $stmt->execute([$_SESSION['user_id']]);
@@ -226,4 +305,16 @@ function send_csv(string $filename, array $header, iterable $rows): never
     exit;
 }
 
+/**
+ * Sends a plain-text email. Returns false if the server can't send mail
+ * (common on a local XAMPP install).
+ */
+function send_mail(string $to, string $subject, string $body): bool
+{
+    $from = setting('org_email', 'info@judescbo.org');
+    $headers = "From: Judes CBO <$from>\r\nContent-Type: text/plain; charset=utf-8";
+    return @mail($to, $subject, $body, $headers);
+}
+
 start_session();
+migrate();

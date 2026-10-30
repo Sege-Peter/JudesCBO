@@ -3,3 +3,8 @@ Options -Indexes
 <FilesMatch "^(config\.local\.php|.*\.local\..*)$">
     Require all denied
 </FilesMatch>
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([a-z0-9-]+)/?$ $1.php [L]

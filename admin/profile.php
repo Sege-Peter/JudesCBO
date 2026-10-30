@@ -33,6 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('error', 'The new passwords do not match.');
         } else {
             db()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([password_hash($new, PASSWORD_DEFAULT), $me['id']]);
+            revoke_all_tokens((int) $me['id']);
+            forget_remember_token();
             session_regenerate_id(true);
             log_activity('profile.password', 'Changed password');
             flash('success', 'Password changed.');
