@@ -210,3 +210,11 @@ CREATE TABLE IF NOT EXISTS site_events (
     INDEX (created_at),
     INDEX (name, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS blocked_ips (
+    ip VARCHAR(45) PRIMARY KEY,
+    reason VARCHAR(200) NOT NULL DEFAULT '',
+    auto TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

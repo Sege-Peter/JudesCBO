@@ -6,15 +6,34 @@ $CONFIG = require dirname(__DIR__) . '/config.php';
 date_default_timezone_set('Africa/Nairobi');
 mb_internal_encoding('UTF-8');
 
+require __DIR__ . '/security.php';
+require __DIR__ . '/passwords.php';
+
 // Security headers for every admin response
 header('X-Frame-Options: SAMEORIGIN');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: same-origin');
+header('Cross-Origin-Opener-Policy: same-origin');
+header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+// Scripts, styles and fonts only from this site and the two libraries' CDNs; no other site may frame the dashboard
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+    . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; "
+    . "font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self'; "
+    . "frame-src 'self'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; object-src 'none'");
+if (is_https()) {
+    header('Strict-Transport-Security: max-age=31536000');
+}
 
 function config(string $key)
 {
     global $CONFIG;
     return $CONFIG[$key] ?? null;
+}
+
+/** Cookies are HTTPS-only when the config says so, or automatically whenever the dashboard is opened over HTTPS. */
+function secure_cookies(): bool
+{
+    return (bool) config('secure_cookies') || is_https();
 }
 
 function db(): PDO
@@ -47,13 +66,15 @@ function start_session(): void
     if (session_status() === PHP_SESSION_ACTIVE) {
         return;
     }
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
     session_name('judes_admin');
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
         'httponly' => true,
         'samesite' => 'Strict',
-        'secure' => (bool) config('secure_cookies'),
+        'secure' => secure_cookies(),
     ]);
     session_start();
 }
@@ -98,7 +119,7 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 7;
 
 function column_exists(string $table, string $column): bool
 {
@@ -162,6 +183,8 @@ function migrate(): void
     db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('maint_token', '" . bin2hex(random_bytes(16)) . "')");
     // Version 6: visitor statistics
     db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('analytics_on', '1'), ('analytics_keep_months', '13'), ('analytics_secret', '" . bin2hex(random_bytes(16)) . "')");
+    // Version 7: blocked IP addresses and automatic blocking of password guessing
+    db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('sec_autoblock', '1'), ('sec_autoblock_limit', '30'), ('sec_force_https', '0')");
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
 
@@ -178,7 +201,7 @@ function set_remember_cookie(string $value, int $expires): void
         'path' => '/',
         'httponly' => true,
         'samesite' => 'Lax',
-        'secure' => (bool) config('secure_cookies'),
+        'secure' => secure_cookies(),
     ]);
 }
 
@@ -255,7 +278,15 @@ function current_user(): ?array
     if (empty($_SESSION['user_id'])) {
         login_from_remember_cookie();
     }
+    // A session copied to a different browser is refused (protects against stolen session cookies)
+    $agent = substr(hash('sha256', (string) ($_SERVER['HTTP_USER_AGENT'] ?? '')), 0, 16);
+    if (!empty($_SESSION['user_id']) && isset($_SESSION['ua']) && $_SESSION['ua'] !== $agent) {
+        log_activity('security.session_mismatch', 'Session used from a different browser; signed out', (int) $_SESSION['user_id']);
+        unset($_SESSION['user_id'], $_SESSION['sv'], $_SESSION['ua']);
+        login_from_remember_cookie();
+    }
     if (!empty($_SESSION['user_id'])) {
+        $_SESSION['ua'] ??= $agent;
         $_SESSION['last_seen'] = time();
         $stmt = db()->prepare('SELECT id, name, email, username, role, active, totp_enabled, session_version FROM users WHERE id = ?');
         $stmt->execute([$_SESSION['user_id']]);
@@ -291,7 +322,7 @@ function require_login(): array
     staff_bypass_cookie();
     // Marks this browser as staff so the website's visitor statistics leave it out
     if (!isset($_COOKIE['judes_staff']) && !headers_sent()) {
-        setcookie('judes_staff', '1', ['expires' => time() + 365 * 86400, 'path' => '/', 'httponly' => true, 'samesite' => 'Lax', 'secure' => (bool) config('secure_cookies')]);
+        setcookie('judes_staff', '1', ['expires' => time() + 365 * 86400, 'path' => '/', 'httponly' => true, 'samesite' => 'Lax', 'secure' => secure_cookies()]);
     }
     // Administrators must turn on two-step login before using the dashboard (when required in Settings)
     if (in_array($user['role'], ['admin', 'developer'], true) && !(int) $user['totp_enabled'] && setting('require_2fa_admins', '1') === '1'
@@ -427,7 +458,7 @@ function staff_bypass_cookie(): void
         'path' => '/',
         'httponly' => true,
         'samesite' => 'Lax',
-        'secure' => (bool) config('secure_cookies'),
+        'secure' => secure_cookies(),
     ]);
 }
 
@@ -532,3 +563,10 @@ function send_mail(string $to, string $subject, string $body): bool
 // Public endpoints that don't need a login (visitor statistics) skip the session so visitors get no cookie
 if (!defined('NO_SESSION')) start_session();
 migrate();
+
+// Addresses blocked on the Security page get nothing from the dashboard or its forms
+if (ip_blocked(client_ip())) {
+    http_response_code(403);
+    header('Content-Type: text/plain; charset=utf-8');
+    exit('Access from your network has been blocked. If this is a mistake, contact the website administrator.');
+}

@@ -2,3 +2,6 @@
 exclude:
   - admin
   - README.md
+# security.txt lives in a dot-folder, which Jekyll skips unless listed
+include:
+  - .well-known

@@ -181,6 +181,7 @@ render_header('System');
             <li><span>Failed logins (last 15 min)</span><strong><?= $lockouts ?></strong></li>
         </ul>
         <div class="tool-row">
+            <a href="security.php" class="btn btn-primary btn-sm"><i class="fas fa-shield-halved"></i> Open the Security page</a>
             <form method="post"><?= csrf_field() ?><input type="hidden" name="section" value="sessions"><input type="hidden" name="action" value="clear-lockouts">
                 <button class="btn btn-light btn-sm"><i class="fas fa-unlock"></i> Clear login lockouts</button></form>
             <form method="post" data-confirm="Renew the staff preview key? Staff who are browsing the website during maintenance will need to open the dashboard again."><?= csrf_field() ?><input type="hidden" name="section" value="sessions"><input type="hidden" name="action" value="rotate-token">
@@ -233,7 +234,7 @@ render_header('System');
             <li><span>Uploaded files</span><strong><?= h($mb($uploadsSize)) ?></strong></li>
             <li><span>Free disk space</span><strong><?= $free ? h($mb($free)) : 'unknown' ?></strong></li>
             <li><span>Max upload size</span><strong><?= h(ini_get('upload_max_filesize')) ?></strong></li>
-            <li><span>Secure cookies (HTTPS)</span><strong><?= config('secure_cookies') ? '<i class="fas fa-check text-green"></i> On' : '<i class="fas fa-xmark text-amber"></i> Off' ?></strong></li>
+            <li><span>Secure cookies (HTTPS)</span><strong><?= secure_cookies() ? '<i class="fas fa-check text-green"></i> On' : '<i class="fas fa-xmark text-amber"></i> Off' ?></strong></li>
         </ul>
     </section>
 </div>

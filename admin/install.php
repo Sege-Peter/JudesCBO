@@ -7,6 +7,7 @@
 declare(strict_types=1);
 
 $CONFIG = require __DIR__ . '/config.php';
+require __DIR__ . '/includes/passwords.php';
 
 function h(?string $v): string { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); }
 
@@ -127,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($name === '') $errors[] = 'Enter your name.';
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Enter a valid email address.';
     if (!preg_match('/^[a-zA-Z0-9_.-]{3,60}$/', $username)) $errors[] = 'Username must be 3 to 60 letters, numbers, dots, dashes or underscores.';
-    if (strlen($password) < 10) $errors[] = 'Password must be at least 10 characters.';
+    if ($problem = password_problem($password, [$name, $username, $email])) $errors[] = $problem;
     if ($password !== $confirm) $errors[] = 'The two passwords do not match.';
 
     if (!$errors) {

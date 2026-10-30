@@ -22,6 +22,7 @@ function nav_items(): array
     }
     if (is_developer()) {
         $items[] = ['system.php', 'System', 'fa-server'];
+        $items[] = ['security.php', 'Security', 'fa-shield-halved'];
     }
     return $items;
 }

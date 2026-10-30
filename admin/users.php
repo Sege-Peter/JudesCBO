@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($form['name'] === '') $errors[] = 'Enter a name.';
         if (!filter_var($form['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'Enter a valid email.';
         if (!preg_match('/^[a-zA-Z0-9_.-]{3,60}$/', $form['username'])) $errors[] = 'Username must be 3 to 60 letters, numbers, dots, dashes or underscores.';
-        if (strlen($password) < 10) $errors[] = 'Password must be at least 10 characters.';
+        if ($problem = password_problem($password, [$form['name'], $form['username'], $form['email']])) $errors[] = $problem;
         if (!isset(assignable_roles($me)[$form['role']])) $form['role'] = 'editor';
         $dup = db()->prepare('SELECT COUNT(*) FROM users WHERE username = ? OR email = ?');
         $dup->execute([$form['username'], $form['email']]);
@@ -84,8 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('success', 'Two-step login reset for ' . $target['name'] . '. They\'ll set it up again at their next login.');
         } elseif ($action === 'reset') {
             $password = (string) ($_POST['password'] ?? '');
-            if (strlen($password) < 10) {
-                flash('error', 'The new password must be at least 10 characters.');
+            if ($problem = password_problem($password, [$target['name'], $target['username'], $target['email']])) {
+                flash('error', $problem);
             } else {
                 db()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([password_hash($password, PASSWORD_DEFAULT), $id]);
                 revoke_all_tokens($id);

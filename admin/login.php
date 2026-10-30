@@ -27,7 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = db()->prepare('SELECT id, password_hash, active, totp_enabled FROM users WHERE username = ? OR email = ?');
         $stmt->execute([$username, $username]);
         $user = $stmt->fetch();
-        if ($user && (int) $user['active'] === 1 && password_verify($password, $user['password_hash'])) {
+        // Check a dummy hash when the account doesn't exist, so response times don't reveal which usernames are real
+        $valid = password_verify($password, $user['password_hash'] ?? '$2y$10$LT.uwPz6RQDFPpPB121Zn.MEecelLqXhTKEosjbF/ULJACmhJY/F.');
+        if ($user && (int) $user['active'] === 1 && $valid) {
             if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
                 db()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([password_hash($password, PASSWORD_DEFAULT), $user['id']]);
             }
@@ -41,6 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             complete_login((int) $user['id'], $remember, 'Signed in');
         }
         db()->prepare('INSERT INTO login_attempts (ip, username) VALUES (?, ?)')->execute([$ip, $username]);
+        db()->exec('DELETE FROM login_attempts WHERE attempted_at < NOW() - INTERVAL 30 DAY');
+        auto_block_check($ip);
         $error = 'Incorrect username or password.';
     }
 }

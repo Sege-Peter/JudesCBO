@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($pending['tries'] >= MAX_TRIES) {
         unset($_SESSION['pending_2fa']);
         db()->prepare('INSERT INTO login_attempts (ip, username) VALUES (?, ?)')->execute([client_ip(), 'user#' . $user['id']]);
+        auto_block_check(client_ip());
         flash('error', 'Too many wrong codes. Please log in again.');
         redirect('login.php');
     }

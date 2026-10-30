@@ -4,7 +4,7 @@ require __DIR__ . '/includes/bootstrap.php';
 $token = (string) ($_GET['token'] ?? $_POST['token'] ?? '');
 $reset = null;
 if (preg_match('/^[a-f0-9]{64}$/', $token)) {
-    $stmt = db()->prepare('SELECT r.id, r.user_id, u.name FROM password_resets r JOIN users u ON u.id = r.user_id WHERE r.token_hash = ? AND r.used_at IS NULL AND r.expires_at > NOW() AND u.active = 1');
+    $stmt = db()->prepare('SELECT r.id, r.user_id, u.name, u.username, u.email FROM password_resets r JOIN users u ON u.id = r.user_id WHERE r.token_hash = ? AND r.used_at IS NULL AND r.expires_at > NOW() AND u.active = 1');
     $stmt->execute([hash('sha256', $token)]);
     $reset = $stmt->fetch() ?: null;
 }
@@ -13,8 +13,8 @@ $error = '';
 if ($reset && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
     $password = (string) ($_POST['password'] ?? '');
-    if (strlen($password) < 10) {
-        $error = 'Your new password must be at least 10 characters.';
+    if ($problem = password_problem($password, [$reset['name'], $reset['username'], $reset['email']])) {
+        $error = $problem;
     } elseif ($password !== ($_POST['confirm'] ?? '')) {
         $error = 'The two passwords do not match.';
     } else {

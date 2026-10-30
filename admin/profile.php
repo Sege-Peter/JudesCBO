@@ -78,8 +78,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $new = (string) ($_POST['new_password'] ?? '');
         if (!password_verify((string) ($_POST['current_password'] ?? ''), $hash)) {
             flash('error', 'Your current password is incorrect.');
-        } elseif (strlen($new) < 10) {
-            flash('error', 'The new password must be at least 10 characters.');
+        } elseif ($problem = password_problem($new, [$me['name'], $me['username'], $me['email']])) {
+            flash('error', $problem);
+        } elseif (password_verify($new, $hash)) {
+            flash('error', 'The new password must be different from your current one.');
         } elseif ($new !== ($_POST['confirm_password'] ?? '')) {
             flash('error', 'The new passwords do not match.');
         } else {
@@ -99,6 +101,9 @@ $showCodes = $_SESSION['show_recovery'] ?? null;
 unset($_SESSION['show_recovery']);
 $twofa = load_2fa((int) $me['id']);
 $codesLeft = count(json_decode((string) $twofa['recovery_codes'], true) ?: []);
+$stmt = db()->prepare("SELECT action, details, ip, created_at FROM activity_log WHERE user_id = ? AND action IN ('login', 'login.2fa_failed', 'security.session_mismatch', 'password.reset', 'profile.password') ORDER BY created_at DESC LIMIT 8");
+$stmt->execute([$me['id']]);
+$mySignins = $stmt->fetchAll();
 
 render_header('My profile');
 ?>
@@ -190,10 +195,28 @@ render_header('My profile');
         <form method="post" class="form-stack">
             <?= csrf_field() ?><input type="hidden" name="action" value="password">
             <label class="field">Current password<input type="password" name="current_password" required autocomplete="current-password"></label>
-            <label class="field">New password <small>At least 10 characters</small><input type="password" name="new_password" minlength="10" required autocomplete="new-password"></label>
+            <label class="field">New password <small>At least 10 characters. Three or four random words work well.</small><input type="password" name="new_password" minlength="10" required autocomplete="new-password"></label>
             <label class="field">Confirm new password<input type="password" name="confirm_password" minlength="10" required autocomplete="new-password"></label>
             <button class="btn btn-primary"><i class="fas fa-key"></i> Change password</button>
         </form>
     </section>
 </div>
+
+<section class="panel" id="signins">
+    <h3 class="panel-title"><i class="fas fa-clock-rotate-left"></i> Recent activity on your account</h3>
+    <?php if (!$mySignins): ?>
+        <p class="empty">Nothing recorded yet.</p>
+    <?php else: ?>
+        <ul class="event-list">
+            <?php foreach ($mySignins as $s): $bad = in_array($s['action'], ['login.2fa_failed', 'security.session_mismatch'], true); ?>
+                <li>
+                    <span class="stat-icon icon-sm <?= $bad ? 'icon-red' : 'icon-green' ?>"><i class="fas <?= $bad ? 'fa-triangle-exclamation' : ($s['action'] === 'login' ? 'fa-right-to-bracket' : 'fa-key') ?>"></i></span>
+                    <span class="list-main"><strong><?= h($s['details'] ?: $s['action']) ?></strong><small><?= h(date('D j M Y, g:i a', strtotime($s['created_at']))) ?></small></span>
+                    <span class="list-side"><code><?= h($s['ip']) ?></code><small><?= h(time_ago($s['created_at'])) ?></small></span>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+        <p class="muted small">Don't recognise something? Change your password straight away and tell a System admin.</p>
+    <?php endif; ?>
+</section>
 <?php render_footer(['https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js', 'assets/twofa.js']); ?>
