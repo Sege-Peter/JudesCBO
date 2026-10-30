@@ -98,7 +98,7 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 
 function column_exists(string $table, string $column): bool
 {
@@ -160,6 +160,8 @@ function migrate(): void
         db()->exec("UPDATE users SET role = 'developer' WHERE role = 'admin' ORDER BY active DESC, id LIMIT 1");
     }
     db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('maint_token', '" . bin2hex(random_bytes(16)) . "')");
+    // Version 6: visitor statistics
+    db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('analytics_on', '1'), ('analytics_keep_months', '13'), ('analytics_secret', '" . bin2hex(random_bytes(16)) . "')");
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
 
@@ -287,6 +289,10 @@ function require_login(): array
     }
     maintenance_tick();
     staff_bypass_cookie();
+    // Marks this browser as staff so the website's visitor statistics leave it out
+    if (!isset($_COOKIE['judes_staff']) && !headers_sent()) {
+        setcookie('judes_staff', '1', ['expires' => time() + 365 * 86400, 'path' => '/', 'httponly' => true, 'samesite' => 'Lax', 'secure' => (bool) config('secure_cookies')]);
+    }
     // Administrators must turn on two-step login before using the dashboard (when required in Settings)
     if (in_array($user['role'], ['admin', 'developer'], true) && !(int) $user['totp_enabled'] && setting('require_2fa_admins', '1') === '1'
         && !in_array(basename($_SERVER['SCRIPT_NAME']), ['profile.php', 'logout.php'], true)) {
@@ -523,5 +529,6 @@ function send_mail(string $to, string $subject, string $body): bool
     return @mail($to, $subject, $body, $headers);
 }
 
-start_session();
+// Public endpoints that don't need a login (visitor statistics) skip the session so visitors get no cookie
+if (!defined('NO_SESSION')) start_session();
 migrate();

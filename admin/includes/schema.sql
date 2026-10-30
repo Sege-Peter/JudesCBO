@@ -178,4 +178,35 @@ CREATE TABLE IF NOT EXISTS partners (
     sort_order INT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX (visible, sort_order)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS page_views (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    visitor CHAR(16) NOT NULL,
+    path VARCHAR(190) NOT NULL,
+    referrer VARCHAR(120) NOT NULL DEFAULT '',
+    source VARCHAR(60) NOT NULL DEFAULT '',
+    device ENUM('mobile','tablet','desktop') NOT NULL DEFAULT 'desktop',
+    browser VARCHAR(30) NOT NULL DEFAULT '',
+    os VARCHAR(30) NOT NULL DEFAULT '',
+    seconds SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    viewed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (viewed_at),
+    INDEX (visitor, viewed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS page_titles (
+    path VARCHAR(190) PRIMARY KEY,
+    title VARCHAR(190) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS site_events (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    visitor CHAR(16) NOT NULL,
+    name VARCHAR(20) NOT NULL,
+    label VARCHAR(190) NOT NULL DEFAULT '',
+    path VARCHAR(190) NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (created_at),
+    INDEX (name, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

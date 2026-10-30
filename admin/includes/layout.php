@@ -5,6 +5,7 @@ function nav_items(): array
 {
     $items = [
         ['index.php', 'Dashboard', 'fa-gauge-high'],
+        ['analytics.php', 'Analytics', 'fa-chart-line'],
         ['stories.php', 'Stories', 'fa-newspaper'],
         ['gallery.php', 'Gallery', 'fa-images'],
         ['events.php', 'Events', 'fa-calendar-days'],

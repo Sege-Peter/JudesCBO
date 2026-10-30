@@ -482,3 +482,61 @@ if (upcomingList && pastList) {
         upcomingList.insertAdjacentHTML('afterbegin', '<div class="events-empty"><i class="far fa-calendar"></i><p>No upcoming events right now. Check back soon.</p></div>');
     }
 }
+
+// Visitor statistics for the dashboard: no cookies and nothing personal is sent.
+// Only works where the dashboard runs (PHP hosting), so it stays quiet on GitHub Pages.
+(() => {
+    const script = document.currentScript;
+    if (!script || !/^https?:$/.test(location.protocol) || /github\.io$/.test(location.hostname)) return;
+    const endpoint = new URL('../admin/api/track.php', script.src).href;
+    const send = (data, beacon) => {
+        const body = JSON.stringify(data);
+        if (beacon && navigator.sendBeacon) {
+            navigator.sendBeacon(endpoint, new Blob([body], { type: 'text/plain' }));
+            return Promise.resolve({});
+        }
+        return fetch(endpoint, { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain' } })
+            .then(r => (r.ok ? r.json() : {}))
+            .catch(() => ({}));
+    };
+
+    const params = new URLSearchParams(location.search);
+    let viewId = 0;
+    send({
+        t: 'view', p: location.pathname, ti: document.title, r: document.referrer,
+        w: screen.width, s: params.get('utm_source') || params.get('ref') || ''
+    }).then(d => { viewId = d.id || 0; });
+
+    // Time on page counts only while the page is on screen
+    let shownAt = Date.now();
+    let visibleMs = 0;
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            visibleMs += Date.now() - shownAt;
+            if (viewId) send({ t: 'leave', id: viewId, s: Math.round(visibleMs / 1000) }, true);
+        } else {
+            shownAt = Date.now();
+        }
+    });
+
+    // Calls, WhatsApp, emails, donate buttons, copied M-Pesa numbers and links to other websites
+    document.addEventListener('click', e => {
+        const el = e.target.closest('a[href], .copy-btn');
+        if (!el) return;
+        let name = '';
+        let label = '';
+        if (el.classList.contains('copy-btn')) {
+            name = 'copy';
+            label = el.dataset.copy || '';
+        } else {
+            const href = el.getAttribute('href');
+            const url = new URL(el.href, location.href);
+            if (href.startsWith('tel:')) [name, label] = ['call', href.slice(4)];
+            else if (href.startsWith('mailto:')) [name, label] = ['email', href.slice(7).split('?')[0]];
+            else if (/(^|\.)(wa\.me|whatsapp\.com)$/.test(url.hostname)) [name, label] = ['whatsapp', url.pathname.replace(/\D/g, '') || url.hostname];
+            else if (/^https?:$/.test(url.protocol) && url.hostname !== location.hostname) [name, label] = ['outbound', url.hostname.replace(/^www\./, '')];
+            else if (/\/donate(\.html)?$/.test(url.pathname) && !/\/donate(\.html)?$/.test(location.pathname)) [name, label] = ['donate', el.textContent.trim().slice(0, 60)];
+        }
+        if (name) send({ t: 'event', n: name, l: label, p: location.pathname }, true);
+    });
+})();

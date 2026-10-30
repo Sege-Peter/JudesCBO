@@ -18,6 +18,8 @@ $stats = [
     'subscribers' => (int) $db->query("SELECT COUNT(*) FROM subscribers WHERE status = 'active'")->fetchColumn(),
     'month_total' => (float) $db->query("SELECT COALESCE(SUM(amount), 0) FROM donations WHERE received_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')")->fetchColumn(),
     'month_count' => (int) $db->query("SELECT COUNT(*) FROM donations WHERE received_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')")->fetchColumn(),
+    'visitors_today' => (int) $db->query('SELECT COUNT(DISTINCT visitor) FROM page_views WHERE viewed_at >= CURDATE()')->fetchColumn(),
+    'views_today' => (int) $db->query('SELECT COUNT(*) FROM page_views WHERE viewed_at >= CURDATE()')->fetchColumn(),
 ];
 
 // Donations for the last 6 months, including months with nothing
@@ -51,7 +53,11 @@ render_header('Dashboard');
     </div>
 </section>
 
-<section class="stat-grid">
+<section class="stat-grid stat-grid-home">
+    <a href="analytics.php?range=today" class="stat-card">
+        <span class="stat-icon icon-blue"><i class="fas fa-chart-line"></i></span>
+        <span class="stat-body"><strong><?= number_format($stats['visitors_today']) ?></strong><small>Visitors today · <?= number_format($stats['views_today']) ?> page view<?= $stats['views_today'] === 1 ? '' : 's' ?></small></span>
+    </a>
     <a href="messages.php?status=new" class="stat-card">
         <span class="stat-icon icon-red"><i class="fas fa-inbox"></i></span>
         <span class="stat-body"><strong><?= $stats['new_messages'] ?></strong><small>New messages</small></span>
