@@ -152,21 +152,8 @@ if (lightbox) {
     });
 }
 
-// M-Pesa Popup Functions
-function openMpesaPopup() {
-    document.getElementById("mpesaPopup").style.display = "flex";
-}
-function closeMpesaPopup() {
-    document.getElementById("mpesaPopup").style.display = "none";
-}
-window.addEventListener('click', function(event) {
-    const popup = document.getElementById('mpesaPopup');
-    if (event.target === popup) closeMpesaPopup();
-});
-
 document.addEventListener('keydown', function(event) {
     if (event.key !== 'Escape') return;
-    closeMpesaPopup();
     setMobileNav(false);
     closeLightbox();
 });
@@ -239,3 +226,56 @@ function eraseEffect() {
     }
 }
 if (typedText) typeEffect();
+
+// Donate page: the amount and cause picker fills in the M-Pesa steps and the WhatsApp confirmation
+const donateCard = document.querySelector('.donate-card');
+if (donateCard) {
+    let amount = 1000;
+    const amountBtns = donateCard.querySelectorAll('.amount-btn');
+    const customAmount = document.getElementById('custom-amount');
+    const confirmLink = document.getElementById('confirm-donation');
+    const fmt = n => n.toLocaleString('en-KE');
+    function updateDonation() {
+        const cause = donateCard.querySelector('input[name="cause"]:checked').value;
+        document.getElementById('summary-amount').textContent = amount ? fmt(amount) : '...';
+        document.getElementById('summary-cause').textContent = cause;
+        document.querySelectorAll('.step-amount').forEach(el => { el.textContent = amount ? fmt(amount) : 'of your choice'; });
+        const gift = amount ? `KES ${fmt(amount)}` : 'a gift';
+        const message = `Hello Judes CBO! I've sent a donation of ${gift} via M-Pesa towards ${cause}. My M-Pesa confirmation code is: `;
+        confirmLink.href = 'https://wa.me/254712109310?text=' + encodeURIComponent(message);
+    }
+    amountBtns.forEach(btn => btn.addEventListener('click', () => {
+        amountBtns.forEach(b => b.classList.toggle('active', b === btn));
+        customAmount.value = '';
+        customAmount.classList.remove('active');
+        amount = parseInt(btn.dataset.amount, 10);
+        updateDonation();
+    }));
+    customAmount.addEventListener('input', () => {
+        const value = parseInt(customAmount.value, 10);
+        amountBtns.forEach(b => b.classList.remove('active'));
+        customAmount.classList.add('active');
+        amount = value > 0 ? value : 0;
+        updateDonation();
+    });
+    donateCard.querySelectorAll('input[name="cause"]').forEach(radio => radio.addEventListener('change', updateDonation));
+    updateDonation();
+}
+
+// Copy-to-clipboard buttons
+document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const label = btn.querySelector('span');
+        try {
+            await navigator.clipboard.writeText(btn.dataset.copy);
+            label.textContent = 'Copied!';
+            btn.classList.add('copied');
+        } catch {
+            label.textContent = btn.dataset.copy;
+        }
+        setTimeout(() => {
+            label.textContent = 'Copy';
+            btn.classList.remove('copied');
+        }, 2000);
+    });
+});

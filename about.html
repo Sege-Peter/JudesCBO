@@ -146,7 +146,7 @@
             </nav>
             <div class="header-actions">
                 <a href="tel:+254712109310" class="header-phone" aria-label="Call us"><i class="fas fa-phone"></i><span>+254 712 109310</span></a>
-                <button type="button" class="header-donate" onclick="openMpesaPopup()"><i class="fas fa-heart"></i><span>Donate</span></button>
+                <a href="donate.html" class="header-donate"><i class="fas fa-heart"></i><span>Donate</span></a>
                 <button type="button" class="mobile-nav-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav">
                     <span></span><span></span><span></span>
                 </button>
@@ -167,7 +167,7 @@
             <li><a href="stories.html"><i class="fas fa-book-open"></i> Stories</a></li>
             <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
         </ul>
-        <button type="button" class="mobile-donate" onclick="openMpesaPopup()"><i class="fas fa-heart"></i> Donate</button>
+        <a href="donate.html" class="mobile-donate"><i class="fas fa-heart"></i> Donate</a>
         <div class="mobile-nav-contact">
             <a href="tel:+254712109310"><i class="fas fa-phone"></i> +254 712 109310</a>
             <a href="mailto:info@judescbo.org"><i class="fas fa-envelope"></i> info@judescbo.org</a>
@@ -319,7 +319,7 @@
                     </a>
                     <p>A grassroots community-based organization empowering women, youth and persons with disabilities in Oyugis, Homa Bay County since 2018.</p>
                     <div class="footer-actions">
-                        <button type="button" class="footer-chip donate" onclick="openMpesaPopup()"><i class="fas fa-heart"></i> Donate</button>
+                        <a href="donate.html" class="footer-chip donate"><i class="fas fa-heart"></i> Donate</a>
                         <a href="https://wa.me/254712109310" class="footer-chip" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>
                     </div>
                 </div>
@@ -331,6 +331,7 @@
                         <li><a href="programs.html">Programs</a></li>
                         <li><a href="stories.html">Stories</a></li>
                         <li><a href="contact.html">Contact</a></li>
+                        <li><a href="donate.html">Donate</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
@@ -358,21 +359,6 @@
             </div>
         </div>
     </footer>
-    <!-- M-Pesa Popup Modal -->
-    <div id="mpesaPopup" class="popup" tabindex="-1" aria-modal="true" role="dialog">
-        <div class="popup-content">
-            <button type="button" class="close" aria-label="Close" onclick="closeMpesaPopup()">&times;</button>
-            <h3>Support Our Work</h3>
-            <!-- TODO: add the official M-Pesa Paybill/Till number and account name here -->
-            <p>Thank you for choosing to support Judes CBO. Reach out and we'll share our M-Pesa donation details.</p>
-            <a href="https://wa.me/254712109310?text=Hello%20Judes%20CBO!%20I%20would%20like%20to%20make%20a%20donation." class="donate-btn" target="_blank" rel="noopener">
-                <i class="fab fa-whatsapp"></i> WhatsApp Us
-            </a>
-            <a href="tel:+254712109310" class="donate-btn"><i class="fas fa-phone"></i> Call +254 712 109310</a>
-            <br>
-            <button type="button" class="cancel-btn" onclick="closeMpesaPopup()">Close</button>
-        </div>
-    </div>
     <!-- WhatsApp Floating Icon -->
     <a href="https://wa.me/254712109310?text=Hello%20Judes%20CBO!%20I%20would%20like%20to%20know%20more%20about%20your%20programs."
        class="whatsapp-float" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">
