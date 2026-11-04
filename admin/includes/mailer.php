@@ -232,7 +232,7 @@ function smtp_send(string $address, string $password, array $recipients, string 
  * Sends from a linked mailbox and saves a copy in its Sent folder.
  * Returns the Message-ID.
  */
-function mailbox_send(array $box, array $opt, array $bcc = []): string
+function mailbox_send(array $box, array $opt, array $bcc = [], bool $saveSent = true): string
 {
     $opt['from'] = $box['address'];
     $opt['from_name'] = $opt['from_name'] ?? ($box['display_name'] ?: 'Judes CBO');
@@ -240,6 +240,7 @@ function mailbox_send(array $box, array $opt, array $bcc = []): string
     $password = mail_decrypt($box['password_enc']);
     $rcpts = array_unique(array_merge(array_map('mail_bare', $opt['to'] ?? []), array_map('mail_bare', $opt['cc'] ?? []), array_map('mail_bare', $bcc)));
     smtp_send($box['address'], $password, $rcpts, $raw);
+    if (!$saveSent) return $msgId;
     try {
         $imap = new ImapClient(mail_host($box['address']));
         $imap->login($box['address'], $password);
@@ -280,7 +281,7 @@ function system_mail(string $to, string $subject, string $body, string $replyTo 
     $box = org_mailbox();
     if ($box) {
         try {
-            mailbox_send($box, ['to' => [$to], 'subject' => $subject, 'text' => $body, 'html' => text_to_html($body), 'reply_to' => $replyTo, 'from_name' => 'Judes CBO']);
+            mailbox_send($box, ['to' => [$to], 'subject' => $subject, 'text' => $body, 'html' => text_to_html($body), 'reply_to' => $replyTo, 'from_name' => 'Judes CBO'], [], false);
             return true;
         } catch (Throwable $e) {
             // fall back to mail() below
@@ -290,4 +291,53 @@ function system_mail(string $to, string $subject, string $body, string $replyTo 
     $from = setting('org_email', 'info@judescbo.co.ke');
     $headers = "From: Judes CBO <$from>\r\nContent-Type: text/plain; charset=utf-8" . ($replyTo ? "\r\nReply-To: " . str_replace(["\r", "\n"], '', $replyTo) : '');
     return @mail($to, mime_header($subject), $body, $headers);
+}
+
+/* ---------- Automatic replies (cPanel autoresponder, managed with the mailbox's own login) ---------- */
+
+const MAIL_AUTOREPLY_SUBJECT = 'Thanks for your email - Judes CBO';
+const MAIL_AUTOREPLY_BODY = "Hello,\n\nThank you for contacting Judes CBO. We have received your email and a member of our team will get back to you soon, usually within 2 working days.\n\nIf your matter is urgent, call or WhatsApp us on +254 712 109310.\n\nKind regards,\nJudes CBO\nhttps://judescbo.co.ke\n\nThis is an automatic reply.";
+
+function webmail_api(array $box, string $function, array $params): array
+{
+    $host = mail_host($box['address']);
+    $ctx = stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Authorization: Basic " . base64_encode($box['address'] . ':' . mail_decrypt($box['password_enc'])) . "\r\nContent-Type: application/x-www-form-urlencoded",
+            'content' => http_build_query($params),
+            'timeout' => 20,
+            'ignore_errors' => true,
+        ],
+        'ssl' => ['verify_peer' => (bool) (config('mail_verify_ssl') ?? true), 'verify_peer_name' => (bool) (config('mail_verify_ssl') ?? true)],
+    ]);
+    $raw = @file_get_contents("https://$host:2096/execute/Email/$function", false, $ctx);
+    $res = is_string($raw) ? json_decode($raw, true) : null;
+    if (!is_array($res)) throw new RuntimeException("Couldn't reach the mail settings service. Try again in a minute.");
+    if (empty($res['status'])) throw new RuntimeException('The mail server said: ' . implode(' ', (array) ($res['errors'] ?? ['unknown error'])));
+    return $res;
+}
+
+/** Current automatic reply for the mailbox, or null when it's off. */
+function autoreply_get(array $box): ?array
+{
+    $list = webmail_api($box, 'list_auto_responders', ['domain' => substr(strrchr($box['address'], '@'), 1)])['data'] ?? [];
+    $on = false;
+    foreach ($list as $r) if (strtolower($r['email'] ?? '') === strtolower($box['address'])) $on = true;
+    if (!$on) return null;
+    $d = webmail_api($box, 'get_auto_responder', ['email' => $box['address']])['data'] ?? [];
+    return ['subject' => (string) ($d['subject'] ?? ''), 'body' => rtrim((string) ($d['body'] ?? '')), 'interval' => (int) ($d['interval'] ?? 24)];
+}
+
+function autoreply_set(array $box, bool $on, string $subject, string $body, int $intervalHours = 24): void
+{
+    [$user, $domain] = explode('@', $box['address'], 2);
+    if (!$on) {
+        if (autoreply_get($box) !== null) webmail_api($box, 'delete_auto_responder', ['email' => $box['address']]);
+        return;
+    }
+    webmail_api($box, 'add_auto_responder', [
+        'email' => $user, 'domain' => $domain, 'from' => $box['display_name'] ?: 'Judes CBO',
+        'subject' => $subject, 'body' => $body, 'is_html' => 0, 'interval' => max(1, $intervalHours), 'start' => '', 'stop' => '',
+    ]);
 }

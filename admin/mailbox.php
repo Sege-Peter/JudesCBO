@@ -98,6 +98,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect(mbx_url(['settings' => 1]));
     }
 
+    if ($action === 'autoreply') {
+        if (!can_edit_box($me, $box)) error_page(403, 'Not allowed', 'Only an administrator can change a shared mailbox.');
+        $on = !empty($_POST['autoreply_on']);
+        try {
+            autoreply_set($box, $on, post_str('autoreply_subject', 200) ?: MAIL_AUTOREPLY_SUBJECT, post_str('autoreply_body', 4000) ?: MAIL_AUTOREPLY_BODY, (int) ($_POST['autoreply_interval'] ?? 24));
+            log_activity('mailbox.autoreply', $box['address'] . ($on ? ' on' : ' off'));
+            flash('success', $on ? 'Automatic reply is on for ' . $box['address'] . '.' : 'Automatic reply is off.');
+        } catch (ImapAuthError | RuntimeException $e) {
+            flash('error', $e->getMessage());
+        }
+        redirect(mbx_url(['settings' => 1]) . '#autoreply');
+    }
+
     if ($action === 'unlink') {
         if (!can_edit_box($me, $box)) error_page(403, 'Not allowed', 'Only an administrator can remove a shared mailbox.');
         db()->prepare('DELETE FROM mailboxes WHERE id = ?')->execute([$box['id']]);
@@ -450,6 +463,11 @@ if ($box && !$authFailed && (isset($_GET['compose']) || in_array($_GET['mode'] ?
 $showLink = !$boxes || isset($_GET['link']) || $authFailed;
 $showSettings = $box && isset($_GET['settings']) && can_edit_box($me, $box);
 $images = isset($_GET['images']);
+$autoreply = null;
+$autoreplyError = '';
+if ($showSettings) {
+    try { $autoreply = autoreply_get($box); } catch (Throwable $e) { $autoreplyError = $e->getMessage(); }
+}
 
 render_header('Mailbox');
 ?>
@@ -478,7 +496,7 @@ render_header('Mailbox');
         <div class="menu-pop">
             <a class="menu-link" href="<?= h(mbx_url(['link' => 1], ['uid'])) ?>"><i class="fas fa-plus"></i> Link another mailbox</a>
             <?php if ($box && can_edit_box($me, $box)): ?>
-                <a class="menu-link" href="<?= h(mbx_url(['settings' => 1], ['uid'])) ?>"><i class="fas fa-signature"></i> Name &amp; signature</a>
+                <a class="menu-link" href="<?= h(mbx_url(['settings' => 1], ['uid'])) ?>"><i class="fas fa-signature"></i> Signature &amp; automatic reply</a>
                 <form method="post" data-confirm="Remove <?= h($box['address']) ?> from the dashboard? The mailbox and its emails stay on the mail server.">
                     <?= csrf_field() ?><input type="hidden" name="action" value="unlink"><input type="hidden" name="box" value="<?= (int) $box['id'] ?>">
                     <button type="submit"><i class="fas fa-link-slash"></i> Remove from dashboard</button>
@@ -526,6 +544,26 @@ render_header('Mailbox');
                 <textarea name="signature" rows="5" maxlength="2000" placeholder="Judes CBO&#10;Homa Bay, Kenya&#10;+254 712 109310 · judescbo.co.ke"><?= h($box['signature'] ?? '') ?></textarea>
             </label>
             <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save</button>
+        </form>
+    </section>
+    <section class="panel mbx-link" id="autoreply">
+        <h3 class="panel-title"><i class="fas fa-reply-all"></i> Automatic reply</h3>
+        <p class="muted">Everyone who emails <?= h($box['address']) ?> gets this reply straight away, at most once a day per sender. It runs on the mail server, so it works even when nobody is logged in.</p>
+        <?php if ($autoreplyError): ?><div class="alert alert-error"><?= h($autoreplyError) ?></div><?php endif; ?>
+        <form method="post" class="form-stack">
+            <?= csrf_field() ?><input type="hidden" name="action" value="autoreply"><input type="hidden" name="box" value="<?= (int) $box['id'] ?>">
+            <label class="check"><input type="checkbox" name="autoreply_on" value="1" <?= $autoreply ? 'checked' : '' ?>> Send an automatic reply</label>
+            <label class="field">Subject <small>%subject% is replaced with the subject of the email received</small>
+                <input type="text" name="autoreply_subject" maxlength="200" value="<?= h($autoreply['subject'] ?? MAIL_AUTOREPLY_SUBJECT) ?>"></label>
+            <label class="field">Message
+                <textarea name="autoreply_body" rows="9" maxlength="4000"><?= h($autoreply['body'] ?? MAIL_AUTOREPLY_BODY) ?></textarea></label>
+            <label class="field">Reply to the same person again after
+                <select name="autoreply_interval">
+                    <?php foreach ([1 => '1 hour', 8 => '8 hours', 24 => '1 day', 72 => '3 days', 168 => '1 week'] as $hrs => $label): ?>
+                        <option value="<?= $hrs ?>" <?= (int) ($autoreply['interval'] ?? 24) === $hrs ? 'selected' : '' ?>><?= $label ?></option>
+                    <?php endforeach; ?>
+                </select></label>
+            <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save automatic reply</button>
         </form>
     </section>
 <?php elseif ($error && !$folders): ?>

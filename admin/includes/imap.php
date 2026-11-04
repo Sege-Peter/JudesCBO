@@ -272,7 +272,7 @@ final class ImapClient
 
     private function readLine(): string
     {
-        $line = fgets($this->sock);
+        $line = @fgets($this->sock);
         if ($line === false) {
             $meta = stream_get_meta_data($this->sock);
             throw new RuntimeException($meta['timed_out'] ? 'The mail server took too long to answer.' : 'Lost the connection to the mail server.');
@@ -291,7 +291,7 @@ final class ImapClient
                 $len = (int) $m[1];
                 $data = '';
                 while (strlen($data) < $len) {
-                    $chunk = fread($this->sock, min(65536, $len - strlen($data)));
+                    $chunk = @fread($this->sock, min(65536, $len - strlen($data)));
                     if ($chunk === false || $chunk === '') throw new RuntimeException('Lost the connection to the mail server.');
                     $data .= $chunk;
                 }

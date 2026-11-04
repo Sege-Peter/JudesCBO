@@ -28,6 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         save_setting('form_mode', $mode);
         save_setting('formspree_url', $url);
         save_setting('notify_email', $notify);
+        save_setting('contact_autoreply', !empty($_POST['contact_autoreply']) ? '1' : '0');
+        save_setting('contact_autoreply_subject', post_str('contact_autoreply_subject', 200) ?: CONTACT_AUTOREPLY_SUBJECT);
+        save_setting('contact_autoreply_body', post_str('contact_autoreply_body', 3000) ?: CONTACT_AUTOREPLY_BODY);
         log_activity('settings.forms', 'Form handling: ' . $mode);
         publish_with_feedback($mode === 'builtin' ? 'Website forms now send to the built-in inbox.' : 'Website forms now send to Formspree.');
     } elseif ($section === 'giving') {
@@ -140,6 +143,12 @@ render_header('Settings');
             </label>
             <label class="field">Formspree address<input type="url" name="formspree_url" value="<?= h(setting('formspree_url', 'https://formspree.io/f/mjkelgrq')) ?>"></label>
             <label class="field">Email me about new messages <small>Built-in inbox only. Leave blank to turn off.</small><input type="email" name="notify_email" value="<?= h(setting('notify_email')) ?>" placeholder="you@example.com"></label>
+            <fieldset class="autoreply-box">
+                <label class="check"><input type="checkbox" name="contact_autoreply" value="1" <?= setting('contact_autoreply', '1') === '1' ? 'checked' : '' ?>> Send an automatic "we received your message" email <small class="muted">(built-in inbox only)</small></label>
+                <label class="field">Subject<input type="text" name="contact_autoreply_subject" maxlength="200" value="<?= h(setting('contact_autoreply_subject', CONTACT_AUTOREPLY_SUBJECT)) ?>"></label>
+                <label class="field">Message <small>{name} becomes the visitor's name and {topic} the topic they chose</small>
+                    <textarea name="contact_autoreply_body" rows="8" maxlength="3000"><?= h(setting('contact_autoreply_body', CONTACT_AUTOREPLY_BODY)) ?></textarea></label>
+            </fieldset>
             <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save and update website</button>
         </form>
     </section>

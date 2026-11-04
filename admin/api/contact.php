@@ -25,4 +25,10 @@ if ($notify !== '' && filter_var($notify, FILTER_VALIDATE_EMAIL)) {
     send_mail($notify, $subject, $body, $email);
 }
 
+// Confirmation to the visitor
+if (setting('contact_autoreply', '1') === '1') {
+    $vars = ['{name}' => $name, '{topic}' => $topic];
+    send_mail($email, strtr(setting('contact_autoreply_subject', CONTACT_AUTOREPLY_SUBJECT), $vars), strtr(setting('contact_autoreply_body', CONTACT_AUTOREPLY_BODY), $vars));
+}
+
 api_reply(true, "Thank you! Your message has been sent. We'll get back to you soon.");

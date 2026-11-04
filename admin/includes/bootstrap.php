@@ -615,6 +615,19 @@ function send_csv(string $filename, array $header, iterable $rows): never
     exit;
 }
 
+const CONTACT_AUTOREPLY_SUBJECT = 'We received your message - Judes CBO';
+const CONTACT_AUTOREPLY_BODY = "Dear {name},
+
+Thank you for contacting Judes CBO. We have received your message about \"{topic}\" and a member of our team will get back to you soon, usually within 2 working days.
+
+If your matter is urgent, call or WhatsApp us on +254 712 109310.
+
+Kind regards,
+Judes CBO
+https://judescbo.co.ke
+
+This is an automatic reply.";
+
 /**
  * Sends a plain-text email from the organisation address. Uses the linked info@ mailbox (SMTP) when
  * there is one, otherwise PHP mail(). Returns false if the server can't send mail.

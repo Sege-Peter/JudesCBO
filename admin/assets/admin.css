@@ -1015,3 +1015,5 @@ a.action-tile:hover { border-color: #d5dce5; background: #fff; }
     .mbx-view .message-head > small { flex-basis: 100%; }
     .mbx-compose-foot .btn { width: auto; }
 }
+.autoreply-box { border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1rem .2rem; margin-bottom: 1rem; background: #fbfcfd; }
+.autoreply-box .check { flex-wrap: wrap; }
