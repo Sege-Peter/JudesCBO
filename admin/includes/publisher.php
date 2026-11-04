@@ -382,12 +382,10 @@ function render_story_page(array $s, ?array $next, array $shell): string
     <link rel="manifest" href="site.webmanifest">
     <meta name="theme-color" content="#1a365d">
     <!-- Fonts, icons and styles -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="preload" href="fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/fonts.css?v=20261104">
+    <link rel="stylesheet" href="css/style.css?v=20261104">
     <!-- Structured data -->
     <script type="application/ld+json">
 $jsonLd

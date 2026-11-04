@@ -147,12 +147,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Set up | Judes CBO Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preload" href="../fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="../fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="../css/fonts.css">
     <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body class="auth-page">
     <main class="auth-card">
-        <img src="../jude-logo.png" alt="Judes CBO" class="auth-logo">
+        <img src="../images/jude-logo-192.webp" alt="Judes CBO" class="auth-logo">
         <?php if ($done): ?>
             <h1>All set!</h1>
             <p class="auth-sub">Your administrator account is ready and the existing stories and photos have been imported.</p>

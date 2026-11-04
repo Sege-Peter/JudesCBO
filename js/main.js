@@ -200,7 +200,9 @@ let slides = document.querySelectorAll(".hero-slide");
 let index = 0;
 function loadSlide(slide) {
     if (slide.dataset.bg) {
-        slide.style.backgroundImage = `url('${slide.dataset.bg}')`;
+        // Phones get the 800px copy of each photo
+        const src = window.innerWidth <= 900 ? slide.dataset.bg.replace(/\.webp$/, '-800.webp') : slide.dataset.bg;
+        slide.style.backgroundImage = `url('${src}')`;
         delete slide.dataset.bg;
     }
 }

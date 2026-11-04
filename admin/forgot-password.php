@@ -21,8 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Too many requests. Please try again in an hour.';
     } else {
         db()->prepare("INSERT INTO api_hits (ip, endpoint) VALUES (?, 'reset')")->execute([$ip]);
-        $stmt = db()->prepare('SELECT id, name, email FROM users WHERE (username = ? OR email = ?) AND active = 1');
-        $stmt->execute([$login, $login]);
+        $stmt = db()->prepare('SELECT id, name, email, personal_email, personal_email_verified_at FROM users
+            WHERE (username = ? OR email = ? OR (personal_email = ? AND personal_email_verified_at IS NOT NULL)) AND active = 1 LIMIT 1');
+        $stmt->execute([$login, $login, strtolower($login)]);
         if ($user = $stmt->fetch()) {
             $token = bin2hex(random_bytes(32));
             db()->prepare('DELETE FROM password_resets WHERE user_id = ? AND used_at IS NULL')->execute([$user['id']]);
@@ -40,6 +41,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 . "Choose a new password here (the link works for " . RESET_MINUTES . " minutes):\n$link\n\n"
                 . "If you didn't ask for this, you can ignore this email. Your password won't change.\n\nJudes CBO";
             $mailed = send_mail($user['email'], 'Reset your Judes CBO dashboard password', $body);
+            // Also to the confirmed personal email, in case the work mailbox can't be reached
+            if (!empty($user['personal_email']) && !empty($user['personal_email_verified_at']) && strcasecmp($user['personal_email'], $user['email']) !== 0) {
+                $mailed = send_mail($user['personal_email'], 'Reset your Judes CBO dashboard password', $body) || $mailed;
+            }
             log_activity('password.reset_request', $mailed ? 'Reset email sent' : 'Reset requested but the email could not be sent', (int) $user['id']);
 
             // A local XAMPP install usually can't send email: keep the link in a private file for testing
@@ -60,8 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="robots" content="noindex, nofollow">
     <title>Forgot password | Judes CBO Admin</title>
     <link rel="icon" href="../favicon.ico" sizes="any">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preload" href="../fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="../fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="../css/fonts.css">
     <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body class="auth-page">
@@ -69,12 +75,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <span class="auth-icon"><i class="fas fa-key"></i></span>
         <?php if ($sent): ?>
             <h1>Check your email</h1>
-            <p class="auth-sub">If that account exists, we've sent a link to reset the password. It works for <?= RESET_MINUTES ?> minutes.</p>
+            <p class="auth-sub">If that account exists, we've sent a reset link to its work email (and confirmed personal email). It works for <?= RESET_MINUTES ?> minutes.</p>
             <p class="auth-note">Didn't get it? Check your spam folder, or ask an administrator to reset your password from the Users page.</p>
             <a href="login.php" class="btn btn-primary btn-block"><i class="fas fa-arrow-left"></i> Back to login</a>
         <?php else: ?>
             <h1>Forgot password?</h1>
-            <p class="auth-sub">Enter your username or email and we'll send you a reset link.</p>
+            <p class="auth-sub">Enter your username, work email or confirmed personal email and we'll send you a reset link.</p>
             <?php if ($error): ?><div class="alert alert-error" role="alert"><?= h($error) ?></div><?php endif; ?>
             <form method="post" class="form-stack">
                 <?= csrf_field() ?>

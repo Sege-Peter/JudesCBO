@@ -40,7 +40,7 @@ $site = rtrim((string) config('site_url'), '/');
 </head>
 <body>
 <div class="card">
-    <img src="../../jude-logo.png" alt="Judes CBO">
+    <img src="../../images/jude-logo-192.webp" alt="Judes CBO">
     <?php if (!$valid): ?>
         <h1>This link doesn't work</h1>
         <p>It may be incomplete. Copy the whole link from the email, or contact us at <a href="mailto:<?= h(setting('org_email', 'info@judescbo.co.ke')) ?>"><?= h(setting('org_email', 'info@judescbo.co.ke')) ?></a> and we'll remove you.</p>

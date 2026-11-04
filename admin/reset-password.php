@@ -36,8 +36,9 @@ if ($reset && $_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="referrer" content="no-referrer">
     <title>Choose a new password | Judes CBO Admin</title>
     <link rel="icon" href="../favicon.ico" sizes="any">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preload" href="../fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="../fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="../css/fonts.css">
     <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body class="auth-page">

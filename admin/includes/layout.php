@@ -44,15 +44,16 @@ function render_header(string $title, string $active = ''): void
     <meta name="csrf-token" content="<?= h(csrf_token()) ?>">
     <title><?= h($title) ?> | Judes CBO Admin</title>
     <link rel="icon" href="../jude-logo.png" type="image/png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preload" href="../fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="../fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="../css/fonts.css">
     <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body>
 <div class="app">
     <aside class="sidebar" id="sidebar">
         <a href="index.php" class="brand">
-            <span class="brand-logo"><img src="../jude-logo.png" alt=""></span>
+            <span class="brand-logo"><img src="../images/jude-logo-192.webp" alt=""></span>
             <span><strong>JUDES CBO</strong><small>Admin dashboard</small></span>
         </a>
         <nav class="side-nav" aria-label="Dashboard">

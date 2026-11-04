@@ -35,12 +35,10 @@
     <link rel="manifest" href="site.webmanifest">
     <meta name="theme-color" content="#1a365d">
     <!-- Fonts, icons and styles -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="preload" href="fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/fonts.css?v=20261104">
+    <link rel="stylesheet" href="css/style.css?v=20261104">
     <!-- Structured data -->
     <script type="application/ld+json">
     {
@@ -163,7 +161,7 @@
     <header class="site-header" id="site-header">
         <div class="container header-container">
             <a href="./" class="logo" aria-label="Judes CBO home">
-                <span class="logo-img"><img src="jude-logo.png" alt=""></span>
+                <span class="logo-img"><img src="images/jude-logo-192.webp" alt="" width="192" height="134"></span>
                 <span class="logo-words">
                     <span class="logo-text">JUDES CBO</span>
                     <span class="logo-subtext">Empowerment for Development</span>
@@ -308,9 +306,12 @@
             </div>
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <a href="./" class="footer-logo">
-                        <span class="logo-img"><img src="jude-logo.png" alt=""></span>
-                        <span class="logo-text">JUDES CBO</span>
+                    <a href="./" class="footer-logo" aria-label="Judes CBO home">
+                        <span class="logo-img"><img src="images/jude-logo-192.webp" alt="" width="192" height="134" loading="lazy"></span>
+                        <span class="logo-words">
+                            <span class="logo-text">JUDES CBO</span>
+                            <span class="logo-subtext">Empowerment for Development</span>
+                        </span>
                     </a>
                     <p>A grassroots community-based organization empowering women, youth and persons with disabilities in Oyugis, Homa Bay County since 2018.</p>
                     <div class="footer-actions">
@@ -362,7 +363,7 @@
     <div class="wa-widget">
         <div class="wa-greeting" role="status">
             <button type="button" class="wa-greeting-close" aria-label="Dismiss message"><i class="fas fa-times"></i></button>
-            <span class="wa-greeting-avatar"><img src="jude-logo.png" alt=""></span>
+            <span class="wa-greeting-avatar"><img src="images/jude-logo-192.webp" alt="" width="192" height="134"></span>
             <div>
                 <strong>Judes CBO</strong>
                 <span>Hi there! Questions about our work? Chat with us on WhatsApp.</span>
@@ -374,6 +375,6 @@
             <span class="wa-label">Chat with us</span>
         </a>
     </div>
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=20261104"></script>
 </body>
 </html>

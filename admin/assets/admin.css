@@ -1025,3 +1025,6 @@ a.action-tile:hover { border-color: #d5dce5; background: #fff; }
 .fwd-add input { flex: 1; min-width: 200px; }
 .fwd-tip { margin-top: .6rem; }
 .mbx-link > p.muted { margin-bottom: 1rem; }
+.verify-state { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .8rem; font-weight: 600; color: #975a16; }
+.verify-state.ok { color: #276749; }
+.verify-state .link { border: 0; background: none; color: var(--green); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; padding: 0; }

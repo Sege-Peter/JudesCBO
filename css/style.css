@@ -2321,3 +2321,33 @@ a.marquee-logo, a.partner-tile { text-decoration: none; }
     .copy-btn { padding: 7px 10px; font-size: .82rem; }
     .mpesa-tab { font-size: .74rem; }
 }
+
+/* ---------- Footer brand ---------- */
+.footer-logo { gap: 14px; margin-bottom: 1.3rem; width: fit-content; }
+.footer-logo .logo-img {
+    width: 64px; height: 64px;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.08), 0 12px 28px rgba(0,0,0,0.35);
+    transition: transform .3s ease, box-shadow .3s ease;
+}
+.footer-logo .logo-img img { width: 84%; height: 84%; }
+.footer-logo:hover .logo-img { transform: translateY(-2px) rotate(-3deg); box-shadow: 0 0 0 4px rgba(154,230,180,0.25), 0 16px 32px rgba(0,0,0,0.4); }
+.footer-logo .logo-text { color: #fff; font-size: 1.4rem; letter-spacing: 2px; line-height: 1.1; }
+.footer-logo .logo-subtext {
+    display: block;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 2px solid rgba(154,230,180,0.35);
+    color: #9ae6b4;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+}
+@media (max-width: 480px) {
+    .footer-logo .logo-img { width: 56px; height: 56px; border-radius: 16px; }
+    .footer-logo .logo-text { font-size: 1.2rem; }
+}
+/* Phones load the 800px copy of the first hero photo */
+@media (max-width: 900px) { .hero-slide-first { background-image: url('../images/hero-1-800.webp') !important; } }

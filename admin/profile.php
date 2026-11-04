@@ -30,10 +30,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ((int) $dup->fetchColumn() > 0) {
             flash('error', 'Another account already uses that email.');
         } else {
-            db()->prepare('UPDATE users SET name = ?, email = ?, personal_email = ? WHERE id = ?')->execute([$name, $email, $personal !== '' ? $personal : null, $me['id']]);
+            $changed = $personal !== strtolower((string) ($me['personal_email'] ?? ''));
+            db()->prepare('UPDATE users SET name = ?, email = ? WHERE id = ?')->execute([$name, $email, $me['id']]);
+            if ($changed) {
+                db()->prepare('UPDATE users SET personal_email = ?, personal_email_verified_at = NULL WHERE id = ?')->execute([$personal !== '' ? $personal : null, $me['id']]);
+            }
             log_activity('profile.update', 'Updated name or email');
-            flash('success', 'Your details were saved.');
+            if ($changed && $personal !== '') {
+                $ok = send_email_verification(['id' => $me['id'], 'name' => $name], $personal);
+                flash($ok ? 'success' : 'error', $ok ? "Saved. We sent a confirmation link to $personal - open it to finish." : 'Saved, but the confirmation email could not be sent. Try "Resend link" later.');
+            } else {
+                flash('success', 'Your details were saved.');
+            }
         }
+    } elseif ($action === 'resend-verify') {
+        if (!empty($me['personal_email']) && empty($me['personal_email_verified_at'])) {
+            $ok = send_email_verification($me, $me['personal_email']);
+            flash($ok ? 'success' : 'error', $ok ? 'We sent a new confirmation link to ' . $me['personal_email'] . '.' : "The email couldn't be sent. Please try again later.");
+        }
+        redirect('profile.php');
     } elseif ($action === '2fa-start') {
         $_SESSION['totp_setup'] = totp_new_secret();
         redirect('profile.php#two-step');
@@ -190,11 +205,20 @@ render_header('My profile');
             <?= csrf_field() ?><input type="hidden" name="action" value="details">
             <label class="field">Full name<input type="text" name="name" value="<?= h($me['name']) ?>" required></label>
             <label class="field">Work email <small>Your @judescbo.co.ke address. Used to sign in and for password resets.</small><input type="email" name="email" value="<?= h($me['email']) ?>" required></label>
-            <label class="field">Personal email <small>Optional, e.g. Gmail. You can forward your work email to it from Mailbox.</small><input type="email" name="personal_email" value="<?= h($me['personal_email'] ?? '') ?>" placeholder="name@gmail.com"></label>
+            <label class="field">Personal email <small>Optional, e.g. Gmail. Once confirmed it also receives password reset links, and you can forward your work email to it from Mailbox.</small><input type="email" name="personal_email" value="<?= h($me['personal_email'] ?? '') ?>" placeholder="name@gmail.com">
+                <?php if (!empty($me['personal_email'])): ?>
+                    <?php if (!empty($me['personal_email_verified_at'])): ?>
+                        <span class="verify-state ok"><i class="fas fa-circle-check"></i> Confirmed</span>
+                    <?php else: ?>
+                        <span class="verify-state"><i class="fas fa-clock"></i> Not confirmed yet. Check that inbox for our link. <button type="submit" form="resend-verify" class="link">Resend link</button></span>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </label>
             <label class="field">Username<input type="text" value="<?= h($me['username']) ?>" disabled></label>
             <label class="field">Role<input type="text" value="<?= h(role_label($me['role'])) ?>" disabled></label>
             <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save details</button>
         </form>
+        <form method="post" id="resend-verify"><?= csrf_field() ?><input type="hidden" name="action" value="resend-verify"></form>
     </section>
     <section class="panel">
         <h3 class="panel-title"><i class="fas fa-key"></i> Change password</h3>

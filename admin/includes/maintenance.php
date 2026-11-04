@@ -150,8 +150,7 @@ function render_maintenance_page(): string
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#0b1d35">
     <link rel="icon" href="{$base}images/icons/favicon-32.png" type="image/png">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{$base}css/fonts.css">
     <style>
         :root { --navy: #0b1d35; --green: #2d5016; --leaf: #68d391; --amber: #f6ad55; --red: #e53e3e; --glass: rgba(255,255,255,0.07); --line: rgba(255,255,255,0.14); }
         * { box-sizing: border-box; margin: 0; padding: 0; }

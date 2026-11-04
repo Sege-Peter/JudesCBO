@@ -75,7 +75,9 @@ function error_page(int $code, string $title, string $message, string $icon = 'f
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title><?= h($title) ?> | Judes CBO dashboard</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="preload" href="../fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/fonts.css">
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 32px 16px; text-align: center;
@@ -100,7 +102,7 @@ function error_page(int $code, string $title, string $message, string $icon = 'f
 </style>
 </head>
 <body>
-<span class="brand"><img src="../jude-logo.png" alt="">JUDES CBO</span>
+<span class="brand"><img src="../images/jude-logo-192.webp" alt="">JUDES CBO</span>
 <main class="card">
     <div class="icon"><i class="fas <?= h($icon) ?>"></i></div>
     <span class="code">Error <?= $code ?></span>
@@ -186,7 +188,7 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 9;
+const SCHEMA_VERSION = 10;
 
 function column_exists(string $table, string $column): bool
 {
@@ -256,6 +258,10 @@ function migrate(): void
     // Version 9: personal email next to the work email, for forwarding
     if (!column_exists('users', 'personal_email')) {
         db()->exec('ALTER TABLE users ADD COLUMN personal_email VARCHAR(190) NULL AFTER email');
+    }
+    // Version 10: personal emails are confirmed by a link before they can receive password resets
+    if (!column_exists('users', 'personal_email_verified_at')) {
+        db()->exec('ALTER TABLE users ADD COLUMN personal_email_verified_at DATETIME NULL AFTER personal_email');
     }
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
@@ -360,7 +366,7 @@ function current_user(): ?array
     if (!empty($_SESSION['user_id'])) {
         $_SESSION['ua'] ??= $agent;
         $_SESSION['last_seen'] = time();
-        $stmt = db()->prepare('SELECT id, name, email, personal_email, username, role, active, totp_enabled, session_version FROM users WHERE id = ?');
+        $stmt = db()->prepare('SELECT id, name, email, personal_email, personal_email_verified_at, username, role, active, totp_enabled, session_version FROM users WHERE id = ?');
         $stmt->execute([$_SESSION['user_id']]);
         $row = $stmt->fetch();
         $_SESSION['sv'] ??= $row ? (int) $row['session_version'] : 0; // sessions from before this feature
@@ -648,6 +654,23 @@ Judes CBO
 https://judescbo.co.ke
 
 This is an automatic reply.";
+
+const VERIFY_HOURS = 48;
+
+/** Emails a link that confirms the user owns $email. Returns whether the email went out. */
+function send_email_verification(array $user, string $email): bool
+{
+    $token = bin2hex(random_bytes(32));
+    db()->prepare('DELETE FROM email_verifications WHERE user_id = ? AND used_at IS NULL')->execute([$user['id']]);
+    db()->prepare('INSERT INTO email_verifications (user_id, email, token_hash, expires_at) VALUES (?, ?, ?, NOW() + INTERVAL ' . VERIFY_HOURS . ' HOUR)')
+        ->execute([$user['id'], strtolower($email), hash('sha256', $token)]);
+    $base = (string) config('admin_url') ?: rtrim((string) config('site_url'), '/') . '/admin/';
+    $link = rtrim($base, '/') . '/verify-email.php?token=' . $token;
+    $body = "Hello {$user['name']},\n\nPlease confirm that this is your personal email for the Judes CBO dashboard by opening this link (it works for " . VERIFY_HOURS . " hours):\n$link\n\n"
+        . "Once confirmed, password reset links will also be sent here, so you can get back into your account even if you can't reach your work email.\n\n"
+        . "If you didn't add this email, you can ignore this message.\n\nJudes CBO";
+    return send_mail($email, 'Confirm your personal email - Judes CBO dashboard', $body);
+}
 
 /**
  * Sends a plain-text email from the organisation address. Uses the linked info@ mailbox (SMTP) when
