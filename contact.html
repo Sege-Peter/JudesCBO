@@ -258,7 +258,7 @@
                 <span class="eyebrow">Send a message</span>
                 <h2>How can we help?</h2>
                 <p class="contact-intro">Fill in the form and our team will get back to you.</p>
-                <form id="contact-form" class="contact-form-modern" action="https://formspree.io/f/mjkelgrq" method="POST" novalidate>
+                <form id="contact-form" class="contact-form-modern" action="admin/api/contact.php" method="POST" novalidate>
                     <input type="hidden" name="_subject" id="form-subject" value="Website enquiry: General enquiry">
                     <input type="text" name="_gotcha" class="sr-only" tabindex="-1" autocomplete="off" aria-hidden="true">
                     <div class="field-row">
@@ -362,7 +362,7 @@
                     <h3>Stay in the loop</h3>
                     <p>Get updates on our programs, events and stories from Homa Bay.</p>
                 </div>
-                <form id="subscribe-form" class="subscribe-form" action="https://formspree.io/f/mjkelgrq" method="POST" autocomplete="off">
+                <form id="subscribe-form" class="subscribe-form" action="admin/api/subscribe.php" method="POST" autocomplete="off">
                     <input type="hidden" name="_subject" value="Newsletter signup">
                     <input type="hidden" name="form" value="newsletter">
                     <input type="email" id="subscriber-email" name="email" placeholder="Your email address" aria-label="Email address" required>
