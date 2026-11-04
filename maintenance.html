@@ -6,12 +6,10 @@
     <title>We&#039;ll be back soon | Judes CBO</title>
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#0b1d35">
-    <link rel="icon" href="/JudesCBO/images/icons/favicon-32.png" type="image/png">
-    <link rel="preload" href="fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="css/fonts.css?v=20261104b">
+    <link rel="icon" href="/images/icons/favicon-32.png" type="image/png">
+    <link rel="stylesheet" href="/css/fonts.css">
     <style>
-        :root { --navy: #0b1d35; --green: #2d5016; --leaf: #68d391; --amber: #f6ad55; --red: #e53e3e; --glass: rgba(255,255,255,0.07); --line: rgba(255,255,255,0.14); }
+        :root { --navy: #0b1d35; --green: #2d5016; --leaf: #68d391; --amber: #f6ad55; --red: #d63031; --glass: rgba(255,255,255,0.07); --line: rgba(255,255,255,0.14); }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { min-height: 100%; }
         body {
@@ -144,7 +142,7 @@
 <body>
     <div class="sky" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span><div class="particles"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
 
-    <a class="brand rise" style="--d:.05s" href="/JudesCBO/"><img src="/JudesCBO/images/icons/icon-192.png" alt="">JUDES CBO</a>
+    <a class="brand rise" style="--d:.05s" href="/"><img src="/images/icons/icon-192.png" alt="">JUDES CBO</a>
 
     <main class="card">
         <div class="art rise" style="--d:.15s" aria-hidden="true">
@@ -218,7 +216,7 @@
 
         // Reload as soon as the website is back
         function check() {
-            fetch('/JudesCBO/admin/api/maintenance.php', { cache: 'no-store' })
+            fetch('/admin/api/maintenance.php', { cache: 'no-store' })
                 .then(function (r) { return r.json(); })
                 .then(function (d) {
                     if (d && d.on === false) {

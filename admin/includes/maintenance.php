@@ -152,7 +152,7 @@ function render_maintenance_page(): string
     <link rel="icon" href="{$base}images/icons/favicon-32.png" type="image/png">
     <link rel="stylesheet" href="{$base}css/fonts.css">
     <style>
-        :root { --navy: #0b1d35; --green: #2d5016; --leaf: #68d391; --amber: #f6ad55; --red: #e53e3e; --glass: rgba(255,255,255,0.07); --line: rgba(255,255,255,0.14); }
+        :root { --navy: #0b1d35; --green: #2d5016; --leaf: #68d391; --amber: #f6ad55; --red: #d63031; --glass: rgba(255,255,255,0.07); --line: rgba(255,255,255,0.14); }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { min-height: 100%; }
         body {

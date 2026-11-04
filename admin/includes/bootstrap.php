@@ -94,7 +94,7 @@ function error_page(int $code, string $title, string $message, string $icon = 'f
     .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 24px; }
     .btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font: inherit; font-weight: 700; font-size: 14px; text-decoration: none; cursor: pointer; }
     .btn:hover { background: rgba(255,255,255,0.16); }
-    .btn.primary { background: #e53e3e; border-color: #e53e3e; }
+    .btn.primary { background: #d63031; border-color: #d63031; }
     .btn.primary:hover { background: #c53030; }
     .btn:focus-visible { outline: 3px solid #68d391; outline-offset: 2px; }
     @media (max-width: 480px) { .btn { flex: 1 1 100%; justify-content: center; } }
