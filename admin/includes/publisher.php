@@ -51,7 +51,8 @@ function write_atomic(string $path, string $content): void
 
 function replace_region(string $html, string $name, string $inner, string $file): string
 {
-    $pattern = '#(<!-- CMS:' . preg_quote($name, '#') . ' -->\n)(.*?)(\n\s*<!-- /CMS:' . preg_quote($name, '#') . ' -->)#s';
+    // Files may have Windows (CRLF) or Unix (LF) line endings
+    $pattern = '#(<!-- CMS:' . preg_quote($name, '#') . ' -->\r?\n)(.*?)(\r?\n\s*<!-- /CMS:' . preg_quote($name, '#') . ' -->)#s';
     if (!preg_match($pattern, $html)) {
         throw new RuntimeException("The '$name' section markers are missing from $file.");
     }
