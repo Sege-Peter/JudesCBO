@@ -26,7 +26,7 @@ const ERROR_PAGES = ['400.html', '401.html', '403.html', '404.html', '500.html',
 const STATIC_PAGES = [
     'index.html' => ['1.0', 'monthly'], 'about.html' => ['0.8', 'yearly'], 'programs.html' => ['0.9', 'monthly'],
     'stories.html' => ['0.7', 'weekly'], 'gallery.html' => ['0.6', 'monthly'], 'donate.html' => ['0.9', 'monthly'],
-    'contact.html' => ['0.6', 'yearly'], 'privacy.html' => ['0.3', 'yearly'], 'terms.html' => ['0.3', 'yearly'],
+    'contact.html' => ['0.6', 'yearly'], 'app.html' => ['0.4', 'yearly'], 'privacy.html' => ['0.3', 'yearly'], 'terms.html' => ['0.3', 'yearly'],
     'events.html' => ['0.8', 'weekly'], 'team.html' => ['0.6', 'monthly'],
 ];
 
@@ -411,8 +411,8 @@ function render_story_page(array $s, ?array $next, array $shell): string
     <!-- Fonts, icons and styles -->
     <link rel="preload" href="fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="css/fonts.css?v=20261104b">
-    <link rel="stylesheet" href="css/style.css?v=20261104b">
+    <link rel="stylesheet" href="css/fonts.css?v=20261104c">
+    <link rel="stylesheet" href="css/style.css?v=20261104c">
     <!-- Structured data -->
     <script type="application/ld+json">
 $jsonLd

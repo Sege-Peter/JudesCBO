@@ -552,3 +552,37 @@ if (upcomingList && pastList) {
         if (name) send({ t: 'event', n: name, l: label, p: location.pathname }, true);
     });
 })();
+
+
+// Install the website as an app (footer badge and the /app page)
+(function () {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (standalone) document.documentElement.classList.add('is-app');
+    const status = document.getElementById('app-status');
+    if (standalone && status) status.hidden = false;
+
+    // Highlight the steps for the visitor's device on the /app page
+    const ua = navigator.userAgent;
+    const platform = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'ios' : /Android/.test(ua) ? 'android' : 'desktop';
+    const mine = document.querySelector(`.app-step[data-platform="${platform}"]`);
+    if (mine) { mine.classList.add('is-you'); mine.parentElement.prepend(mine); }
+
+    let deferred = null;
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        deferred = e;
+        document.querySelectorAll('button[data-install]').forEach(b => { b.hidden = false; });
+    });
+    document.addEventListener('click', async e => {
+        const trigger = e.target.closest('[data-install]');
+        if (!trigger || !deferred) return; // no prompt available: the link opens the /app page with instructions
+        e.preventDefault();
+        deferred.prompt();
+        try { await deferred.userChoice; } catch { /* dismissed */ }
+        deferred = null;
+    });
+    window.addEventListener('appinstalled', () => {
+        document.querySelectorAll('button[data-install]').forEach(b => { b.hidden = true; });
+        if (status) status.hidden = false;
+    });
+})();
