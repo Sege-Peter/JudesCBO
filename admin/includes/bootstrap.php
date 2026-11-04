@@ -186,7 +186,7 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 8;
+const SCHEMA_VERSION = 9;
 
 function column_exists(string $table, string $column): bool
 {
@@ -253,6 +253,10 @@ function migrate(): void
     // Version 7: blocked IP addresses and automatic blocking of password guessing
     db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('sec_autoblock', '1'), ('sec_autoblock_limit', '30'), ('sec_force_https', '0')");
     // Version 8: the dashboard mailbox (mailboxes table comes from schema.sql)
+    // Version 9: personal email next to the work email, for forwarding
+    if (!column_exists('users', 'personal_email')) {
+        db()->exec('ALTER TABLE users ADD COLUMN personal_email VARCHAR(190) NULL AFTER email');
+    }
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
 
@@ -356,7 +360,7 @@ function current_user(): ?array
     if (!empty($_SESSION['user_id'])) {
         $_SESSION['ua'] ??= $agent;
         $_SESSION['last_seen'] = time();
-        $stmt = db()->prepare('SELECT id, name, email, username, role, active, totp_enabled, session_version FROM users WHERE id = ?');
+        $stmt = db()->prepare('SELECT id, name, email, personal_email, username, role, active, totp_enabled, session_version FROM users WHERE id = ?');
         $stmt->execute([$_SESSION['user_id']]);
         $row = $stmt->fetch();
         $_SESSION['sv'] ??= $row ? (int) $row['session_version'] : 0; // sessions from before this feature

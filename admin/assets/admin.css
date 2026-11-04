@@ -1017,3 +1017,11 @@ a.action-tile:hover { border-color: #d5dce5; background: #fff; }
 }
 .autoreply-box { border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1rem .2rem; margin-bottom: 1rem; background: #fbfcfd; }
 .autoreply-box .check { flex-wrap: wrap; }
+.fwd-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+.fwd-list li { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border: 1px solid var(--line); border-radius: 12px; }
+.fwd-list li i { color: var(--green); }
+.fwd-list li strong { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: .9rem; }
+.fwd-add { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
+.fwd-add input { flex: 1; min-width: 200px; }
+.fwd-tip { margin-top: .6rem; }
+.mbx-link > p.muted { margin-bottom: 1rem; }

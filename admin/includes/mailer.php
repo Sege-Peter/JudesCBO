@@ -341,3 +341,26 @@ function autoreply_set(array $box, bool $on, string $subject, string $body, int 
         'subject' => $subject, 'body' => $body, 'is_html' => 0, 'interval' => max(1, $intervalHours), 'start' => '', 'stop' => '',
     ]);
 }
+
+/* ---------- Forwarding (cPanel forwarders, managed with the mailbox's own login) ---------- */
+
+/** Addresses this mailbox forwards copies to. */
+function forward_list(array $box): array
+{
+    $rows = webmail_api($box, 'list_forwarders', ['domain' => substr(strrchr($box['address'], '@'), 1)])['data'] ?? [];
+    $out = [];
+    foreach ($rows as $r) {
+        if (strtolower($r['dest'] ?? '') === strtolower($box['address']) && filter_var($r['forward'] ?? '', FILTER_VALIDATE_EMAIL)) $out[] = $r['forward'];
+    }
+    return array_values(array_unique($out));
+}
+
+function forward_add(array $box, string $to): void
+{
+    webmail_api($box, 'add_forwarder', ['domain' => substr(strrchr($box['address'], '@'), 1), 'email' => $box['address'], 'fwdopt' => 'fwd', 'fwdemail' => $to]);
+}
+
+function forward_remove(array $box, string $to): void
+{
+    webmail_api($box, 'delete_forwarder', ['address' => $box['address'], 'forwarder' => $to]);
+}

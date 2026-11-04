@@ -18,14 +18,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'details') {
         $name = post_str('name', 120);
         $email = post_str('email', 190);
+        $personal = strtolower(post_str('personal_email', 190));
         $dup = db()->prepare('SELECT COUNT(*) FROM users WHERE email = ? AND id <> ?');
         $dup->execute([$email, $me['id']]);
         if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            flash('error', 'Enter your name and a valid email.');
+            flash('error', 'Enter your name and a valid work email.');
+        } elseif ($personal !== '' && !filter_var($personal, FILTER_VALIDATE_EMAIL)) {
+            flash('error', 'Enter a valid personal email, or leave it blank.');
+        } elseif ($personal !== '' && $personal === strtolower($email)) {
+            flash('error', 'Your personal email should be different from your work email.');
         } elseif ((int) $dup->fetchColumn() > 0) {
             flash('error', 'Another account already uses that email.');
         } else {
-            db()->prepare('UPDATE users SET name = ?, email = ? WHERE id = ?')->execute([$name, $email, $me['id']]);
+            db()->prepare('UPDATE users SET name = ?, email = ?, personal_email = ? WHERE id = ?')->execute([$name, $email, $personal !== '' ? $personal : null, $me['id']]);
             log_activity('profile.update', 'Updated name or email');
             flash('success', 'Your details were saved.');
         }
@@ -184,7 +189,8 @@ render_header('My profile');
         <form method="post" class="form-stack">
             <?= csrf_field() ?><input type="hidden" name="action" value="details">
             <label class="field">Full name<input type="text" name="name" value="<?= h($me['name']) ?>" required></label>
-            <label class="field">Email<input type="email" name="email" value="<?= h($me['email']) ?>" required></label>
+            <label class="field">Work email <small>Your @judescbo.co.ke address. Used to sign in and for password resets.</small><input type="email" name="email" value="<?= h($me['email']) ?>" required></label>
+            <label class="field">Personal email <small>Optional, e.g. Gmail. You can forward your work email to it from Mailbox.</small><input type="email" name="personal_email" value="<?= h($me['personal_email'] ?? '') ?>" placeholder="name@gmail.com"></label>
             <label class="field">Username<input type="text" value="<?= h($me['username']) ?>" disabled></label>
             <label class="field">Role<input type="text" value="<?= h(role_label($me['role'])) ?>" disabled></label>
             <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save details</button>

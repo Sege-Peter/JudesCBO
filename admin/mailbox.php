@@ -111,6 +111,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect(mbx_url(['settings' => 1]) . '#autoreply');
     }
 
+    if ($action === 'forward_add' || $action === 'forward_remove') {
+        if (!can_edit_box($me, $box)) error_page(403, 'Not allowed', 'Only an administrator can change a shared mailbox.');
+        $to = strtolower(post_str('forward_to', 190));
+        try {
+            if (!filter_var($to, FILTER_VALIDATE_EMAIL)) throw new RuntimeException('Enter a valid email address to forward to.');
+            if ($to === strtolower($box['address'])) throw new RuntimeException("A mailbox can't forward to itself.");
+            if ($action === 'forward_add') {
+                if (in_array($to, array_map('strtolower', forward_list($box)), true)) throw new RuntimeException("Already forwarding to $to.");
+                forward_add($box, $to);
+                log_activity('mailbox.forward', $box['address'] . " now forwards to $to");
+                flash('success', "Emails to {$box['address']} will now also go to $to. A copy stays in this mailbox.");
+            } else {
+                forward_remove($box, $to);
+                log_activity('mailbox.forward', $box['address'] . " stopped forwarding to $to");
+                flash('success', "Stopped forwarding to $to.");
+            }
+        } catch (RuntimeException $e) {
+            flash('error', $e->getMessage());
+        }
+        redirect(mbx_url(['settings' => 1]) . '#forwarding');
+    }
+
     if ($action === 'unlink') {
         if (!can_edit_box($me, $box)) error_page(403, 'Not allowed', 'Only an administrator can remove a shared mailbox.');
         db()->prepare('DELETE FROM mailboxes WHERE id = ?')->execute([$box['id']]);
@@ -465,9 +487,13 @@ $showSettings = $box && isset($_GET['settings']) && can_edit_box($me, $box);
 $images = isset($_GET['images']);
 $autoreply = null;
 $autoreplyError = '';
+$forwards = [];
+$forwardError = '';
 if ($showSettings) {
     try { $autoreply = autoreply_get($box); } catch (Throwable $e) { $autoreplyError = $e->getMessage(); }
+    try { $forwards = forward_list($box); } catch (Throwable $e) { $forwardError = $e->getMessage(); }
 }
+$myPersonal = (string) ($me['personal_email'] ?? '');
 
 render_header('Mailbox');
 ?>
@@ -496,7 +522,7 @@ render_header('Mailbox');
         <div class="menu-pop">
             <a class="menu-link" href="<?= h(mbx_url(['link' => 1], ['uid'])) ?>"><i class="fas fa-plus"></i> Link another mailbox</a>
             <?php if ($box && can_edit_box($me, $box)): ?>
-                <a class="menu-link" href="<?= h(mbx_url(['settings' => 1], ['uid'])) ?>"><i class="fas fa-signature"></i> Signature &amp; automatic reply</a>
+                <a class="menu-link" href="<?= h(mbx_url(['settings' => 1], ['uid'])) ?>"><i class="fas fa-sliders"></i> Signature, auto-reply &amp; forwarding</a>
                 <form method="post" data-confirm="Remove <?= h($box['address']) ?> from the dashboard? The mailbox and its emails stay on the mail server.">
                     <?= csrf_field() ?><input type="hidden" name="action" value="unlink"><input type="hidden" name="box" value="<?= (int) $box['id'] ?>">
                     <button type="submit"><i class="fas fa-link-slash"></i> Remove from dashboard</button>
@@ -545,6 +571,32 @@ render_header('Mailbox');
             </label>
             <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save</button>
         </form>
+    </section>
+    <section class="panel mbx-link" id="forwarding">
+        <h3 class="panel-title"><i class="fas fa-share-from-square"></i> Forwarding</h3>
+        <p class="muted">Send a copy of every email that arrives at <?= h($box['address']) ?> to another address, such as your personal Gmail. The original always stays here in the mailbox.</p>
+        <?php if ($forwardError): ?><div class="alert alert-error"><?= h($forwardError) ?></div><?php endif; ?>
+        <?php if ($forwards): ?>
+            <ul class="fwd-list">
+                <?php foreach ($forwards as $f): ?>
+                    <li><i class="fas fa-arrow-right"></i><strong><?= h($f) ?></strong>
+                        <form method="post" data-confirm="Stop forwarding to <?= h($f) ?>?">
+                            <?= csrf_field() ?><input type="hidden" name="action" value="forward_remove"><input type="hidden" name="box" value="<?= (int) $box['id'] ?>"><input type="hidden" name="forward_to" value="<?= h($f) ?>">
+                            <button class="btn btn-danger-ghost btn-sm"><i class="fas fa-xmark"></i> Stop</button>
+                        </form></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php elseif (!$forwardError): ?>
+            <p class="empty"><i class="fas fa-share"></i> Not forwarding anywhere.</p>
+        <?php endif; ?>
+        <form method="post" class="fwd-add">
+            <?= csrf_field() ?><input type="hidden" name="action" value="forward_add"><input type="hidden" name="box" value="<?= (int) $box['id'] ?>">
+            <input type="email" name="forward_to" required placeholder="name@gmail.com" value="<?= h($myPersonal !== '' && !in_array(strtolower($myPersonal), array_map('strtolower', $forwards), true) ? $myPersonal : '') ?>" aria-label="Forward to">
+            <button class="btn btn-primary"><i class="fas fa-plus"></i> Add forwarding</button>
+        </form>
+        <?php if ($myPersonal === ''): ?>
+            <p class="small muted fwd-tip">Tip: add your personal email in <a href="profile.php">My profile</a> and it will be filled in here for you.</p>
+        <?php endif; ?>
     </section>
     <section class="panel mbx-link" id="autoreply">
         <h3 class="panel-title"><i class="fas fa-reply-all"></i> Automatic reply</h3>
