@@ -32,6 +32,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         save_setting('sec_autoblock_limit', (string) (in_array($limit, [10, 20, 30, 50], true) ? $limit : 30));
         log_activity('security.autoblock', setting('sec_autoblock') === '1' ? 'On at ' . setting('sec_autoblock_limit') . ' failed logins' : 'Off');
         flash('success', 'Automatic blocking saved.');
+    } elseif ($action === 'idle') {
+        $m = (int) ($_POST['sec_idle_minutes'] ?? 30);
+        save_setting('sec_idle_minutes', (string) (in_array($m, IDLE_CHOICES, true) ? $m : 30));
+        log_activity('security.idle', 'Sign out after ' . setting('sec_idle_minutes') . ' minutes idle');
+        flash('success', 'Session timeout saved.');
     } elseif ($action === 'https') {
         $on = !empty($_POST['sec_force_https']);
         if ($on && !is_https()) {
@@ -110,6 +115,20 @@ render_header('Security');
             <?= csrf_field() ?><input type="hidden" name="action" value="https">
             <label class="check"><input type="checkbox" name="sec_force_https" value="1" <?= setting('sec_force_https') === '1' ? 'checked' : '' ?> <?= !is_https() && setting('sec_force_https') !== '1' ? 'disabled' : '' ?>> Always use HTTPS</label>
             <button class="btn btn-primary" <?= !is_https() && setting('sec_force_https') !== '1' ? 'disabled' : '' ?>><i class="fas fa-floppy-disk"></i> Save</button>
+        </form>
+    </section>
+
+    <section class="panel" id="idle">
+        <h3 class="panel-title"><i class="fas fa-clock"></i> Session timeout</h3>
+        <p class="muted">Signs staff out when the dashboard is left open with no activity, so an unattended computer can't be used to get in. Just before, they're asked if they're still there.</p>
+        <form method="post" class="form-stack">
+            <?= csrf_field() ?><input type="hidden" name="action" value="idle">
+            <label class="field">Sign out after
+                <select name="sec_idle_minutes">
+                    <?php foreach (IDLE_CHOICES as $m): ?><option value="<?= $m ?>" <?= session_idle_limit() === $m * 60 ? 'selected' : '' ?>><?= $m < 60 ? "$m minutes" : ($m / 60) . ' hour' . ($m > 60 ? 's' : '') ?> of inactivity</option><?php endforeach; ?>
+                </select>
+            </label>
+            <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save</button>
         </form>
     </section>
 

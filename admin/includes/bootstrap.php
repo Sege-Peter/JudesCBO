@@ -267,7 +267,14 @@ function migrate(): void
 
 /* ---------- Auth ---------- */
 
-const SESSION_IDLE_LIMIT = 2 * 60 * 60; // log out after 2 hours of inactivity
+const IDLE_CHOICES = [15, 30, 60, 120, 240]; // minutes, chosen on the Security page
+
+/** Seconds without activity before staff are signed out (Security page, default 30 minutes). */
+function session_idle_limit(): int
+{
+    $m = (int) setting('sec_idle_minutes', '30');
+    return (in_array($m, IDLE_CHOICES, true) ? $m : 30) * 60;
+}
 const REMEMBER_DAYS = 30;
 const REMEMBER_COOKIE = 'judes_remember';
 
@@ -349,7 +356,7 @@ function current_user(): ?array
         return $user;
     }
     $user = null;
-    if (!empty($_SESSION['user_id']) && time() - ($_SESSION['last_seen'] ?? 0) > SESSION_IDLE_LIMIT) {
+    if (!empty($_SESSION['user_id']) && time() - ($_SESSION['last_seen'] ?? 0) > session_idle_limit()) {
         unset($_SESSION['user_id']);
     }
     if (empty($_SESSION['user_id'])) {

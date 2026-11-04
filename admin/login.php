@@ -49,6 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 $flashes = take_flashes();
+if (isset($_GET['idle']) && !$flashes) {
+    $flashes[] = ['type' => 'info', 'message' => 'You were signed out because the dashboard was left idle. Please log in again.'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -224,3 +224,75 @@ function adminToast(message, type) {
         });
     });
 })();
+
+
+// Session timeout: sign out after the idle time set on the Security page. Activity in any open tab counts.
+// Shortly before, a "Still there?" prompt appears (no countdown); unsaved story text is kept by the editor.
+(function () {
+    const meta = document.querySelector('meta[name="session-idle"]');
+    const form = document.getElementById('logout-form');
+    if (!meta || !form) return;
+    const idle = parseInt(meta.content, 10) * 1000;
+    if (!idle) return;
+    const warnAt = idle - Math.min(60000, idle / 5); // ask a minute before
+    const KEY = 'judes-last-active';
+    const csrf = document.querySelector('meta[name="csrf-token"]').content;
+    let last = Date.now(), lastPing = Date.now(), prompt = null, done = false;
+
+    const store = t => { try { localStorage.setItem(KEY, String(t)); } catch (e) { /* storage blocked */ } };
+    const shared = () => { try { return parseInt(localStorage.getItem(KEY) || '0', 10) || 0; } catch (e) { return 0; } };
+    const lastActive = () => Math.max(last, shared());
+
+    function ping() {
+        lastPing = Date.now();
+        fetch('session', { method: 'POST', headers: { 'X-CSRF-Token': csrf }, credentials: 'same-origin' })
+            .then(r => r.ok ? r.json() : { ok: false })
+            .then(j => { if (!j.ok) location.href = 'login?idle=1'; })
+            .catch(() => { /* offline: try again on the next activity */ });
+    }
+    function active() {
+        if (prompt || done) return;
+        last = Date.now();
+        store(last);
+        // Tell the server now and then, so it doesn't time out while someone is working on one page
+        if (last - lastPing > Math.min(5 * 60000, idle / 3)) ping();
+    }
+    ['mousedown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach(ev => document.addEventListener(ev, active, { passive: true, capture: true }));
+    let moveTimer = 0;
+    document.addEventListener('mousemove', () => { if (!moveTimer) moveTimer = setTimeout(() => { moveTimer = 0; active(); }, 5000); }, { passive: true });
+    store(last);
+
+    function signOut() {
+        if (done) return;
+        done = true;
+        const flag = document.createElement('input');
+        flag.type = 'hidden'; flag.name = 'idle'; flag.value = '1';
+        form.appendChild(flag);
+        window.onbeforeunload = null;
+        form.submit();
+    }
+    function showPrompt() {
+        prompt = document.createElement('dialog');
+        prompt.className = 'modal idle-modal';
+        prompt.innerHTML = '<div class="modal-body"><div class="idle-icon"><i class="fas fa-clock"></i></div>' +
+            '<h3>Still there?</h3><p class="muted">You\'ve been inactive for a while. For your security you\'ll be signed out soon.</p>' +
+            '<div class="modal-foot"><button type="button" class="btn btn-light" data-out><i class="fas fa-right-from-bracket"></i> Sign out</button>' +
+            '<button type="button" class="btn btn-primary" data-stay><i class="fas fa-check"></i> Stay signed in</button></div></div>';
+        document.body.appendChild(prompt);
+        prompt.querySelector('[data-stay]').addEventListener('click', stay);
+        prompt.querySelector('[data-out]').addEventListener('click', signOut);
+        prompt.addEventListener('cancel', e => { e.preventDefault(); stay(); });
+        prompt.showModal ? prompt.showModal() : prompt.setAttribute('open', '');
+        prompt.querySelector('[data-stay]').focus();
+    }
+    function hidePrompt() { if (prompt) { prompt.close && prompt.close(); prompt.remove(); prompt = null; } }
+    function stay() { hidePrompt(); last = Date.now(); store(last); ping(); }
+
+    setInterval(() => {
+        if (done) return;
+        const quiet = Date.now() - lastActive();
+        if (quiet >= idle) signOut();
+        else if (quiet >= warnAt) { if (!prompt) showPrompt(); }
+        else if (prompt) hidePrompt(); // someone was active in another tab
+    }, 5000);
+})();

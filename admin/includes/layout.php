@@ -42,6 +42,7 @@ function render_header(string $title, string $active = ''): void
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <meta name="csrf-token" content="<?= h(csrf_token()) ?>">
+    <meta name="session-idle" content="<?= session_idle_limit() ?>">
     <title><?= h($title) ?> | Judes CBO Admin</title>
     <link rel="icon" href="../jude-logo.png" type="image/png">
     <link rel="preload" href="../fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -85,7 +86,7 @@ function render_header(string $title, string $active = ''): void
                     </button>
                     <div class="dropdown" id="user-dropdown">
                         <a href="profile"><i class="fas fa-user"></i> My profile</a>
-                        <form method="post" action="logout"><?= csrf_field() ?><button type="submit"><i class="fas fa-right-from-bracket"></i> Log out</button></form>
+                        <form method="post" action="logout" id="logout-form"><?= csrf_field() ?><button type="submit"><i class="fas fa-right-from-bracket"></i> Log out</button></form>
                     </div>
                 </div>
             </div>
