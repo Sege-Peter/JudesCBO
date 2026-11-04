@@ -165,8 +165,122 @@ def title_block(d, F, title, subtitle, y=262):
             y += 38
 
 
+def phone(screen_path, width):
+    """A realistic phone: black frame, thin highlight, camera pill, side buttons, screen with rounded corners."""
+    scr = Image.open(os.path.join(ROOT, screen_path)).convert('RGB')
+    sw = width
+    sh = round(scr.height * sw / scr.width)
+    scr = scr.resize((sw, sh), Image.LANCZOS)
+    bezel, r_out = 13, 54
+    fw, fh = sw + 2 * bezel, sh + 2 * bezel
+    pad = 8  # room for the side buttons
+    ph = Image.new('RGBA', (fw + 2 * pad, fh), (0, 0, 0, 0))
+    d = ImageDraw.Draw(ph)
+    # side buttons
+    for y0, y1 in ((150, 200), (225, 300), (320, 395)):
+        d.rounded_rectangle((pad - 4, y0, pad + 6, y1), radius=3, fill=(30, 34, 42))
+    d.rounded_rectangle((pad + fw - 6, 240, pad + fw + 4, 340), radius=3, fill=(30, 34, 42))
+    # frame with a subtle metal edge
+    d.rounded_rectangle((pad, 0, pad + fw - 1, fh - 1), radius=r_out, fill=(14, 17, 23))
+    d.rounded_rectangle((pad + 1, 1, pad + fw - 2, fh - 2), radius=r_out - 1, outline=(70, 76, 90), width=2)
+    # screen
+    mask = Image.new('L', (sw, sh), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, sw - 1, sh - 1), radius=r_out - bezel, fill=255)
+    ph.paste(scr, (pad + bezel, bezel), mask)
+    # camera pill
+    cx = pad + fw // 2
+    d.rounded_rectangle((cx - 44, bezel + 10, cx + 44, bezel + 34), radius=12, fill=(5, 6, 8))
+    # glass sheen
+    sheen = Image.new('RGBA', ph.size, (0, 0, 0, 0))
+    ImageDraw.Draw(sheen).polygon([(pad + bezel, bezel), (pad + bezel + sw * 0.55, bezel), (pad + bezel, bezel + sh * 0.42)], fill=(255, 255, 255, 18))
+    ph.alpha_composite(sheen)
+    return ph
+
+
+def place(card, img, angle, x, y, shadow=True):
+    rot = img.rotate(angle, resample=Image.BICUBIC, expand=True)
+    if shadow:
+        a = rot.split()[3].point(lambda v: 150 if v > 0 else 0)
+        sh = Image.new('RGBA', rot.size, (0, 0, 0, 0))
+        sh.putalpha(a)
+        big = Image.new('RGBA', (rot.width + 120, rot.height + 120), (0, 0, 0, 0))
+        big.paste(sh, (60, 60))
+        big = big.filter(ImageFilter.GaussianBlur(26))
+        card.alpha_composite(big, (x - 60 + 18, y - 60 + 30)) if 0 <= x - 42 and 0 <= y - 30 else card.paste(big, (x - 42, y - 30), big)
+    card.paste(rot, (x, y), rot)
+
+
+def app_card(F):
+    """Link preview for /app: brand text on the left, the real app in two phones on the right."""
+    card = Image.new('RGBA', (W, H), (*NAVY, 255))
+    glow = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    g = ImageDraw.Draw(glow)
+    g.ellipse((-260, -320, 520, 380), fill=(45, 80, 22, 150))
+    g.ellipse((760, 330, 1420, 900), fill=(214, 48, 49, 70))
+    g.ellipse((640, -200, 1300, 420), fill=(26, 54, 93, 160))
+    card.alpha_composite(glow.filter(ImageFilter.GaussianBlur(90)))
+    dots = ImageDraw.Draw(card)
+    for gx in range(20, W, 28):
+        for gy in range(20, H, 28):
+            dots.point((gx, gy), fill=(255, 255, 255, 22))
+
+    # Phones: launch screen behind, home screen in front
+    back = phone('tools/assets/app-screen-splash.jpg', 236)
+    front = phone('tools/assets/app-screen-home.jpg', 262)
+    place(card, back, 9, 610, 70)
+    place(card, front, -7, 820, 118)
+
+    # Left column
+    d = ImageDraw.Draw(card)
+    card.alpha_composite(logo_tile(), (PAD, 46))
+    d.text((PAD + 108, 58), 'JUDES CBO', font=ImageFont.truetype(F['black'], 34), fill='white')
+    d.text((PAD + 110, 102), 'EMPOWERMENT FOR DEVELOPMENT', font=ImageFont.truetype(F['bold'], 15), fill=MINT)
+    lf = ImageFont.truetype(F['bold'], 19)
+    label = 'FREE APP'
+    tw = d.textlength(label, font=lf) + 12
+    d.rounded_rectangle((PAD, 186, PAD + tw + 36, 226), radius=20, fill=RED)
+    x = PAD + 18
+    for ch in label:
+        d.text((x, 195), ch, font=lf, fill='white')
+        x += d.textlength(ch, font=lf) + 1.5
+    tf = ImageFont.truetype(F['black'], 60)
+    y = 248
+    for line in ('Get the', 'Judes CBO app'):
+        d.text((PAD, y), line, font=tf, fill='white')
+        y += 68
+    sf = ImageFont.truetype(F['body'], 25)
+    for line in ('Free on Android, iPhone and computer.', 'No app store needed.'):
+        d.text((PAD, y + 12), line, font=sf, fill=(255, 255, 255, 225))
+        y += 36
+    # Quick facts as chips
+    cf = ImageFont.truetype(F['bold'], 17)
+    x, y = PAD, y + 34
+    chips = Image.new('RGBA', (W, H), (0, 0, 0, 0))  # translucent fills must be blended, not drawn straight on
+    cd = ImageDraw.Draw(chips)
+    for chip in ('Opens instantly', 'Works offline', 'Under 1 MB'):
+        w = d.textlength(chip, font=cf) + 44
+        cd.rounded_rectangle((x, y, x + w, y + 38), radius=19, fill=(255, 255, 255, 28), outline=(255, 255, 255, 80))
+        cd.ellipse((x + 14, y + 15, x + 22, y + 23), fill=(*MINT, 255))
+        cd.text((x + 30, y + 8), chip, font=cf, fill=(255, 255, 255, 255))
+        x += w + 10
+    card.alpha_composite(chips)
+    # Footer and accent bar
+    d.text((PAD, H - 64), 'judescbo.co.ke/app', font=ImageFont.truetype(F['black'], 24), fill='white')
+    for xx in range(W):
+        t = xx / (W - 1)
+        if t < 0.6:
+            c = tuple(int(a + (b - a) * (t / 0.6)) for a, b in zip((45, 80, 22), (104, 211, 145)))
+        else:
+            c = tuple(int(a + (b - a) * ((t - 0.6) / 0.4)) for a, b in zip((104, 211, 145), (246, 173, 85)))
+        d.line((xx, H - 10, xx, H), fill=(*c, 255))
+    return card
+
+
 def main():
     F = fonts()
+    app = app_card(F)
+    app.convert('RGB').save(os.path.join(ROOT, 'images', 'brand', 'share-app.jpg'), 'JPEG', quality=86, optimize=True, progressive=True)
+    print('share-app.jpg')
     out_dir = os.path.join(ROOT, 'images', 'brand')
     for key, (photo, label, title, subtitle) in PAGES.items():
         card = cover(photo).convert('RGBA')
