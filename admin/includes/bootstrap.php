@@ -619,6 +619,23 @@ function send_csv(string $filename, array $header, iterable $rows): never
     exit;
 }
 
+const NEWSLETTER_WELCOME_SUBJECT = 'Thanks for subscribing to the Judes CBO newsletter';
+const NEWSLETTER_WELCOME_BODY = "Hello,\n\nThank you for subscribing to the Judes CBO newsletter!\n\nYou'll now receive news about our work in Homa Bay: youth and adolescent health, disability inclusion, community events and ways you can get involved.\n\nYou can also find us at https://judescbo.co.ke\n\nWarm regards,\nJudes CBO";
+
+/** Signed link that lets a subscriber leave the newsletter without logging in. */
+function unsubscribe_url(string $email): string
+{
+    $email = strtolower($email);
+    $sig = substr(hash_hmac('sha256', 'unsub|' . $email, setting('analytics_secret', 'judes')), 0, 32);
+    return rtrim((string) config('site_url'), '/') . '/admin/api/unsubscribe.php?' . http_build_query(['e' => $email, 't' => $sig]);
+}
+
+function unsubscribe_valid(string $email, string $token): bool
+{
+    $sig = substr(hash_hmac('sha256', 'unsub|' . strtolower($email), setting('analytics_secret', 'judes')), 0, 32);
+    return hash_equals($sig, $token);
+}
+
 const CONTACT_AUTOREPLY_SUBJECT = 'We received your message - Judes CBO';
 const CONTACT_AUTOREPLY_BODY = "Dear {name},
 

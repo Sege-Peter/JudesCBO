@@ -29,6 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         save_setting('formspree_url', $url);
         save_setting('notify_email', $notify);
         save_setting('contact_autoreply', !empty($_POST['contact_autoreply']) ? '1' : '0');
+        save_setting('newsletter_welcome', !empty($_POST['newsletter_welcome']) ? '1' : '0');
+        save_setting('newsletter_welcome_subject', post_str('newsletter_welcome_subject', 200) ?: NEWSLETTER_WELCOME_SUBJECT);
+        save_setting('newsletter_welcome_body', post_str('newsletter_welcome_body', 3000) ?: NEWSLETTER_WELCOME_BODY);
         save_setting('contact_autoreply_subject', post_str('contact_autoreply_subject', 200) ?: CONTACT_AUTOREPLY_SUBJECT);
         save_setting('contact_autoreply_body', post_str('contact_autoreply_body', 3000) ?: CONTACT_AUTOREPLY_BODY);
         log_activity('settings.forms', 'Form handling: ' . $mode);
@@ -148,6 +151,12 @@ render_header('Settings');
                 <label class="field">Subject<input type="text" name="contact_autoreply_subject" maxlength="200" value="<?= h(setting('contact_autoreply_subject', CONTACT_AUTOREPLY_SUBJECT)) ?>"></label>
                 <label class="field">Message <small>{name} becomes the visitor's name and {topic} the topic they chose</small>
                     <textarea name="contact_autoreply_body" rows="8" maxlength="3000"><?= h(setting('contact_autoreply_body', CONTACT_AUTOREPLY_BODY)) ?></textarea></label>
+            </fieldset>
+            <fieldset class="autoreply-box">
+                <label class="check"><input type="checkbox" name="newsletter_welcome" value="1" <?= setting('newsletter_welcome', '1') === '1' ? 'checked' : '' ?>> Send a "thanks for subscribing" email to new newsletter subscribers <small class="muted">(built-in inbox only)</small></label>
+                <label class="field">Subject<input type="text" name="newsletter_welcome_subject" maxlength="200" value="<?= h(setting('newsletter_welcome_subject', NEWSLETTER_WELCOME_SUBJECT)) ?>"></label>
+                <label class="field">Message <small>An unsubscribe link is added at the bottom automatically</small>
+                    <textarea name="newsletter_welcome_body" rows="8" maxlength="3000"><?= h(setting('newsletter_welcome_body', NEWSLETTER_WELCOME_BODY)) ?></textarea></label>
             </fieldset>
             <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save and update website</button>
         </form>
