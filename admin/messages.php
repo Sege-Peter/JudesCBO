@@ -69,6 +69,9 @@ $counts = db()->query('SELECT status, COUNT(*) c FROM messages GROUP BY status')
 $topics = db()->query('SELECT DISTINCT topic FROM messages ORDER BY topic')->fetchAll(PDO::FETCH_COLUMN);
 $query = array_filter(['status' => $status, 'topic' => $topic, 'q' => $q]);
 
+require_once __DIR__ . '/includes/mailer.php';
+$hasMailbox = (bool) user_mailboxes(current_user());
+
 render_header('Messages');
 
 if (setting('form_mode', 'formspree') !== 'builtin'): ?>
@@ -141,7 +144,12 @@ if (setting('form_mode', 'formspree') !== 'builtin'): ?>
             <div class="message-body"><?= nl2br(h($current['message'])) ?></div>
 
             <div class="message-actions">
-                <a href="<?= h($mailto) ?>" class="btn btn-primary" data-mark-replied="<?= (int) $current['id'] ?>"><i class="fas fa-reply"></i> Reply by email</a>
+                <?php if ($hasMailbox): ?>
+                    <a href="mailbox.php?compose=1&amp;contact=<?= (int) $current['id'] ?>" class="btn btn-primary"><i class="fas fa-reply"></i> Reply from mailbox</a>
+                    <a href="<?= h($mailto) ?>" class="btn btn-light" data-mark-replied="<?= (int) $current['id'] ?>"><i class="fas fa-envelope"></i> Email app</a>
+                <?php else: ?>
+                    <a href="<?= h($mailto) ?>" class="btn btn-primary" data-mark-replied="<?= (int) $current['id'] ?>"><i class="fas fa-reply"></i> Reply by email</a>
+                <?php endif; ?>
                 <?php if (strlen($waNumber) >= 9): ?>
                     <a href="https://wa.me/<?= h($waNumber) ?>?text=<?= rawurlencode('Hello ' . $current['name'] . ', this is Judes CBO responding to your message.') ?>" target="_blank" rel="noopener" class="btn btn-wa" data-mark-replied="<?= (int) $current['id'] ?>"><i class="fab fa-whatsapp"></i> WhatsApp</a>
                 <?php endif; ?>

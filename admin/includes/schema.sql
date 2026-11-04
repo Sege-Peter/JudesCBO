@@ -218,3 +218,15 @@ CREATE TABLE IF NOT EXISTS blocked_ips (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_at DATETIME NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mailboxes (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    address VARCHAR(190) NOT NULL,
+    display_name VARCHAR(120) NOT NULL DEFAULT '',
+    password_enc TEXT NOT NULL,
+    owner_id INT UNSIGNED NULL,
+    signature TEXT NULL,
+    added_by INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (owner_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

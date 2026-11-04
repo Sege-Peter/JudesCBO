@@ -22,7 +22,7 @@ if ($notify !== '' && filter_var($notify, FILTER_VALIDATE_EMAIL)) {
     $body = "You have a new message on the Judes CBO website.\n\n"
         . "From: $name <$email>\n" . ($phone ? "Phone: $phone\n" : '') . "Topic: $topic\n\n$message\n\n"
         . "Reply from the dashboard: " . rtrim((string) config('site_url'), '/') . "/admin/messages.php\n";
-    @mail($notify, $subject, $body, "Reply-To: $email\r\nContent-Type: text/plain; charset=utf-8");
+    send_mail($notify, $subject, $body, $email);
 }
 
 api_reply(true, "Thank you! Your message has been sent. We'll get back to you soon.");

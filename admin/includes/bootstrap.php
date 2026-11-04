@@ -186,7 +186,7 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 7;
+const SCHEMA_VERSION = 8;
 
 function column_exists(string $table, string $column): bool
 {
@@ -252,6 +252,7 @@ function migrate(): void
     db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('analytics_on', '1'), ('analytics_keep_months', '13'), ('analytics_secret', '" . bin2hex(random_bytes(16)) . "')");
     // Version 7: blocked IP addresses and automatic blocking of password guessing
     db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('sec_autoblock', '1'), ('sec_autoblock_limit', '30'), ('sec_force_https', '0')");
+    // Version 8: the dashboard mailbox (mailboxes table comes from schema.sql)
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
 
@@ -615,14 +616,13 @@ function send_csv(string $filename, array $header, iterable $rows): never
 }
 
 /**
- * Sends a plain-text email. Returns false if the server can't send mail
- * (common on a local XAMPP install).
+ * Sends a plain-text email from the organisation address. Uses the linked info@ mailbox (SMTP) when
+ * there is one, otherwise PHP mail(). Returns false if the server can't send mail.
  */
-function send_mail(string $to, string $subject, string $body): bool
+function send_mail(string $to, string $subject, string $body, string $replyTo = ''): bool
 {
-    $from = setting('org_email', 'info@judescbo.co.ke');
-    $headers = "From: Judes CBO <$from>\r\nContent-Type: text/plain; charset=utf-8";
-    return @mail($to, $subject, $body, $headers);
+    require_once __DIR__ . '/mailer.php';
+    return system_mail($to, $subject, $body, $replyTo);
 }
 
 // Public endpoints that don't need a login (visitor statistics) skip the session so visitors get no cookie

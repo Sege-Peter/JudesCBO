@@ -12,6 +12,7 @@ function nav_items(): array
         ['team.php', 'Team', 'fa-people-group'],
         ['partners.php', 'Partners', 'fa-handshake'],
         ['messages.php', 'Messages', 'fa-inbox'],
+        ['mailbox.php', 'Mailbox', 'fa-envelope'],
         ['subscribers.php', 'Subscribers', 'fa-envelope-open-text'],
         ['donations.php', 'Donations', 'fa-hand-holding-dollar'],
     ];
