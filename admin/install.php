@@ -64,7 +64,7 @@ $defaults = [
     'form_mode' => 'formspree',
     'formspree_url' => 'https://formspree.io/f/mjkelgrq',
     'notify_email' => '',
-    'org_email' => 'info@judescbo.org',
+    'org_email' => 'info@judescbo.co.ke',
 ];
 $insertSetting = $pdo->prepare('INSERT IGNORE INTO settings (name, value) VALUES (?, ?)');
 foreach ($defaults as $k => $v) {

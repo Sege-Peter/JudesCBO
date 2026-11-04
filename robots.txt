@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-Sitemap: https://sege-peter.github.io/JudesCBO/sitemap.xml
+Sitemap: https://judescbo.co.ke/sitemap.xml

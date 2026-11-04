@@ -22,13 +22,13 @@ Content is stored in the database. Each time something is saved, the dashboard r
        'db_name' => 'cpaneluser_judes',
        'db_user' => 'cpaneluser_judes',
        'db_pass' => 'the-database-password',
-       'site_url' => 'https://www.judescbo.org/',
+       'site_url' => 'https://www.judescbo.co.ke/',
        'secure_cookies' => true,
        'install_key' => 'a-long-random-secret',
    ];
    ```
 
-4. Open `https://www.judescbo.org/admin/install.php?key=a-long-random-secret` and create the first administrator.
+4. Open `https://www.judescbo.co.ke/admin/install.php?key=a-long-random-secret` and create the first administrator.
 5. Log in at `/admin/login.php`, then open **Settings** and click **Rebuild all pages now** so links use the new address.
 6. To collect messages in the dashboard, switch **Settings → Contact & newsletter forms** to **Built-in inbox**.
 

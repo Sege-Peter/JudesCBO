@@ -620,7 +620,7 @@ function send_csv(string $filename, array $header, iterable $rows): never
  */
 function send_mail(string $to, string $subject, string $body): bool
 {
-    $from = setting('org_email', 'info@judescbo.org');
+    $from = setting('org_email', 'info@judescbo.co.ke');
     $headers = "From: Judes CBO <$from>\r\nContent-Type: text/plain; charset=utf-8";
     return @mail($to, $subject, $body, $headers);
 }

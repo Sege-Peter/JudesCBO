@@ -81,7 +81,7 @@ function render_event_ics(array $e): string
         'LOCATION:' . ics_escape(event_place($e)),
         'DESCRIPTION:' . ics_escape(trim($e['summary'] . "\n\n" . $e['description'])),
         'URL:' . site_url('events'),
-        'ORGANIZER;CN=Judes CBO:mailto:' . setting('org_email', 'info@judescbo.org'),
+        'ORGANIZER;CN=Judes CBO:mailto:' . setting('org_email', 'info@judescbo.co.ke'),
         'END:VEVENT', 'END:VCALENDAR',
     ];
     return implode("\r\n", array_map('ics_fold', $lines)) . "\r\n";
@@ -383,7 +383,7 @@ function render_mpesa_card(): string
 
 function render_bank_card(): string
 {
-    $email = setting('org_email', 'info@judescbo.org');
+    $email = setting('org_email', 'info@judescbo.co.ke');
     $out = '<div class="way-card reveal">' . "\n"
         . '    <span class="way-icon"><i class="fas fa-building-columns"></i></span>' . "\n"
         . "    <h3>Bank Transfer</h3>\n";
@@ -413,7 +413,7 @@ function render_bank_card(): string
 
 function render_abroad_card(): string
 {
-    $email = setting('org_email', 'info@judescbo.org');
+    $email = setting('org_email', 'info@judescbo.co.ke');
     $link = setting('give_online_url');
     $out = '<div class="way-card reveal">' . "\n"
         . '    <span class="way-icon"><i class="fas fa-globe-africa"></i></span>' . "\n"

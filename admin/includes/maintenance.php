@@ -102,7 +102,7 @@ function render_maintenance_page(): string
     $message = setting('maint_message') ?: "We're making some improvements to our website. Thank you for your patience.";
     $until = strtotime(setting('maint_until'));
     $started = strtotime(setting('maint_started')) ?: time();
-    $email = setting('org_email', 'info@judescbo.org');
+    $email = setting('org_email', 'info@judescbo.co.ke');
     $contact = setting('maint_show_contact', '1') === '1';
     $whatsapp = 'https://wa.me/254712109310?text=' . rawurlencode('Hello Judes CBO!');
     $year = date('Y');
