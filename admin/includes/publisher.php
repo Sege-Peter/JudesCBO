@@ -411,8 +411,8 @@ function render_story_page(array $s, ?array $next, array $shell): string
     <!-- Fonts, icons and styles -->
     <link rel="preload" href="fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="css/fonts.css?v=20261104c">
-    <link rel="stylesheet" href="css/style.css?v=20261104c">
+    <link rel="stylesheet" href="css/fonts.css?v=20261104d">
+    <link rel="stylesheet" href="css/style.css?v=20261104d">
     <!-- Structured data -->
     <script type="application/ld+json">
 $jsonLd

@@ -2415,3 +2415,13 @@ html.is-app .footer-app { display: none; }
 .app-install { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border: 0; border-radius: 999px; background: var(--red); color: #fff; font: 700 1rem 'Montserrat', sans-serif; cursor: pointer; box-shadow: 0 10px 24px rgba(214,48,49,.35); transition: transform .25s, background .25s; }
 .app-install:hover { background: #c53030; transform: translateY(-2px); }
 @media (max-width: 900px) { .app-perks { align-items: flex-start; width: max-content; max-width: 100%; margin: 1.4rem auto 0; text-align: left; } }
+
+/* Phones: the app badge sits under the Programs links instead of under Donate/WhatsApp */
+.footer-app--col { display: none; }
+@media (max-width: 600px) {
+    .footer-actions .footer-app { display: none; }
+    .footer-app--col { display: inline-flex; margin-top: 16px; padding: 7px 12px 7px 10px; gap: 8px; }
+    .footer-app--col i { font-size: 1.35rem; }
+    .footer-app--col span { font-size: .82rem; }
+    html.is-app .footer-app--col { display: none; }
+}
