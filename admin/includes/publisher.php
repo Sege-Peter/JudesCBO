@@ -92,7 +92,7 @@ function render_story_card(array $s): string
     $file = h(story_href($s));
     $thumb = $s['cover_image']
         ? '<a href="' . $file . '" class="story-thumb"><img src="' . h($s['cover_image']) . '" alt="' . h($s['cover_alt'] ?: $s['title']) . '" loading="lazy"></a>'
-        : '<a href="' . $file . '" class="story-thumb story-thumb--icon"><i class="fas ' . h(CATEGORY_ICONS[$s['category']] ?? 'fa-newspaper') . '"></i></a>';
+        : '<a href="' . $file . '" class="story-thumb story-thumb--icon" aria-label="' . h($s['title']) . '"><i class="fas ' . h(CATEGORY_ICONS[$s['category']] ?? 'fa-newspaper') . '" aria-hidden="true"></i></a>';
     $iso = h($s['published_at']);
     $e = 'h';
     return <<<HTML
@@ -353,6 +353,10 @@ function render_story_page(array $s, ?array $next, array $shell): string
     <title>{$e($title)}</title>
     <meta name="description" content="{$e($desc)}">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <meta name="geo.region" content="KE-08">
+    <meta name="geo.placename" content="Oyugis, Homa Bay County, Kenya">
+    <meta name="geo.position" content="-0.510;34.733">
+    <meta name="ICBM" content="-0.510, 34.733">
     <meta name="author" content="Judes Community Based Organization">
     <link rel="canonical" href="{$e($url)}">
     <!-- Open Graph / social sharing -->
@@ -384,8 +388,8 @@ function render_story_page(array $s, ?array $next, array $shell): string
     <!-- Fonts, icons and styles -->
     <link rel="preload" href="fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="css/fonts.css?v=20261104">
-    <link rel="stylesheet" href="css/style.css?v=20261104">
+    <link rel="stylesheet" href="css/fonts.css?v=20261104b">
+    <link rel="stylesheet" href="css/style.css?v=20261104b">
     <!-- Structured data -->
     <script type="application/ld+json">
 $jsonLd
@@ -419,7 +423,7 @@ $body
                     <p>Your support helps us reach more young people and families in Homa Bay County.</p>
                 </div>
                 <div class="article-cta-actions">
-                    <a href="donate" class="header-donate"><i class="fas fa-heart"></i><span>Donate</span></a>
+                    <a href="donate" class="header-donate" aria-label="Donate"><i class="fas fa-heart"></i><span>Donate</span></a>
                     <a href="contact" class="footer-chip">Get involved</a>
                 </div>
             </div>

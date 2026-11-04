@@ -42,18 +42,31 @@ function updateProgress() {
 updateProgress();
 window.addEventListener('scroll', updateProgress, { passive: true });
 
-// Scroll reveal: cards on inner pages are tagged automatically, unless they're already on screen
+// Scroll reveal: cards on inner pages are tagged automatically, unless they're already on screen.
+// Runs after the first frame is painted so measuring positions doesn't hold up the page.
+let revealEls = [];
+function initReveal() {
 document.querySelectorAll('.feature-card, .story-card, .partner-card, .article-content, .article-cta').forEach(el => {
     if (!el.classList.contains('reveal') && el.getBoundingClientRect().top > window.innerHeight) {
         el.classList.add('reveal');
     }
 });
-const revealEls = document.querySelectorAll('.reveal');
+revealEls = document.querySelectorAll('.reveal');
 revealEls.forEach(el => {
     // Stagger siblings in the same grid
     const siblings = [...el.parentElement.children].filter(c => c.classList.contains('reveal'));
     el.style.setProperty('--stagger', `${Math.min(siblings.indexOf(el) * 0.1, 0.5)}s`);
 });
+pendingReveal = reduceMotion ? [] : [...revealEls];
+if (reduceMotion) revealEls.forEach(finishReveal);
+if (pendingReveal.length) {
+    window.addEventListener('scroll', queueReveal, { passive: true });
+    window.addEventListener('resize', queueReveal);
+    window.addEventListener('load', queueReveal);
+    checkReveal();
+}
+}
+requestAnimationFrame(() => setTimeout(initReveal, 0));
 function finishReveal(el) {
     el.classList.add('is-visible');
     // Hand the element back to its own hover transitions once it has arrived
@@ -63,8 +76,7 @@ function finishReveal(el) {
     }, 1600);
 }
 // Checks positions on scroll rather than using IntersectionObserver, so content can never get stuck hidden
-let pendingReveal = reduceMotion ? [] : [...revealEls];
-if (reduceMotion) revealEls.forEach(finishReveal);
+let pendingReveal = [];
 let revealQueued = false;
 function checkReveal() {
     revealQueued = false;
@@ -83,12 +95,6 @@ function queueReveal() {
         revealQueued = true;
         requestAnimationFrame(checkReveal);
     }
-}
-if (pendingReveal.length) {
-    window.addEventListener('scroll', queueReveal, { passive: true });
-    window.addEventListener('resize', queueReveal);
-    window.addEventListener('load', queueReveal);
-    requestAnimationFrame(checkReveal);
 }
 
 // Animated counters
@@ -119,7 +125,7 @@ function checkCounters() {
 if (pendingCounters.length) {
     pendingCounters.forEach(el => { el.textContent = el.dataset.from || '0'; });
     window.addEventListener('scroll', checkCounters, { passive: true });
-    checkCounters();
+    requestAnimationFrame(() => setTimeout(checkCounters, 0));
 }
 
 // About tabs (home page)
@@ -264,7 +270,11 @@ function eraseEffect() {
         setTimeout(typeEffect, 500);
     }
 }
-if (typedText) typeEffect();
+// Starts once the page has loaded so it doesn't compete with the first paint
+if (typedText) {
+    if (document.readyState === 'complete') setTimeout(typeEffect, 600);
+    else window.addEventListener('load', () => setTimeout(typeEffect, 600), { once: true });
+}
 
 // Donate page: the amount and cause picker fills in the M-Pesa steps and the WhatsApp confirmation
 const donateCard = document.querySelector('.donate-card');

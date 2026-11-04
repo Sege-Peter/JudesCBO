@@ -572,7 +572,8 @@ function email_signature_html(string $sig, string $logo): string
     $rest = '';
     foreach ($lines as $l) {
         $l = h($l);
-        $l = preg_replace('~(\+?\d[\d \-]{7,}\d)~', '<a href="tel:$1" style="color:#4a5568;text-decoration:none">$1</a>', $l);
+        // Phone numbers become tap-to-call links (the dial link has no spaces)
+        $l = preg_replace_callback('~(\+?\d[\d \-]{7,}\d)~', fn($m) => '<a href="tel:' . preg_replace('/[^\d+]/', '', $m[1]) . '" style="color:#2d5016;text-decoration:none">' . $m[1] . '</a>', $l);
         $l = preg_replace('~\b((?:https?://)?(?:www\.)?judescbo\.co\.ke[^\s<]*)~', '<a href="https://judescbo.co.ke" style="color:#2d5016;font-weight:bold;text-decoration:none">$1</a>', $l);
         $l = preg_replace('~([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})~', '<a href="mailto:$1" style="color:#2d5016;text-decoration:none">$1</a>', $l);
         $rest .= '<br>' . $l;
