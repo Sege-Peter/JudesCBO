@@ -128,7 +128,7 @@ function render_events_schema(array $events, ?array $org): string
             'eventStatus' => 'https://schema.org/EventScheduled',
             'eventAttendanceMode' => 'https://schema.org/OfflineEventAttendanceMode',
             'location' => ['@type' => 'Place', 'name' => $e['venue'], 'address' => ['@type' => 'PostalAddress', 'addressLocality' => $e['ward'] ?: 'Oyugis', 'addressRegion' => 'Homa Bay County', 'addressCountry' => 'KE']],
-            'image' => site_url($e['image'] ?: 'images/brand/og-events.jpg'),
+            'image' => site_url($e['image'] ?: 'images/brand/share-events.jpg'),
             'url' => site_url('events') . '#event-' . $e['slug'],
             'organizer' => $orgRef,
             'isAccessibleForFree' => true,

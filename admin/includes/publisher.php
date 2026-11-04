@@ -176,14 +176,14 @@ function render_gallery_page(): string
 function story_share_image(array $s): string
 {
     if (!$s['cover_image'] || !function_exists('imagejpeg')) {
-        return 'images/brand/og-stories.jpg';
+        return 'images/brand/share-stories.jpg';
     }
     $src = site_path($s['cover_image']);
     if (!is_file($src)) {
-        return 'images/brand/og-stories.jpg';
+        return 'images/brand/share-stories.jpg';
     }
     // A new file name whenever the cover or title changes, so apps that cache previews pick it up
-    $relative = 'uploads/og/' . $s['slug'] . '-' . substr(md5($s['cover_image'] . '|' . $s['title'] . '|v2'), 0, 8) . '.jpg';
+    $relative = 'uploads/og/' . $s['slug'] . '-' . substr(md5($s['cover_image'] . '|' . $s['title'] . '|' . ($s['excerpt'] ?? '') . '|v3'), 0, 8) . '.jpg';
     $dest = site_path($relative);
     if (is_file($dest)) {
         return $relative;
@@ -196,7 +196,7 @@ function story_share_image(array $s): string
         default => false,
     };
     if (!$img) {
-        return 'images/brand/og-stories.jpg';
+        return 'images/brand/share-stories.jpg';
     }
     // Centre-crop the cover to 1200x630
     [$w, $h] = [imagesx($img), imagesy($img)];
@@ -213,19 +213,40 @@ function story_share_image(array $s): string
         imagedestroy($overlay);
     }
 
+    // Title and summary in the brand fonts, placed like the page preview images (tools/build-og.py)
     $font = share_card_font();
+    $body = share_card_font('body');
     if ($font && function_exists('imagettftext')) {
         $white = imagecolorallocate($card, 255, 255, 255);
-        $size = mb_strlen($s['title']) > 48 ? 34 : 40; // points
-        $lines = wrap_for_image($s['title'], $font, $size, 820);
+        $soft = imagecolorallocatealpha($card, 255, 255, 255, 14);
+        $size = mb_strlen($s['title']) <= 34 ? 46 : 40; // points (GD uses 96 dpi: 46pt is about 62px)
+        $lines = wrap_for_image($s['title'], $font, $size, 780);
         if (count($lines) > 3) {
             $lines = array_slice($lines, 0, 3);
-            $lines[2] = rtrim(mb_substr($lines[2], 0, max(0, mb_strlen($lines[2]) - 1))) . '…';
+            $words = explode(' ', $lines[2]);
+            if (count($words) > 1) array_pop($words); // end on a whole word
+            $lines[2] = rtrim(implode(' ', $words), ' ,.:;-') . '…';
         }
-        $y = 268 + (int) ($size * 1.33);
+        $px = $size * 96 / 72;
+        $y = 262 + (int) round($px * 0.92);
         foreach ($lines as $line) {
-            imagettftext($card, $size, 0, 70, $y, $white, $font, $line);
-            $y += (int) ($size * 1.33 * 1.18);
+            imagettftext($card, $size, 0, 64, $y, $white, $font, $line);
+            $y += (int) round($px * 1.12);
+        }
+        $summary = trim((string) ($s['excerpt'] ?? ''));
+        if ($body && $summary !== '' && count($lines) <= 2) {
+            $sub = wrap_for_image($summary, $body, 20, 760);
+            if (count($sub) > 2) {
+                $sub = array_slice($sub, 0, 2);
+                $words = explode(' ', $sub[1]);
+                if (count($words) > 1) array_pop($words);
+                $sub[1] = rtrim(implode(' ', $words), ' ,.:;-') . '…';
+            }
+            $y += 6;
+            foreach ($sub as $line) {
+                imagettftext($card, 20, 0, 64, $y, $soft, $body, $line);
+                $y += 38;
+            }
         }
     }
 
@@ -241,10 +262,11 @@ function story_share_image(array $s): string
     return $relative;
 }
 
-/** A bold sans-serif font available on this server, for card titles. */
-function share_card_font(): ?string
+/** Brand font for share cards (bundled in admin/assets/fonts), falling back to a system font. */
+function share_card_font(string $kind = 'title'): ?string
 {
-    $candidates = array_merge(glob(dirname(__DIR__) . '/assets/fonts/*.ttf') ?: [], [
+    $bundled = dirname(__DIR__) . '/assets/fonts/' . ($kind === 'body' ? 'Raleway-SemiBold.ttf' : 'Montserrat-ExtraBold.ttf');
+    $candidates = array_merge([$bundled], [
         '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf',
         '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
         '/usr/share/fonts/dejavu-sans-fonts/DejaVuSans-Bold.ttf',
