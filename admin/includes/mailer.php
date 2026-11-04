@@ -364,3 +364,106 @@ function forward_remove(array $box, string $to): void
 {
     webmail_api($box, 'delete_forwarder', ['address' => $box['address'], 'forwarder' => $to]);
 }
+
+/* ---------- Unsubscribe and block sender ---------- */
+
+/** Parses List-Unsubscribe into ['https' => url|null, 'mailto' => addr|null, 'oneclick' => bool]. */
+function unsubscribe_options(array $headers): array
+{
+    $out = ['https' => null, 'mailto' => null, 'subject' => 'unsubscribe', 'oneclick' => false];
+    $value = Mime::decodeHeader(implode(',', $headers['list-unsubscribe'] ?? []));
+    foreach (preg_match_all('/<([^>]+)>/', $value, $m) ? $m[1] : [] as $u) {
+        $u = trim($u);
+        if ($out['https'] === null && preg_match('#^https://#i', $u) && filter_var($u, FILTER_VALIDATE_URL)) $out['https'] = $u;
+        if ($out['mailto'] === null && stripos($u, 'mailto:') === 0) {
+            $parts = parse_url($u);
+            $addr = rawurldecode((string) ($parts['path'] ?? ''));
+            if (filter_var($addr, FILTER_VALIDATE_EMAIL)) {
+                $out['mailto'] = $addr;
+                parse_str((string) ($parts['query'] ?? ''), $q);
+                if (!empty($q['subject']) && is_string($q['subject'])) $out['subject'] = mb_substr($q['subject'], 0, 120);
+            }
+        }
+    }
+    $out['oneclick'] = $out['https'] !== null && stripos(implode(' ', $headers['list-unsubscribe-post'] ?? []), 'One-Click') !== false;
+    return $out;
+}
+
+/** True only for public internet addresses (keeps the one-click request away from internal services). */
+function public_host(string $host): bool
+{
+    $ips = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : (gethostbynamel($host) ?: []);
+    if (!$ips) return false;
+    foreach ($ips as $ip) {
+        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) return false;
+    }
+    return true;
+}
+
+/**
+ * Unsubscribes from a mailing list on the user's behalf.
+ * Returns ['done' => bool, 'open' => url to open in the browser when it can't be done automatically].
+ */
+function mailbox_unsubscribe(array $box, array $headers): array
+{
+    $o = unsubscribe_options($headers);
+    if ($o['oneclick']) {
+        $host = (string) parse_url($o['https'], PHP_URL_HOST);
+        if ($host !== '' && public_host($host)) {
+            $ctx = stream_context_create(['http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/x-www-form-urlencoded\r\nUser-Agent: JudesCBO-Mailbox/1.0",
+                'content' => 'List-Unsubscribe=One-Click',
+                'timeout' => 15,
+                'follow_location' => 0,
+                'ignore_errors' => true,
+            ]]);
+            $res = @file_get_contents($o['https'], false, $ctx);
+            $status = 0;
+            foreach ($http_response_header ?? [] as $line) {
+                if (preg_match('#^HTTP/\S+\s+(\d{3})#', $line, $m)) $status = (int) $m[1];
+            }
+            if ($res !== false && $status >= 200 && $status < 300) return ['done' => true, 'open' => null];
+        }
+    }
+    if ($o['mailto']) {
+        mailbox_send($box, ['to' => [$o['mailto']], 'subject' => $o['subject'], 'text' => 'Please unsubscribe ' . $box['address'] . ' from this mailing list.', 'html' => ''], [], false);
+        return ['done' => true, 'open' => null];
+    }
+    return ['done' => false, 'open' => $o['https']];
+}
+
+/** Folder name the mail server's filters use for a mailbox folder (INBOX.spam -> spam). */
+function filter_folder(string $imapName): string
+{
+    return preg_replace('/^INBOX[.\/]/i', '', $imapName);
+}
+
+const BLOCK_PREFIX = 'Blocked: ';
+
+/** Senders blocked for this mailbox (filters named "Blocked: address"). */
+function blocked_senders(array $box): array
+{
+    $rows = webmail_api($box, 'list_filters', ['account' => $box['address']])['data'] ?? [];
+    $out = [];
+    foreach ($rows as $r) {
+        if (str_starts_with((string) ($r['filtername'] ?? ''), BLOCK_PREFIX)) $out[] = substr($r['filtername'], strlen(BLOCK_PREFIX));
+    }
+    sort($out);
+    return $out;
+}
+
+/** Future mail from $sender goes straight to the Spam folder. */
+function block_sender(array $box, string $sender, string $spamFolder): void
+{
+    webmail_api($box, 'store_filter', [
+        'account' => $box['address'], 'filtername' => BLOCK_PREFIX . $sender,
+        'part1' => '$header_from:', 'match1' => 'contains', 'val1' => $sender, 'opt1' => 'or',
+        'action1' => 'save', 'dest1' => filter_folder($spamFolder),
+    ]);
+}
+
+function unblock_sender(array $box, string $sender): void
+{
+    webmail_api($box, 'delete_filter', ['account' => $box['address'], 'filtername' => BLOCK_PREFIX . $sender]);
+}

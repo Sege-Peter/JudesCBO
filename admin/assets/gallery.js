@@ -45,7 +45,7 @@
                 data.append('csrf', csrf);
                 grid.querySelectorAll('.photo-card').forEach(card => data.append('ids[]', card.dataset.id));
                 try {
-                    const res = await fetch('gallery.php', { method: 'POST', body: data });
+                    const res = await fetch('gallery', { method: 'POST', body: data });
                     const json = await res.json();
                     if (!json.ok) throw new Error(json.error);
                     adminToast('New order saved and published.');

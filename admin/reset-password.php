@@ -23,7 +23,7 @@ if ($reset && $_SERVER['REQUEST_METHOD'] === 'POST') {
         revoke_all_tokens((int) $reset['user_id']);
         log_activity('password.reset', 'Password reset by email link', (int) $reset['user_id']);
         flash('success', 'Your password has been changed. You can log in now.');
-        redirect('login.php');
+        redirect('login');
     }
 }
 ?>
@@ -47,8 +47,8 @@ if ($reset && $_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if (!$reset): ?>
             <h1>Link expired</h1>
             <p class="auth-sub">This reset link is invalid, already used, or older than an hour.</p>
-            <a href="forgot-password.php" class="btn btn-primary btn-block">Request a new link</a>
-            <p class="auth-foot"><a href="login.php"><i class="fas fa-arrow-left"></i> Back to login</a></p>
+            <a href="forgot-password" class="btn btn-primary btn-block">Request a new link</a>
+            <p class="auth-foot"><a href="login"><i class="fas fa-arrow-left"></i> Back to login</a></p>
         <?php else: ?>
             <h1>New password</h1>
             <p class="auth-sub">Hi <?= h(explode(' ', $reset['name'])[0]) ?>, choose a new password for your account.</p>

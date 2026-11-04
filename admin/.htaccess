@@ -5,6 +5,10 @@ Options -Indexes
 </FilesMatch>
 
 RewriteEngine On
+# Old .php addresses redirect to the clean ones (page views only, so form posts are never redirected)
+RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+RewriteCond %{THE_REQUEST} \s([^\s?]*/)([a-z0-9-]+)\.php[\s?]
+RewriteRule ^[a-z0-9-]+\.php$ %1%2 [R=301,L,NE]
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}.php -f
 RewriteRule ^([a-z0-9-]+)/?$ $1.php [L]

@@ -45,7 +45,7 @@ if (preg_match('/^[a-f0-9]{64}$/', $token)) {
             <h1>Link not valid</h1>
             <p class="auth-sub">This confirmation link has expired or was already used. Open <strong>My profile</strong> in the dashboard and choose <strong>Resend link</strong>.</p>
         <?php endif; ?>
-        <a href="<?= current_user() ? 'profile.php' : 'login.php' ?>" class="btn btn-primary btn-block"><?= current_user() ? 'Go to my profile' : 'Go to login' ?></a>
+        <a href="<?= current_user() ? 'profile' : 'login' ?>" class="btn btn-primary btn-block"><?= current_user() ? 'Go to my profile' : 'Go to login' ?></a>
     </main>
 </body>
 </html>

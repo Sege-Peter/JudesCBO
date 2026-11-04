@@ -106,9 +106,12 @@ final class ImapClient
     }
 
     /** UIDs matching the search, newest first. $query is plain text searched in From, To and Subject. */
-    public function search(string $query = '', bool $unseenOnly = false, bool $flaggedOnly = false): array
+    public function search(string $query = '', bool $unseenOnly = false, bool $flaggedOnly = false, string $tab = ''): array
     {
         $crit = [];
+        // Newsletters and marketing carry a List-Unsubscribe header
+        if ($tab === 'promo') $crit[] = 'HEADER List-Unsubscribe ""';
+        if ($tab === 'primary') $crit[] = 'NOT HEADER List-Unsubscribe ""';
         $charset = '';
         if ($query !== '') {
             $q = str_replace(["\r", "\n"], ' ', $query);
@@ -139,13 +142,17 @@ final class ImapClient
     public function summaries(array $uids): array
     {
         if (!$uids) return [];
-        [, $lines] = $this->cmd('UID FETCH ' . implode(',', $uids) . ' (UID FLAGS INTERNALDATE RFC822.SIZE BODYSTRUCTURE BODY.PEEK[HEADER.FIELDS (FROM TO CC SUBJECT DATE)])');
+        [, $lines] = $this->cmd('UID FETCH ' . implode(',', $uids) . ' (UID FLAGS INTERNALDATE RFC822.SIZE BODYSTRUCTURE BODY.PEEK[HEADER.FIELDS (FROM TO CC SUBJECT DATE LIST-UNSUBSCRIBE)] BODY.PEEK[TEXT]<0.1500>)');
         $out = [];
         foreach ($lines as $l) {
             $f = $this->fetchData($l);
             if (!$f || !isset($f['UID'])) continue;
             $hdr = '';
-            foreach ($f as $k => $v) if (str_starts_with($k, 'BODY[HEADER')) $hdr = (string) $v;
+            $text = '';
+            foreach ($f as $k => $v) {
+                if (str_starts_with($k, 'BODY[HEADER')) $hdr = (string) $v;
+                if (str_starts_with($k, 'BODY[TEXT]')) $text = (string) $v;
+            }
             $h = Mime::headers($hdr);
             $flags = array_map('strtolower', (array) ($f['FLAGS'] ?? []));
             $out[(int) $f['UID']] = [
@@ -159,9 +166,41 @@ final class ImapClient
                 'flagged' => in_array('\\flagged', $flags, true),
                 'answered' => in_array('\\answered', $flags, true),
                 'attach' => self::hasAttachment($f['BODYSTRUCTURE'] ?? null),
+                'promo' => !empty($h['list-unsubscribe']),
+                'snippet' => self::snippet($text),
             ];
         }
         return $out;
+    }
+
+    /** A short plain-text preview from the start of the body (best effort, no full MIME parse). */
+    private static function snippet(string $raw): string
+    {
+        if ($raw === '') return '';
+        // Skip a MIME part header block if the body starts with a boundary
+        if (preg_match('/^\s*--\S+\r?\n/', $raw)) {
+            $parts = preg_split('/\r?\n\r?\n/', $raw, 2);
+            $head = $parts[0];
+            $raw = $parts[1] ?? '';
+            if (stripos($head, 'base64') !== false) {
+                $raw = (string) base64_decode(preg_replace('/[^A-Za-z0-9+\/=]/', '', (string) preg_replace('/\r?\n--.*/s', '', $raw)));
+            } elseif (stripos($head, 'quoted-printable') !== false) {
+                $raw = quoted_printable_decode($raw);
+            }
+        } elseif (preg_match('/=\r?\n|=[0-9A-F]{2}/', $raw)) {
+            $raw = quoted_printable_decode($raw);
+        } elseif (preg_match('/^[A-Za-z0-9+\/=\r\n]{80,}$/', trim(substr($raw, 0, 400)))) {
+            $raw = (string) base64_decode(preg_replace('/[^A-Za-z0-9+\/=]/', '', $raw));
+        }
+        $raw = preg_replace('/\r?\n--[^\r\n]+.*$/s', '', $raw);
+        $raw = preg_replace('#<(style|script|head)\b[^>]*>.*?</\1>#is', ' ', (string) $raw);
+        // Block-level tags become spaces so words don't run together
+        $raw = preg_replace('#<(br|/p|/div|/h[1-6]|/li|/tr|/td|/table)\b[^>]*>#i', ' ', (string) $raw);
+        $text = html_entity_decode(strip_tags((string) $raw), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace('/^>.*$/m', '', $text);
+        $text = trim(preg_replace('/\s+/u', ' ', (string) $text) ?? '');
+        if (!mb_check_encoding($text, 'UTF-8')) $text = mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
+        return mb_strimwidth($text, 0, 140, '…');
     }
 
     private static function hasAttachment($bs): bool

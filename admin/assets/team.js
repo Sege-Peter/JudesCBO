@@ -45,7 +45,7 @@
                 data.append('action', 'reorder');
                 document.querySelectorAll('.team-admin-card').forEach(c => data.append('ids[]', c.dataset.id));
                 try {
-                    const res = await fetch('team.php', { method: 'POST', body: data });
+                    const res = await fetch('team', { method: 'POST', body: data });
                     if (!(await res.json()).ok) throw new Error();
                     adminToast('New order saved and published.');
                 } catch {

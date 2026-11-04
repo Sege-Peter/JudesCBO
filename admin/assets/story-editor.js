@@ -31,7 +31,7 @@
         data.append('image', file, file.name && file.name !== 'image.png' ? file.name : `pasted-${Date.now()}.png`);
         quill.insertText(index, UPLOADING, { italic: true }, 'user');
         try {
-            const res = await fetch('story-edit.php', { method: 'POST', body: data });
+            const res = await fetch('story-edit', { method: 'POST', body: data });
             const json = await res.json();
             quill.deleteText(index, UPLOADING.length, 'user');
             if (!json.ok) throw new Error(json.error);

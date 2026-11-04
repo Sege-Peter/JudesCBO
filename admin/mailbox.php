@@ -19,14 +19,15 @@ $q = trim((string) ($_GET['q'] ?? ''));
 $filter = in_array($_GET['filter'] ?? '', ['unread', 'starred'], true) ? $_GET['filter'] : '';
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $uid = (int) ($_GET['uid'] ?? 0);
+$tab = ($_GET['tab'] ?? '') === 'promo' ? 'promo' : '';
 
 function mbx_url(array $set = [], array $drop = []): string
 {
-    global $box, $folder, $q, $filter, $page;
-    $p = array_filter(['box' => $box['id'] ?? null, 'folder' => $folder !== 'INBOX' ? $folder : null, 'q' => $q ?: null, 'filter' => $filter ?: null, 'page' => $page > 1 ? $page : null]);
+    global $box, $folder, $q, $filter, $page, $tab;
+    $p = array_filter(['box' => $box['id'] ?? null, 'folder' => $folder !== 'INBOX' ? $folder : null, 'tab' => $tab ?: null, 'q' => $q ?: null, 'filter' => $filter ?: null, 'page' => $page > 1 ? $page : null]);
     foreach ($drop as $k) unset($p[$k]);
     $p = array_filter(array_merge($p, $set), fn($v) => $v !== null && $v !== '');
-    return 'mailbox.php' . ($p ? '?' . http_build_query($p) : '');
+    return 'mailbox' . ($p ? '?' . http_build_query($p) : '');
 }
 
 function can_edit_box(array $me, array $box): bool
@@ -78,17 +79,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 flash('error', "$address is already linked.");
             }
-            redirect('mailbox.php?box=' . (int) $existing);
+            redirect('mailbox?box=' . (int) $existing);
         }
         db()->prepare('INSERT INTO mailboxes (address, display_name, password_enc, owner_id, added_by) VALUES (?, ?, ?, ?, ?)')
             ->execute([$address, $name ?: 'Judes CBO', mail_encrypt($password), $shared ? null : $me['id'], $me['id']]);
         $newId = (int) db()->lastInsertId();
         log_activity('mailbox.link', $address . ($shared ? ' (shared)' : ''));
         flash('success', "$address is linked.");
-        redirect('mailbox.php?box=' . $newId);
+        redirect('mailbox?box=' . $newId);
     }
 
-    if (!$box) redirect('mailbox.php');
+    if (!$box) redirect('mailbox');
 
     if ($action === 'settings') {
         if (!can_edit_box($me, $box)) error_page(403, 'Not allowed', 'Only an administrator can change a shared mailbox.');
@@ -133,12 +134,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect(mbx_url(['settings' => 1]) . '#forwarding');
     }
 
+    if ($action === 'unblock') {
+        if (!can_edit_box($me, $box)) error_page(403, 'Not allowed', 'Only an administrator can change a shared mailbox.');
+        $sender = strtolower(post_str('sender', 190));
+        try {
+            unblock_sender($box, $sender);
+            log_activity('mailbox.unblock', $box['address'] . ": $sender");
+            flash('success', "Emails from $sender will reach the inbox again.");
+        } catch (RuntimeException $e) {
+            flash('error', $e->getMessage());
+        }
+        redirect(mbx_url(['settings' => 1]) . '#blocked');
+    }
+
     if ($action === 'unlink') {
         if (!can_edit_box($me, $box)) error_page(403, 'Not allowed', 'Only an administrator can remove a shared mailbox.');
         db()->prepare('DELETE FROM mailboxes WHERE id = ?')->execute([$box['id']]);
         log_activity('mailbox.unlink', $box['address']);
         flash('success', $box['address'] . ' was removed from the dashboard. The mailbox itself and its emails are untouched.');
-        redirect('mailbox.php');
+        redirect('mailbox');
     }
 
     try {
@@ -154,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($bad || (!$to && !$cc && !$bcc)) {
                 $_SESSION['mbx_draft'] = $_POST;
                 flash('error', $bad ? 'Check these addresses: ' . implode(', ', $bad) : 'Add at least one recipient.');
-                redirect(is_string($back) && str_starts_with($back, 'mailbox.php') ? $back : mbx_url(['compose' => 1]));
+                redirect(is_string($back) && str_starts_with($back, 'mailbox') ? $back : mbx_url(['compose' => 1]));
             }
             $attachments = [];
             $total = 0;
@@ -209,13 +223,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             unset($_SESSION['mbx_draft']);
             log_activity('mailbox.send', 'From ' . $box['address'] . ' to ' . implode(', ', array_merge($to, $cc, $bcc)) . ': ' . mb_strimwidth($subject, 0, 80, '…'));
             flash('success', 'Email sent.');
-            if ($contactId) redirect('messages.php?id=' . $contactId);
+            if ($contactId) redirect('messages?id=' . $contactId);
             redirect($replyUid ? mbx_url(['folder' => $replyFolder, 'uid' => $replyUid]) : mbx_url());
+        }
+
+        if ($action === 'unsubscribe' || $action === 'block') {
+            $one = (int) ($_POST['uid'] ?? 0);
+            $imap = mailbox_connect($box);
+            $folders = $imap->folders();
+            $imap->select($folder);
+            $raw = $imap->raw($one, true);
+            if ($raw === null) throw new RuntimeException('That email is no longer in this folder.');
+            $msgHeaders = Mime::parse($raw)['headers'];
+            $sender = strtolower(Mime::addresses(Mime::decodeHeader($msgHeaders['from'][0] ?? ''))[0]['email'] ?? '');
+            if ($action === 'unsubscribe') {
+                $r = mailbox_unsubscribe($box, $msgHeaders);
+                log_activity('mailbox.unsubscribe', $box['address'] . " from $sender" . ($r['done'] ? '' : ' (manual link)'));
+                if ($r['done']) {
+                    flash('success', "Unsubscribed from $sender. It can take a few days for their emails to stop.");
+                } elseif ($r['open']) {
+                    $_SESSION['mbx_open'] = $r['open'];
+                    flash('info', 'This sender asks you to confirm on their website. Use the "Open unsubscribe page" button below.');
+                } else {
+                    flash('error', "This email doesn't include an unsubscribe option. Use Block sender instead.");
+                }
+                redirect(mbx_url(['uid' => $one]));
+            }
+            if (!can_edit_box($me, $box)) throw new RuntimeException('Only an administrator can block senders for a shared mailbox.');
+            if (!filter_var($sender, FILTER_VALIDATE_EMAIL)) throw new RuntimeException("Couldn't read the sender's address.");
+            $junk = mail_special_folder($folders, 'junk');
+            if ($junk === null) throw new RuntimeException('This mailbox has no Spam folder.');
+            block_sender($box, $sender, $junk);
+            $imap->move([$one], $junk);
+            log_activity('mailbox.block', $box['address'] . ": $sender");
+            flash('success', "Blocked $sender. Their emails will go straight to Spam. You can undo this in mailbox settings.");
+            redirect(mbx_url([], ['uid']));
         }
 
         // Message actions on one or more UIDs in the current folder
         $uids = uid_list($_POST['uids'] ?? []);
-        if ($uids && in_array($action, ['read', 'unread', 'star', 'unstar', 'delete', 'move', 'spam'], true)) {
+        if ($uids && in_array($action, ['read', 'unread', 'star', 'unstar', 'delete', 'move', 'spam', 'archive', 'notspam'], true)) {
             $imap = mailbox_connect($box);
             $folders = $imap->folders();
             $imap->select($folder);
@@ -226,6 +273,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 case 'unread': $imap->setFlag($uids, '\\Seen', false); break;
                 case 'star': $imap->setFlag($uids, '\\Flagged', true); break;
                 case 'unstar': $imap->setFlag($uids, '\\Flagged', false); break;
+                case 'archive':
+                    $arch = mail_special_folder($folders, 'archive');
+                    if ($arch === null) throw new RuntimeException('This mailbox has no Archive folder.');
+                    $imap->move($uids, $arch);
+                    flash('success', $n === 1 ? 'Archived.' : "$n emails archived.");
+                    redirect(mbx_url([], ['uid']));
+                case 'notspam':
+                    $imap->move($uids, 'INBOX');
+                    flash('success', $n === 1 ? 'Moved to Inbox.' : "$n emails moved to Inbox.");
+                    redirect(mbx_url([], ['uid']));
                 case 'spam':
                     $junk = mail_special_folder($folders, 'junk');
                     if ($junk === null) throw new RuntimeException('This mailbox has no Spam folder.');
@@ -253,7 +310,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             if ($action === 'unread') redirect(mbx_url([], ['uid']));
             $back = (string) ($_POST['back'] ?? '');
-            redirect(str_starts_with($back, 'mailbox.php') ? $back : mbx_url());
+            redirect(str_starts_with($back, 'mailbox') ? $back : mbx_url());
         }
     } catch (ImapAuthError $e) {
         flash('error', 'The password for ' . $box['address'] . ' has changed. Link it again with the new password.');
@@ -262,7 +319,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'send') $_SESSION['mbx_draft'] = $_POST;
         flash('error', $e->getMessage());
         $back = (string) ($_POST['back'] ?? '');
-        redirect(str_starts_with($back, 'mailbox.php') ? $back : mbx_url());
+        redirect(str_starts_with($back, 'mailbox') ? $back : mbx_url());
     }
     redirect(mbx_url());
 }
@@ -297,46 +354,62 @@ $list = [];
 $total = 0;
 $message = null;
 $special = [];
-if ($box && !isset($_GET['link'])) {
+$promoUnseen = 0;
+$load = function () use ($box, &$folder, &$uid, $q, $filter, $page, $tab, &$folders, &$special, &$message, &$list, &$total, &$error, &$promoUnseen): void {
+    $imap = mailbox_connect($box);
+    $folders = $imap->folders();
+    $special = [];
+    foreach (['sent', 'trash', 'drafts', 'junk', 'archive'] as $use) $special[$use] = mail_special_folder($folders, $use);
+    if (!in_array($folder, array_column($folders, 'name'), true)) $folder = 'INBOX';
+    // Order: Inbox, Drafts, Sent, Archive, Spam, Trash, then the rest A–Z
+    $rank = fn($f) => match (true) {
+        strtoupper($f['name']) === 'INBOX' => 0,
+        $f['name'] === $special['drafts'] => 1,
+        $f['name'] === $special['sent'] => 2,
+        $f['name'] === $special['archive'] => 3,
+        $f['name'] === $special['junk'] => 4,
+        $f['name'] === $special['trash'] => 5,
+        default => 10,
+    };
+    usort($folders, fn($a, $b) => [$rank($a), strtolower($a['label'])] <=> [$rank($b), strtolower($b['label'])]);
+    $imap->select($folder);
+    $message = null;
+    if ($uid) {
+        $raw = $imap->raw($uid);
+        if ($raw === null) {
+            $error = 'That email is no longer in this folder.';
+            $uid = 0;
+        } else {
+            $message = Mime::parse($raw);
+            $message['uid'] = $uid;
+            $flagInfo = $imap->summaries([$uid]);
+            $message['flagged'] = $flagInfo[$uid]['flagged'] ?? false;
+        }
+    }
+    // Unread counts after opening the email, so it no longer counts as unread
+    $skip = [$special['sent'], $special['trash'], $special['drafts']];
+    foreach (array_keys($folders) as $k) {
+        $folders[$k]['unseen'] = in_array($folders[$k]['name'], $skip, true) ? 0 : $imap->status($folders[$k]['name'])['unseen'];
+    }
+    $isInbox = strtoupper($folder) === 'INBOX';
+    $all = $imap->search($q, $filter === 'unread', $filter === 'starred', $isInbox ? ($tab ?: 'primary') : '');
+    if ($isInbox) $promoUnseen = count($imap->search('', true, false, 'promo'));
+    $total = count($all);
+    $pageUids = array_slice($all, ($page - 1) * MBX_PER_PAGE, MBX_PER_PAGE);
+    $sum = $imap->summaries($pageUids);
+    $list = [];
+    foreach ($pageUids as $u) if (isset($sum[$u])) $list[] = $sum[$u];
+};
+if ($box && !isset($_GET['link']) && !isset($_GET['settings'])) {
     try {
-        $imap = mailbox_connect($box);
-        $folders = $imap->folders();
-        foreach (['sent', 'trash', 'drafts', 'junk', 'archive'] as $use) $special[$use] = mail_special_folder($folders, $use);
-        if (!in_array($folder, array_column($folders, 'name'), true)) $folder = 'INBOX';
-        // Order: Inbox, Drafts, Sent, Archive, Spam, Trash, then the rest A–Z
-        $rank = fn($f) => match (true) {
-            strtoupper($f['name']) === 'INBOX' => 0,
-            $f['name'] === $special['drafts'] => 1,
-            $f['name'] === $special['sent'] => 2,
-            $f['name'] === $special['archive'] => 3,
-            $f['name'] === $special['junk'] => 4,
-            $f['name'] === $special['trash'] => 5,
-            default => 10,
-        };
-        usort($folders, fn($a, $b) => [$rank($a), strtolower($a['label'])] <=> [$rank($b), strtolower($b['label'])]);
-        $imap->select($folder);
-        if ($uid) {
-            $raw = $imap->raw($uid);
-            if ($raw === null) {
-                $error = 'That email is no longer in this folder.';
-                $uid = 0;
-            } else {
-                $message = Mime::parse($raw);
-                $message['uid'] = $uid;
-                $flagInfo = $imap->summaries([$uid]);
-                $message['flagged'] = $flagInfo[$uid]['flagged'] ?? false;
-            }
+        try {
+            $load();
+        } catch (RuntimeException $e) {
+            if ($e instanceof ImapAuthError || !str_contains($e->getMessage(), 'connection')) throw $e;
+            // The mail server sometimes drops a connection; one fresh try usually works
+            usleep(400000);
+            $load();
         }
-        // Unread counts after opening the email, so it no longer counts as unread
-        foreach ($folders as &$f) {
-            $f['unseen'] = in_array($f['name'], [$special['sent'], $special['trash'], $special['drafts']], true) ? 0 : $imap->status($f['name'])['unseen'];
-        }
-        unset($f);
-        $all = $imap->search($q, $filter === 'unread', $filter === 'starred');
-        $total = count($all);
-        $pageUids = array_slice($all, ($page - 1) * MBX_PER_PAGE, MBX_PER_PAGE);
-        $sum = $imap->summaries($pageUids);
-        foreach ($pageUids as $u) if (isset($sum[$u])) $list[] = $sum[$u];
     } catch (ImapAuthError $e) {
         $authFailed = true;
     } catch (Throwable $e) {
@@ -376,6 +449,13 @@ function mbx_name(string $from): string
     $a = Mime::addresses($from)[0] ?? null;
     if (!$a) return $from ?: '(unknown)';
     return $a['name'] !== '' ? $a['name'] : $a['email'];
+}
+
+/** Stable colour for a sender's avatar. */
+function mbx_color(string $email): string
+{
+    $palette = ['#2d5016', '#1a365d', '#c05621', '#2b6cb0', '#805ad5', '#b83280', '#2c7a7b', '#975a16'];
+    return $palette[abs(crc32(strtolower($email))) % count($palette)];
 }
 
 function mbx_size(int $bytes): string
@@ -485,11 +565,16 @@ if ($box && !$authFailed && (isset($_GET['compose']) || in_array($_GET['mode'] ?
 $showLink = !$boxes || isset($_GET['link']) || $authFailed;
 $showSettings = $box && isset($_GET['settings']) && can_edit_box($me, $box);
 $images = isset($_GET['images']);
+$openUnsub = $_SESSION['mbx_open'] ?? null;
+unset($_SESSION['mbx_open']);
 $autoreply = null;
 $autoreplyError = '';
 $forwards = [];
 $forwardError = '';
+$blocked = [];
+$blockedError = '';
 if ($showSettings) {
+    try { $blocked = blocked_senders($box); } catch (Throwable $e) { $blockedError = $e->getMessage(); }
     try { $autoreply = autoreply_get($box); } catch (Throwable $e) { $autoreplyError = $e->getMessage(); }
     try { $forwards = forward_list($box); } catch (Throwable $e) { $forwardError = $e->getMessage(); }
 }
@@ -514,9 +599,9 @@ render_header('Mailbox');
     <form class="search" method="get">
         <input type="hidden" name="box" value="<?= (int) $box['id'] ?>">
         <?php if ($folder !== 'INBOX'): ?><input type="hidden" name="folder" value="<?= h($folder) ?>"><?php endif; ?>
+        <?php if ($tab): ?><input type="hidden" name="tab" value="<?= h($tab) ?>"><?php endif; ?>
         <i class="fas fa-magnifying-glass"></i><input type="search" name="q" value="<?= h($q) ?>" placeholder="Search sender, recipient or subject">
     </form>
-    <a href="<?= h(mbx_url(['compose' => 1], ['uid'])) ?>" class="btn btn-primary"><i class="fas fa-pen"></i> Compose</a>
     <details class="menu-details">
         <summary class="btn btn-light" aria-label="Mailbox options"><i class="fas fa-ellipsis"></i></summary>
         <div class="menu-pop">
@@ -595,7 +680,25 @@ render_header('Mailbox');
             <button class="btn btn-primary"><i class="fas fa-plus"></i> Add forwarding</button>
         </form>
         <?php if ($myPersonal === ''): ?>
-            <p class="small muted fwd-tip">Tip: add your personal email in <a href="profile.php">My profile</a> and it will be filled in here for you.</p>
+            <p class="small muted fwd-tip">Tip: add your personal email in <a href="profile">My profile</a> and it will be filled in here for you.</p>
+        <?php endif; ?>
+    </section>
+    <section class="panel mbx-link" id="blocked">
+        <h3 class="panel-title"><i class="fas fa-ban"></i> Blocked senders</h3>
+        <p class="muted">Emails from these addresses go straight to Spam. Block someone from the <strong>Block sender</strong> button when reading their email.</p>
+        <?php if ($blockedError): ?><div class="alert alert-error"><?= h($blockedError) ?></div><?php endif; ?>
+        <?php if ($blocked): ?>
+            <ul class="fwd-list">
+                <?php foreach ($blocked as $b): ?>
+                    <li><i class="fas fa-ban"></i><strong><?= h($b) ?></strong>
+                        <form method="post">
+                            <?= csrf_field() ?><input type="hidden" name="action" value="unblock"><input type="hidden" name="box" value="<?= (int) $box['id'] ?>"><input type="hidden" name="sender" value="<?= h($b) ?>">
+                            <button class="btn btn-light btn-sm"><i class="fas fa-rotate-left"></i> Unblock</button>
+                        </form></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php elseif (!$blockedError): ?>
+            <p class="empty"><i class="fas fa-shield-halved"></i> No blocked senders.</p>
         <?php endif; ?>
     </section>
     <section class="panel mbx-link" id="autoreply">
@@ -623,25 +726,42 @@ render_header('Mailbox');
 <?php else: ?>
     <?php if ($error): ?><div class="alert alert-error"><?= h($error) ?><button type="button" class="alert-close" aria-label="Dismiss">&times;</button></div><?php endif; ?>
     <div class="mbx <?= $message || $compose ? 'has-open' : '' ?>">
-        <nav class="panel mbx-folders" aria-label="Folders">
+        <nav class="mbx-folders" aria-label="Folders">
+            <a href="<?= h(mbx_url(['compose' => 1], ['uid'])) ?>" class="btn btn-primary mbx-compose-btn"><i class="fas fa-pen"></i> <span>Compose</span></a>
             <?php foreach ($folders as $f): ?>
-                <a href="<?= h(mbx_url(['folder' => $f['name']], ['uid', 'page', 'q', 'filter'])) ?>" class="<?= $f['name'] === $folder ? 'active' : '' ?>">
+                <a href="<?= h(mbx_url(['folder' => $f['name']], ['uid', 'page', 'q', 'filter', 'tab'])) ?>" class="mbx-folder <?= $f['name'] === $folder ? 'active' : '' ?>">
                     <i class="fas <?= $folderIcon($f['name']) ?>"></i><span><?= h($folderLabel($f['name'])) ?></span>
                     <?php if ($f['unseen'] > 0): ?><em><?= (int) $f['unseen'] ?></em><?php endif; ?>
                 </a>
             <?php endforeach; ?>
         </nav>
 
-        <section class="panel mbx-list">
+        <section class="mbx-list">
+            <header class="mbx-list-title">
+                <h2><?= h($folderLabel($folder)) ?></h2>
+                <span><?= $total ?> <?= $total === 1 ? 'email' : 'emails' ?></span>
+            </header>
+            <?php if (strtoupper($folder) === 'INBOX'): ?>
+                <nav class="mbx-tabs" aria-label="Inbox sections">
+                    <a href="<?= h(mbx_url(['tab' => null, 'page' => null], ['uid'])) ?>" class="<?= $tab === '' ? 'active' : '' ?>"><i class="fas fa-inbox"></i> Primary</a>
+                    <a href="<?= h(mbx_url(['tab' => 'promo', 'page' => null], ['uid'])) ?>" class="<?= $tab === 'promo' ? 'active' : '' ?>"><i class="fas fa-tag"></i> Promotions<?php if ($promoUnseen > 0): ?> <em><?= $promoUnseen ?></em><?php endif; ?></a>
+                </nav>
+            <?php endif; ?>
             <form method="post" id="bulk-form">
                 <?= csrf_field() ?><input type="hidden" name="box" value="<?= (int) $box['id'] ?>"><input type="hidden" name="folder" value="<?= h($folder) ?>">
                 <input type="hidden" name="back" value="<?= h(mbx_url()) ?>">
                 <div class="mbx-list-head">
                     <label class="mbx-check" title="Select all"><input type="checkbox" id="mbx-all" aria-label="Select all"></label>
                     <div class="mbx-bulk" id="mbx-bulk" hidden>
+                        <?php if ($special['archive'] && $folder !== $special['archive']): ?><button name="action" value="archive" class="icon-btn" title="Archive"><i class="fas fa-box-archive"></i></button><?php endif; ?>
                         <button name="action" value="read" class="icon-btn" title="Mark read"><i class="fas fa-envelope-open"></i></button>
                         <button name="action" value="unread" class="icon-btn" title="Mark unread"><i class="fas fa-envelope"></i></button>
                         <button name="action" value="star" class="icon-btn" title="Star"><i class="fas fa-star"></i></button>
+                        <?php if ($folder === ($special['junk'] ?? '')): ?>
+                            <button name="action" value="notspam" class="icon-btn" title="Not spam"><i class="fas fa-inbox"></i></button>
+                        <?php elseif ($special['junk']): ?>
+                            <button name="action" value="spam" class="icon-btn" title="Spam"><i class="fas fa-ban"></i></button>
+                        <?php endif; ?>
                         <button name="action" value="delete" class="icon-btn" title="<?= $folder === ($special['trash'] ?? '') ? 'Delete for good' : 'Delete' ?>"><i class="fas fa-trash"></i></button>
                     </div>
                     <div class="mbx-filters">
@@ -651,61 +771,71 @@ render_header('Mailbox');
                     </div>
                 </div>
                 <?php if (!$list): ?>
-                    <p class="empty"><i class="fas fa-inbox"></i> <?= $q !== '' || $filter ? 'No emails match.' : 'This folder is empty.' ?></p>
+                    <div class="mbx-empty"><i class="fas <?= $tab === 'promo' ? 'fa-tag' : 'fa-inbox' ?>"></i><p><?= $q !== '' || $filter ? 'No emails match.' : ($tab === 'promo' ? 'No newsletters or promotions.' : 'Nothing here. You\'re all caught up!') ?></p></div>
                 <?php endif; ?>
                 <?php $isSent = $folder === ($special['sent'] ?? '') || $folder === ($special['drafts'] ?? ''); ?>
                 <?php foreach ($list as $m):
-                    $who = $isSent ? 'To: ' . mbx_name($m['to']) : mbx_name($m['from']); ?>
+                    $who = $isSent ? mbx_name($m['to']) : mbx_name($m['from']);
+                    $whoEmail = (Mime::addresses($isSent ? $m['to'] : $m['from'])[0]['email'] ?? $who); ?>
                     <div class="mbx-item <?= $m['seen'] ? '' : 'unread' ?> <?= $uid === $m['uid'] ? 'active' : '' ?>">
                         <label class="mbx-check"><input type="checkbox" name="uids[]" value="<?= (int) $m['uid'] ?>" aria-label="Select"></label>
+                        <span class="mbx-avatar" style="--av:<?= mbx_color($whoEmail) ?>"><?= h(mb_strtoupper(mb_substr(trim($who, '"\' '), 0, 1)) ?: '?') ?></span>
                         <a href="<?= h(mbx_url(['uid' => $m['uid']])) ?>" class="mbx-item-link">
-                            <span class="mbx-top"><strong><?= h($who) ?></strong><small><?= h(mbx_when($m['date'])) ?></small></span>
+                            <span class="mbx-top"><strong><?= $isSent ? '<span class="muted">To:</span> ' : '' ?><?= h($who) ?></strong><small><?= h(mbx_when($m['date'])) ?></small></span>
                             <span class="mbx-subject"><?= h($m['subject'] !== '' ? $m['subject'] : '(no subject)') ?></span>
-                            <span class="mbx-icons">
-                                <?php if ($m['flagged']): ?><i class="fas fa-star text-gold" title="Starred"></i><?php endif; ?>
-                                <?php if ($m['answered']): ?><i class="fas fa-reply" title="Replied"></i><?php endif; ?>
-                                <?php if ($m['attach']): ?><i class="fas fa-paperclip" title="Has attachments"></i><?php endif; ?>
-                            </span>
+                            <?php if ($m['snippet'] !== ''): ?><span class="mbx-snippet"><?= h($m['snippet']) ?></span><?php endif; ?>
+                            <?php if ($m['flagged'] || $m['answered'] || $m['attach'] || ($m['promo'] && $tab !== 'promo')): ?>
+                                <span class="mbx-icons">
+                                    <?php if ($m['flagged']): ?><i class="fas fa-star text-gold" title="Starred"></i><?php endif; ?>
+                                    <?php if ($m['answered']): ?><i class="fas fa-reply" title="Replied"></i><?php endif; ?>
+                                    <?php if ($m['attach']): ?><i class="fas fa-paperclip" title="Has attachments"></i><?php endif; ?>
+                                    <?php if ($m['promo'] && $tab !== 'promo'): ?><span class="mbx-chip">Newsletter</span><?php endif; ?>
+                                </span>
+                            <?php endif; ?>
                         </a>
                     </div>
                 <?php endforeach; ?>
             </form>
             <?php $pages = (int) ceil($total / MBX_PER_PAGE); if ($pages > 1): ?>
                 <nav class="mbx-pager">
-                    <?php if ($page > 1): ?><a href="<?= h(mbx_url(['page' => $page - 1], ['uid'])) ?>" class="btn btn-light btn-sm"><i class="fas fa-chevron-left"></i></a><?php endif; ?>
+                    <?php if ($page > 1): ?><a href="<?= h(mbx_url(['page' => $page - 1], ['uid'])) ?>" class="icon-btn" aria-label="Newer"><i class="fas fa-chevron-left"></i></a><?php endif; ?>
                     <span><?= ($page - 1) * MBX_PER_PAGE + 1 ?>–<?= min($total, $page * MBX_PER_PAGE) ?> of <?= $total ?></span>
-                    <?php if ($page < $pages): ?><a href="<?= h(mbx_url(['page' => $page + 1], ['uid'])) ?>" class="btn btn-light btn-sm"><i class="fas fa-chevron-right"></i></a><?php endif; ?>
+                    <?php if ($page < $pages): ?><a href="<?= h(mbx_url(['page' => $page + 1], ['uid'])) ?>" class="icon-btn" aria-label="Older"><i class="fas fa-chevron-right"></i></a><?php endif; ?>
                 </nav>
             <?php endif; ?>
         </section>
 
-        <section class="panel mbx-view">
+        <section class="mbx-view">
             <?php if ($compose): ?>
-                <a href="<?= h(mbx_url([], ['uid', 'compose', 'mode'])) ?>" class="back-link mbx-back"><i class="fas fa-arrow-left"></i> Back</a>
-                <h2 class="mbx-compose-title"><?= ['reply' => 'Reply', 'all' => 'Reply all', 'fwd' => 'Forward'][$compose['mode']] ?? 'New email' ?></h2>
+                <div class="mbx-view-bar">
+                    <a href="<?= h(mbx_url([], ['uid', 'compose', 'mode'])) ?>" class="icon-btn mbx-back" aria-label="Back"><i class="fas fa-arrow-left"></i></a>
+                    <h2 class="mbx-compose-title"><?= ['reply' => 'Reply', 'all' => 'Reply all', 'fwd' => 'Forward'][$compose['mode']] ?? 'New email' ?></h2>
+                </div>
                 <form method="post" enctype="multipart/form-data" class="mbx-compose" id="compose-form">
                     <?= csrf_field() ?><input type="hidden" name="action" value="send"><input type="hidden" name="box" value="<?= (int) $box['id'] ?>">
                     <input type="hidden" name="mode" value="<?= h($compose['mode']) ?>"><input type="hidden" name="reply_uid" value="<?= (int) $compose['reply_uid'] ?>">
                     <input type="hidden" name="reply_folder" value="<?= h($folder) ?>"><input type="hidden" name="contact" value="<?= (int) $compose['contact'] ?>">
-                    <input type="hidden" name="back" value="<?= h('mailbox.php?' . ($_SERVER['QUERY_STRING'] ?? '')) ?>">
-                    <div class="mbx-from">From <strong><?= h($box['display_name'] ?: 'Judes CBO') ?> &lt;<?= h($box['address']) ?>&gt;</strong></div>
-                    <label class="mbx-row">To <input type="text" name="to" value="<?= h($compose['to']) ?>" placeholder="name@example.com, …" <?= $compose['to'] === '' ? 'autofocus' : '' ?>>
-                        <button type="button" class="mbx-ccbtn" id="show-cc" <?= $compose['cc'] !== '' || $compose['bcc'] !== '' ? 'hidden' : '' ?>>Cc / Bcc</button></label>
-                    <div id="cc-rows" <?= $compose['cc'] === '' && $compose['bcc'] === '' ? 'hidden' : '' ?>>
-                        <label class="mbx-row">Cc <input type="text" name="cc" value="<?= h($compose['cc']) ?>"></label>
-                        <label class="mbx-row">Bcc <input type="text" name="bcc" value="<?= h($compose['bcc']) ?>"></label>
+                    <input type="hidden" name="back" value="<?= h('mailbox?' . ($_SERVER['QUERY_STRING'] ?? '')) ?>">
+                    <div class="mbx-fields">
+                        <div class="mbx-row mbx-from-row"><span>From</span><strong><?= h($box['display_name'] ?: 'Judes CBO') ?> <span class="muted">&lt;<?= h($box['address']) ?>&gt;</span></strong></div>
+                        <label class="mbx-row"><span>To</span><input type="text" name="to" value="<?= h($compose['to']) ?>" placeholder="name@example.com, …" <?= $compose['to'] === '' ? 'autofocus' : '' ?>>
+                            <button type="button" class="mbx-ccbtn" id="show-cc" <?= $compose['cc'] !== '' || $compose['bcc'] !== '' ? 'hidden' : '' ?>>Cc / Bcc</button></label>
+                        <div id="cc-rows" <?= $compose['cc'] === '' && $compose['bcc'] === '' ? 'hidden' : '' ?>>
+                            <label class="mbx-row"><span>Cc</span><input type="text" name="cc" value="<?= h($compose['cc']) ?>"></label>
+                            <label class="mbx-row"><span>Bcc</span><input type="text" name="bcc" value="<?= h($compose['bcc']) ?>"></label>
+                        </div>
+                        <label class="mbx-row"><span>Subject</span><input type="text" name="subject" value="<?= h($compose['subject']) ?>" maxlength="300"></label>
                     </div>
-                    <label class="mbx-row">Subject <input type="text" name="subject" value="<?= h($compose['subject']) ?>" maxlength="300"></label>
-                    <textarea name="body" rows="16" class="mbx-body" <?= $compose['to'] !== '' ? 'autofocus' : '' ?>><?= h($compose['body']) ?></textarea>
+                    <textarea name="body" rows="16" class="mbx-body" placeholder="Write your message…" <?= $compose['to'] !== '' ? 'autofocus' : '' ?>><?= h($compose['body']) ?></textarea>
                     <?php if ($compose['atts']): ?>
                         <label class="check"><input type="checkbox" name="keep_attachments" value="1" checked> Include the original attachments
                             <small class="muted">(<?= h(implode(', ', array_column($compose['atts'], 'name'))) ?>)</small></label>
                     <?php endif; ?>
                     <div class="mbx-compose-foot">
                         <button class="btn btn-primary" id="send-btn"><i class="fas fa-paper-plane"></i> Send</button>
-                        <label class="btn btn-light mbx-attach"><i class="fas fa-paperclip"></i> Attach files<input type="file" name="files[]" multiple id="mbx-files"></label>
+                        <label class="icon-btn mbx-attach" title="Attach files"><i class="fas fa-paperclip"></i><input type="file" name="files[]" multiple id="mbx-files" aria-label="Attach files"></label>
                         <span class="muted small" id="mbx-file-list"></span>
-                        <a href="<?= h($compose['contact'] ? 'messages.php?id=' . $compose['contact'] : mbx_url([], ['compose', 'mode'])) ?>" class="btn btn-light mbx-discard">Discard</a>
+                        <a href="<?= h($compose['contact'] ? 'messages?id=' . $compose['contact'] : mbx_url([], ['compose', 'mode'])) ?>" class="icon-btn mbx-discard" title="Discard"><i class="fas fa-trash"></i></a>
                     </div>
                 </form>
             <?php elseif ($message):
@@ -716,28 +846,25 @@ render_header('Mailbox');
                 $hasRemote = false;
                 $doc = $message['html'] !== '' ? mbx_html_doc($message, $images, $hasRemote) : null;
                 $files = array_filter($message['attachments'], fn($a) => !$a['inline'] || $message['html'] === '');
+                $unsub = unsubscribe_options($h);
+                $isPromo = $unsub['https'] || $unsub['mailto'];
+                $inJunk = $folder === ($special['junk'] ?? '');
             ?>
-                <a href="<?= h(mbx_url([], ['uid'])) ?>" class="back-link mbx-back"><i class="fas fa-arrow-left"></i> Back to <?= h($folderLabel($folder)) ?></a>
-                <h2 class="mbx-subject-big"><?= h($subject) ?></h2>
-                <header class="message-head">
-                    <span class="avatar"><?= h(mb_strtoupper(mb_substr($from['name'] ?: $from['email'] ?: '?', 0, 1))) ?></span>
-                    <div>
-                        <strong><?= h($from['name'] ?: $from['email']) ?></strong> <?php if ($from['name']): ?><span class="muted small">&lt;<?= h($from['email']) ?>&gt;</span><?php endif; ?>
-                        <p class="small muted">To <?= h(Mime::decodeHeader($h['to'][0] ?? '')) ?><?php if (!empty($h['cc'][0])): ?> · Cc <?= h(Mime::decodeHeader($h['cc'][0])) ?><?php endif; ?></p>
-                    </div>
-                    <small class="muted"><?= h(date('D j M Y, g:i a', strtotime($h['date'][0] ?? '') ?: time())) ?></small>
-                </header>
-                <div class="message-actions mbx-actions">
-                    <a href="<?= h(mbx_url(['uid' => $uid, 'mode' => 'reply'])) ?>" class="btn btn-primary btn-sm"><i class="fas fa-reply"></i> Reply</a>
-                    <a href="<?= h(mbx_url(['uid' => $uid, 'mode' => 'all'])) ?>" class="btn btn-light btn-sm"><i class="fas fa-reply-all"></i> Reply all</a>
-                    <a href="<?= h(mbx_url(['uid' => $uid, 'mode' => 'fwd'])) ?>" class="btn btn-light btn-sm"><i class="fas fa-share"></i> Forward</a>
-                    <form method="post" class="inline-form">
+                <div class="mbx-view-bar">
+                    <a href="<?= h(mbx_url([], ['uid'])) ?>" class="icon-btn mbx-back" aria-label="Back to <?= h($folderLabel($folder)) ?>"><i class="fas fa-arrow-left"></i></a>
+                    <form method="post" class="mbx-tools">
                         <?= csrf_field() ?><input type="hidden" name="box" value="<?= (int) $box['id'] ?>"><input type="hidden" name="folder" value="<?= h($folder) ?>">
                         <input type="hidden" name="uids" value="<?= $uid ?>"><input type="hidden" name="back" value="<?= h(mbx_url(['uid' => $uid])) ?>">
-                        <button name="action" value="<?= $message['flagged'] ? 'unstar' : 'star' ?>" class="icon-btn" title="<?= $message['flagged'] ? 'Remove star' : 'Star' ?>"><i class="<?= $message['flagged'] ? 'fas text-gold' : 'far' ?> fa-star"></i></button>
-                        <button name="action" value="unread" class="icon-btn" title="Mark unread"><i class="fas fa-envelope"></i></button>
-                        <?php if (($special['junk'] ?? null) && $folder !== $special['junk']): ?><button name="action" value="spam" class="icon-btn" title="Move to Spam"><i class="fas fa-ban"></i></button><?php endif; ?>
+                        <?php if ($special['archive'] && $folder !== $special['archive']): ?><button name="action" value="archive" class="icon-btn" title="Archive"><i class="fas fa-box-archive"></i></button><?php endif; ?>
+                        <?php if ($inJunk): ?>
+                            <button name="action" value="notspam" class="icon-btn" title="Not spam"><i class="fas fa-inbox"></i></button>
+                        <?php elseif ($special['junk']): ?>
+                            <button name="action" value="spam" class="icon-btn" title="Report spam"><i class="fas fa-ban"></i></button>
+                        <?php endif; ?>
                         <button name="action" value="delete" class="icon-btn" title="Delete"><i class="fas fa-trash"></i></button>
+                        <span class="mbx-sep"></span>
+                        <button name="action" value="unread" class="icon-btn" title="Mark unread"><i class="fas fa-envelope"></i></button>
+                        <button name="action" value="<?= $message['flagged'] ? 'unstar' : 'star' ?>" class="icon-btn" title="<?= $message['flagged'] ? 'Remove star' : 'Star' ?>"><i class="<?= $message['flagged'] ? 'fas text-gold' : 'far' ?> fa-star"></i></button>
                         <select name="to_folder" class="mbx-move" aria-label="Move to folder" onchange="if(this.value){const b=document.createElement('input');b.type='hidden';b.name='action';b.value='move';this.form.appendChild(b);this.form.submit()}">
                             <option value="">Move to…</option>
                             <?php foreach ($folders as $f): if ($f['name'] === $folder) continue; ?>
@@ -746,33 +873,65 @@ render_header('Mailbox');
                         </select>
                     </form>
                 </div>
-                <?php if ($doc !== null): ?>
-                    <?php if ($hasRemote && !$images): ?>
-                        <div class="mbx-images-note"><i class="far fa-image"></i> Pictures from the internet are hidden to protect your privacy. <a href="<?= h(mbx_url(['uid' => $uid, 'images' => 1])) ?>">Show pictures</a></div>
+                <div class="mbx-read">
+                    <h2 class="mbx-subject-big"><?= h($subject) ?> <span class="mbx-chip"><?= h($folderLabel($folder)) ?></span></h2>
+                    <header class="mbx-sender">
+                        <span class="mbx-avatar mbx-avatar-lg" style="--av:<?= mbx_color($from['email']) ?>"><?= h(mb_strtoupper(mb_substr($from['name'] ?: $from['email'] ?: '?', 0, 1))) ?></span>
+                        <div class="mbx-sender-main">
+                            <div><strong><?= h($from['name'] ?: $from['email']) ?></strong> <?php if ($from['name']): ?><span class="muted small">&lt;<?= h($from['email']) ?>&gt;</span><?php endif; ?></div>
+                            <p class="small muted">to <?= h(Mime::decodeHeader($h['to'][0] ?? '')) ?><?php if (!empty($h['cc'][0])): ?> · cc <?= h(Mime::decodeHeader($h['cc'][0])) ?><?php endif; ?></p>
+                        </div>
+                        <small class="muted mbx-date" title="<?= h(date('l j F Y, g:i a', strtotime($h['date'][0] ?? '') ?: time())) ?>"><?= h(date('D j M, g:i a', strtotime($h['date'][0] ?? '') ?: time())) ?></small>
+                        <a href="<?= h(mbx_url(['uid' => $uid, 'mode' => 'reply'])) ?>" class="icon-btn" title="Reply"><i class="fas fa-reply"></i></a>
+                    </header>
+                    <?php if ($isPromo || ($from['email'] && !$inJunk)): ?>
+                        <div class="mbx-promo <?= $isPromo ? '' : 'mbx-promo-quiet' ?>">
+                            <?php if ($isPromo): ?><span><i class="fas fa-tag"></i> This is a newsletter or marketing email.</span><?php endif; ?>
+                            <form method="post" class="mbx-promo-actions">
+                                <?= csrf_field() ?><input type="hidden" name="box" value="<?= (int) $box['id'] ?>"><input type="hidden" name="folder" value="<?= h($folder) ?>"><input type="hidden" name="uid" value="<?= $uid ?>">
+                                <?php if ($openUnsub): ?>
+                                    <a href="<?= h($openUnsub) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm"><i class="fas fa-arrow-up-right-from-square"></i> Open unsubscribe page</a>
+                                <?php elseif ($isPromo): ?><button name="action" value="unsubscribe" class="btn btn-light btn-sm"><i class="fas fa-bell-slash"></i> Unsubscribe</button><?php endif; ?>
+                                <?php if (can_edit_box($me, $box) && $special['junk'] && !$inJunk): ?>
+                                    <button name="action" value="block" class="btn btn-light btn-sm" data-confirm-click="Block <?= h($from['email']) ?>? Their future emails will go straight to Spam."><i class="fas fa-ban"></i> Block sender</button>
+                                <?php endif; ?>
+                            </form>
+                        </div>
                     <?php endif; ?>
-                    <iframe class="mbx-frame" sandbox="allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" srcdoc="<?= h($doc) ?>" title="Email content"></iframe>
-                <?php else: ?>
-                    <div class="message-body mbx-text"><?= mbx_text_html($message['text']) ?></div>
-                <?php endif; ?>
-                <?php if ($files): ?>
-                    <div class="mbx-files">
-                        <?php foreach ($files as $i => $a):
-                            $viewable = preg_match('#^(image/(png|jpe?g|gif|webp)|application/pdf)$#', $a['type']); ?>
-                            <span class="mbx-file">
-                                <i class="fas <?= str_starts_with($a['type'], 'image/') ? 'fa-file-image' : ($a['type'] === 'application/pdf' ? 'fa-file-pdf' : 'fa-file') ?>"></i>
-                                <span><strong><?= h($a['name']) ?></strong><small><?= mbx_size($a['size']) ?></small></span>
-                                <?php if ($viewable): ?><a href="<?= h(mbx_url(['uid' => $uid, 'att' => $i, 'view' => 1])) ?>" target="_blank" rel="noopener" class="icon-btn" title="Open"><i class="fas fa-eye"></i></a><?php endif; ?>
-                                <a href="<?= h(mbx_url(['uid' => $uid, 'att' => $i])) ?>" class="icon-btn" title="Download"><i class="fas fa-download"></i></a>
-                            </span>
-                        <?php endforeach; ?>
+                    <?php if ($doc !== null): ?>
+                        <?php if ($hasRemote && !$images): ?>
+                            <div class="mbx-images-note"><i class="far fa-image"></i> Pictures from the internet are hidden to protect your privacy. <a href="<?= h(mbx_url(['uid' => $uid, 'images' => 1])) ?>">Show pictures</a></div>
+                        <?php endif; ?>
+                        <iframe class="mbx-frame" sandbox="allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" srcdoc="<?= h($doc) ?>" title="Email content"></iframe>
+                    <?php else: ?>
+                        <div class="mbx-text"><?= mbx_text_html($message['text']) ?></div>
+                    <?php endif; ?>
+                    <?php if ($files): ?>
+                        <div class="mbx-files">
+                            <?php foreach ($files as $i => $a):
+                                $viewable = preg_match('#^(image/(png|jpe?g|gif|webp)|application/pdf)$#', $a['type']); ?>
+                                <span class="mbx-file">
+                                    <i class="fas <?= str_starts_with($a['type'], 'image/') ? 'fa-file-image' : ($a['type'] === 'application/pdf' ? 'fa-file-pdf' : 'fa-file') ?>"></i>
+                                    <span><strong><?= h($a['name']) ?></strong><small><?= mbx_size($a['size']) ?></small></span>
+                                    <?php if ($viewable): ?><a href="<?= h(mbx_url(['uid' => $uid, 'att' => $i, 'view' => 1])) ?>" target="_blank" rel="noopener" class="icon-btn" title="Open"><i class="fas fa-eye"></i></a><?php endif; ?>
+                                    <a href="<?= h(mbx_url(['uid' => $uid, 'att' => $i])) ?>" class="icon-btn" title="Download"><i class="fas fa-download"></i></a>
+                                </span>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                    <div class="mbx-reply-bar">
+                        <a href="<?= h(mbx_url(['uid' => $uid, 'mode' => 'reply'])) ?>" class="btn btn-light"><i class="fas fa-reply"></i> Reply</a>
+                        <a href="<?= h(mbx_url(['uid' => $uid, 'mode' => 'all'])) ?>" class="btn btn-light"><i class="fas fa-reply-all"></i> Reply all</a>
+                        <a href="<?= h(mbx_url(['uid' => $uid, 'mode' => 'fwd'])) ?>" class="btn btn-light"><i class="fas fa-share"></i> Forward</a>
                     </div>
-                <?php endif; ?>
+                </div>
             <?php else: ?>
-                <div class="empty-state"><i class="fas fa-envelope-open"></i><h3>Select an email</h3><p>Choose an email from the list to read it, or write a new one.</p>
+                <div class="mbx-placeholder"><span><i class="fas fa-envelope-open-text"></i></span><h3>Select an email to read</h3><p>Or write a new one.</p>
                     <a href="<?= h(mbx_url(['compose' => 1])) ?>" class="btn btn-primary"><i class="fas fa-pen"></i> Compose</a></div>
             <?php endif; ?>
         </section>
     </div>
+    <a href="<?= h(mbx_url(['compose' => 1], ['uid'])) ?>" class="mbx-fab" aria-label="Compose"><i class="fas fa-pen"></i></a>
 <?php endif; ?>
 <script>
 (function () {
@@ -786,6 +945,7 @@ render_header('Mailbox');
     if (bulkForm) bulkForm.addEventListener('submit', e => {
         if (e.submitter && e.submitter.value === 'delete' && !confirm('Delete the selected emails?')) e.preventDefault();
     });
+    document.querySelectorAll('[data-confirm-click]').forEach(b => b.addEventListener('click', e => { if (!confirm(b.dataset.confirmClick)) e.preventDefault(); }));
     const cc = document.getElementById('show-cc');
     if (cc) cc.addEventListener('click', () => { document.getElementById('cc-rows').hidden = false; cc.hidden = true; });
     const files = document.getElementById('mbx-files');

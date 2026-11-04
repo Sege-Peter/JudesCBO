@@ -2,7 +2,7 @@
 require __DIR__ . '/includes/bootstrap.php';
 
 if (current_user()) {
-    redirect('index.php');
+    redirect('index');
 }
 
 const MAX_ATTEMPTS = 5;
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Password is right; now ask for the code from the authenticator app
                 session_regenerate_id(true);
                 $_SESSION['pending_2fa'] = ['user_id' => (int) $user['id'], 'remember' => $remember, 'at' => time(), 'tries' => 0];
-                redirect('login-2fa.php');
+                redirect('login-2fa');
             }
             complete_login((int) $user['id'], $remember, 'Signed in');
         }
@@ -83,7 +83,7 @@ $flashes = take_flashes();
             </label>
             <div class="auth-row">
                 <label class="check"><input type="checkbox" name="remember" value="1" <?= $remember ? 'checked' : '' ?>> Remember me</label>
-                <a href="forgot-password.php" class="auth-link">Forgot password?</a>
+                <a href="forgot-password" class="auth-link">Forgot password?</a>
             </div>
             <button type="submit" class="btn btn-primary btn-block">Log in <i class="fas fa-arrow-right"></i></button>
         </form>

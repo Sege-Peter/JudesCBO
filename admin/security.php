@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         log_activity('security.clear_lockouts', "$n failed login records cleared");
         flash('success', 'Failed login records cleared. Anyone who was locked out can try again now.');
     }
-    redirect('security.php');
+    redirect('security');
 }
 
 db()->exec('DELETE FROM blocked_ips WHERE expires_at IS NOT NULL AND expires_at < NOW()');
@@ -215,7 +215,7 @@ render_header('Security');
                     </li>
                 <?php endforeach; ?>
             </ul>
-            <p class="muted small"><a href="activity.php">Full activity log</a></p>
+            <p class="muted small"><a href="activity">Full activity log</a></p>
         <?php endif; ?>
     </section>
 </div>

@@ -97,7 +97,7 @@
         data.append('status', 'replied');
         data.append('ajax', '1');
         data.append('id', link.dataset.markReplied);
-        fetch('messages.php', { method: 'POST', body: data });
+        fetch('messages', { method: 'POST', body: data });
     }));
 
     // Show the M-Pesa code field only for M-Pesa donations

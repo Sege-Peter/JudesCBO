@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db()->prepare('DELETE FROM team_members WHERE id = ?')->execute([$id]);
         log_activity('team.delete', $member['name']);
         publish_with_feedback($member['name'] . ' removed from the team page.');
-        redirect('team.php');
+        redirect('team');
     }
 
     if ($action === 'save') {
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $visible = !empty($_POST['visible']) ? 1 : 0;
         if ($name === '') {
             flash('error', 'Enter a name.');
-            redirect('team.php');
+            redirect('team');
         }
         $photo = $member['photo'] ?? null;
         if (!empty($_FILES['photo']['name'])) {
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             log_activity('team.create', $name);
         }
         publish_with_feedback($name . ' saved' . ($visible ? ' and shown on the team page.' : ' (hidden from the website).'));
-        redirect('team.php');
+        redirect('team');
     }
 }
 

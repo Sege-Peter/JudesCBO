@@ -17,7 +17,7 @@ if ($id) {
     $found = $stmt->fetch();
     if (!$found) {
         flash('error', 'That story no longer exists.');
-        redirect('stories.php');
+        redirect('stories');
     }
     $story = $found;
 }
@@ -94,13 +94,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             log_activity('story.create', $story['title']);
         }
         publish_with_feedback($story['status'] === 'published' ? 'Story saved and published to the website.' : 'Draft saved. It is not on the website yet.');
-        redirect('story-edit.php?id=' . $id);
+        redirect('story-edit?id=' . $id);
     }
 }
 
-render_header($id ? 'Edit story' : 'New story', 'stories.php');
+render_header($id ? 'Edit story' : 'New story', 'stories');
 ?>
-<a href="stories.php" class="back-link"><i class="fas fa-arrow-left"></i> All stories</a>
+<a href="stories" class="back-link"><i class="fas fa-arrow-left"></i> All stories</a>
 <?php foreach ($errors as $e): ?><div class="alert alert-error"><?= h($e) ?></div><?php endforeach; ?>
 
 <form method="post" enctype="multipart/form-data" class="editor-layout" id="story-form">

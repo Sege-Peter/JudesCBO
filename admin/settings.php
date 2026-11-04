@@ -18,12 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $url = post_str('formspree_url', 200);
         if ($mode === 'formspree' && !preg_match('#^https://formspree\.io/f/[A-Za-z0-9]+$#', $url)) {
             flash('error', 'Enter a Formspree address like https://formspree.io/f/abc123.');
-            redirect('settings.php#forms');
+            redirect('settings#forms');
         }
         $notify = post_str('notify_email', 190);
         if ($notify !== '' && !filter_var($notify, FILTER_VALIDATE_EMAIL)) {
             flash('error', 'Enter a valid notification email, or leave it blank.');
-            redirect('settings.php#forms');
+            redirect('settings#forms');
         }
         save_setting('form_mode', $mode);
         save_setting('formspree_url', $url);
@@ -62,12 +62,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($values['give_online_url'] !== '' && !preg_match('#^https://[^\s]+$#i', $values['give_online_url'])) $errors[] = 'The online giving link must start with https://';
         if ($errors) {
             foreach ($errors as $e) flash('error', $e);
-            redirect('settings.php#giving');
+            redirect('settings#giving');
         }
         foreach ($values as $key => $value) save_setting($key, $value);
         log_activity('settings.giving', 'Donation details updated');
         publish_with_feedback('Donation details updated on the Donate page.');
-        redirect('settings.php#giving');
+        redirect('settings#giving');
     } elseif ($section === 'security') {
         save_setting('require_2fa_admins', !empty($_POST['require_2fa_admins']) ? '1' : '0');
         log_activity('settings.security', 'Two-step login for administrators: ' . (!empty($_POST['require_2fa_admins']) ? 'required' : 'optional'));
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('error', 'The website could not be updated: ' . $e->getMessage());
         }
     }
-    redirect('settings.php');
+    redirect('settings');
 }
 
 $builtin = setting('form_mode', 'formspree') === 'builtin';

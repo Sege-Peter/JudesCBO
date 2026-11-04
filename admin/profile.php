@@ -48,10 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ok = send_email_verification($me, $me['personal_email']);
             flash($ok ? 'success' : 'error', $ok ? 'We sent a new confirmation link to ' . $me['personal_email'] . '.' : "The email couldn't be sent. Please try again later.");
         }
-        redirect('profile.php');
+        redirect('profile');
     } elseif ($action === '2fa-start') {
         $_SESSION['totp_setup'] = totp_new_secret();
-        redirect('profile.php#two-step');
+        redirect('profile#two-step');
     } elseif ($action === '2fa-confirm' && !empty($_SESSION['totp_setup'])) {
         $secret = $_SESSION['totp_setup'];
         $step = totp_verify($secret, post_str('code', 10));
@@ -66,10 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             log_activity('profile.2fa_on', 'Turned on two-step login');
             flash('success', 'Two-step login is on. Save your recovery codes now.');
         }
-        redirect('profile.php#two-step');
+        redirect('profile#two-step');
     } elseif ($action === '2fa-cancel') {
         unset($_SESSION['totp_setup']);
-        redirect('profile.php#two-step');
+        redirect('profile#two-step');
     } elseif ($action === '2fa-codes' || $action === '2fa-off') {
         $row = load_2fa((int) $me['id']);
         $step = totp_verify((string) $row['totp_secret'], post_str('code', 10), (int) $row['totp_last_step']);
@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             log_activity('profile.2fa_off', 'Turned off two-step login');
             flash('success', 'Two-step login is off.');
         }
-        redirect('profile.php#two-step');
+        redirect('profile#two-step');
     } elseif ($action === 'password') {
         $stmt = db()->prepare('SELECT password_hash FROM users WHERE id = ?');
         $stmt->execute([$me['id']]);
@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('success', 'Password changed.');
         }
     }
-    redirect('profile.php');
+    redirect('profile');
 }
 
 $setupSecret = $_SESSION['totp_setup'] ?? null;

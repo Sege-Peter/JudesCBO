@@ -38,11 +38,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ->execute([$form['name'], $form['email'], $form['username'], password_hash($password, PASSWORD_DEFAULT), $form['role']]);
             log_activity('user.create', $form['username'] . ' (' . role_label($form['role']) . ')');
             flash('success', $form['name'] . ' can now log in. Share the password with them privately.');
-            redirect('users.php');
+            redirect('users');
         }
     } elseif ($target && !can_manage($me, $target)) {
         flash('error', 'Only a System admin can change a System admin\'s account.');
-        redirect('users.php');
+        redirect('users');
     } elseif ($target) {
         $lastDeveloper = $target['role'] === 'developer' && (int) $target['active'] === 1 && active_developers() <= 1;
         $isMe = (int) $target['id'] === (int) $me['id'];
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 flash('success', 'Password reset for ' . $target['name'] . '. Share it with them privately.');
             }
         }
-        redirect('users.php');
+        redirect('users');
     }
 }
 

@@ -43,7 +43,7 @@
                 data.append('action', 'reorder');
                 grid.querySelectorAll('.partner-admin-card').forEach(c => data.append('ids[]', c.dataset.id));
                 try {
-                    const res = await fetch('partners.php', { method: 'POST', body: data });
+                    const res = await fetch('partners', { method: 'POST', body: data });
                     if (!(await res.json()).ok) throw new Error();
                     adminToast('New order saved and published.');
                 } catch {

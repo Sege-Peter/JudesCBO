@@ -2,7 +2,7 @@
 require __DIR__ . '/includes/bootstrap.php';
 
 if (current_user()) {
-    redirect('index.php');
+    redirect('index');
 }
 
 const RESET_MINUTES = 60;
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
                 $base = $scheme . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']) . '/';
             }
-            $link = rtrim($base, '/') . '/reset-password.php?token=' . $token;
+            $link = rtrim($base, '/') . '/reset-password?token=' . $token;
             $body = "Hello {$user['name']},\n\nSomeone (hopefully you) asked to reset the password for your Judes CBO dashboard account.\n\n"
                 . "Choose a new password here (the link works for " . RESET_MINUTES . " minutes):\n$link\n\n"
                 . "If you didn't ask for this, you can ignore this email. Your password won't change.\n\nJudes CBO";
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h1>Check your email</h1>
             <p class="auth-sub">If that account exists, we've sent a reset link to its work email (and confirmed personal email). It works for <?= RESET_MINUTES ?> minutes.</p>
             <p class="auth-note">Didn't get it? Check your spam folder, or ask an administrator to reset your password from the Users page.</p>
-            <a href="login.php" class="btn btn-primary btn-block"><i class="fas fa-arrow-left"></i> Back to login</a>
+            <a href="login" class="btn btn-primary btn-block"><i class="fas fa-arrow-left"></i> Back to login</a>
         <?php else: ?>
             <h1>Forgot password?</h1>
             <p class="auth-sub">Enter your username, work email or confirmed personal email and we'll send you a reset link.</p>
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </label>
                 <button type="submit" class="btn btn-primary btn-block">Send reset link</button>
             </form>
-            <p class="auth-foot"><a href="login.php"><i class="fas fa-arrow-left"></i> Back to login</a></p>
+            <p class="auth-foot"><a href="login"><i class="fas fa-arrow-left"></i> Back to login</a></p>
         <?php endif; ?>
     </main>
 </body>

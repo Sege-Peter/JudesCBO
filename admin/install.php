@@ -51,7 +51,7 @@ try {
 $hasAdmin = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin'")->fetchColumn() > 0;
 if ($hasAdmin) {
     http_response_code(403);
-    exit('Setup is already complete. <a href="login.php">Go to the login page</a>.');
+    exit('Setup is already complete. <a href="login">Go to the login page</a>.');
 }
 
 /* ---------- Seed existing website content (only into empty tables) ---------- */
@@ -158,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if ($done): ?>
             <h1>All set!</h1>
             <p class="auth-sub">Your administrator account is ready and the existing stories and photos have been imported.</p>
-            <a href="login.php" class="btn btn-primary btn-block">Go to login</a>
+            <a href="login" class="btn btn-primary btn-block">Go to login</a>
         <?php else: ?>
             <h1>Set up the dashboard</h1>
             <p class="auth-sub">The database is ready. Create the first administrator account.</p>

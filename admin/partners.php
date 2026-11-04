@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db()->prepare('DELETE FROM partners WHERE id = ?')->execute([$id]);
         log_activity('partner.delete', $partner['name']);
         publish_with_feedback($partner['name'] . ' removed from the website.');
-        redirect('partners.php');
+        redirect('partners');
     }
 
     if ($action === 'save') {
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $visible = !empty($_POST['visible']) ? 1 : 0;
         if ($name === '') {
             flash('error', 'Enter the partner\'s name.');
-            redirect('partners.php');
+            redirect('partners');
         }
         $logo = $partner['logo'] ?? null;
         if (!empty($_FILES['logo']['name'])) {
@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             log_activity('partner.create', $name);
         }
         publish_with_feedback($name . ' saved' . ($visible ? ' and shown on the website.' : ' (hidden from the website).'));
-        redirect('partners.php');
+        redirect('partners');
     }
 }
 
@@ -92,7 +92,7 @@ render_header('Partners');
 <?php if (!$partners): ?>
     <div class="panel empty-state"><i class="fas fa-handshake"></i><h3>No partners yet</h3><p>Add the organisations you work with. Their logos scroll across the homepage and appear on the About page.</p><button type="button" class="btn btn-primary" data-partner-new>Add the first partner</button></div>
 <?php else: ?>
-    <p class="muted hint-line"><i class="fas fa-up-down-left-right"></i> Drag partners to change their order on the website.<?php if ((int) setting('stat_partners', '4') !== $shown): ?> The homepage counter says <?= (int) setting('stat_partners', '4') ?> partners; <?php if (is_admin()): ?><a href="settings.php">change it in Settings</a><?php else: ?>an administrator can change it in Settings<?php endif; ?>.<?php endif; ?></p>
+    <p class="muted hint-line"><i class="fas fa-up-down-left-right"></i> Drag partners to change their order on the website.<?php if ((int) setting('stat_partners', '4') !== $shown): ?> The homepage counter says <?= (int) setting('stat_partners', '4') ?> partners; <?php if (is_admin()): ?><a href="settings">change it in Settings</a><?php else: ?>an administrator can change it in Settings<?php endif; ?>.<?php endif; ?></p>
     <div class="partner-admin-grid" id="partner-grid">
         <?php foreach ($partners as $p): ?>
             <article class="partner-admin-card <?= $p['visible'] ? '' : 'is-hidden' ?>" data-id="<?= (int) $p['id'] ?>">

@@ -4,26 +4,26 @@ declare(strict_types=1);
 function nav_items(): array
 {
     $items = [
-        ['index.php', 'Dashboard', 'fa-gauge-high'],
-        ['analytics.php', 'Analytics', 'fa-chart-line'],
-        ['stories.php', 'Stories', 'fa-newspaper'],
-        ['gallery.php', 'Gallery', 'fa-images'],
-        ['events.php', 'Events', 'fa-calendar-days'],
-        ['team.php', 'Team', 'fa-people-group'],
-        ['partners.php', 'Partners', 'fa-handshake'],
-        ['messages.php', 'Messages', 'fa-inbox'],
-        ['mailbox.php', 'Mailbox', 'fa-envelope'],
-        ['subscribers.php', 'Subscribers', 'fa-envelope-open-text'],
-        ['donations.php', 'Donations', 'fa-hand-holding-dollar'],
+        ['index', 'Dashboard', 'fa-gauge-high'],
+        ['analytics', 'Analytics', 'fa-chart-line'],
+        ['stories', 'Stories', 'fa-newspaper'],
+        ['gallery', 'Gallery', 'fa-images'],
+        ['events', 'Events', 'fa-calendar-days'],
+        ['team', 'Team', 'fa-people-group'],
+        ['partners', 'Partners', 'fa-handshake'],
+        ['messages', 'Messages', 'fa-inbox'],
+        ['mailbox', 'Mailbox', 'fa-envelope'],
+        ['subscribers', 'Subscribers', 'fa-envelope-open-text'],
+        ['donations', 'Donations', 'fa-hand-holding-dollar'],
     ];
     if (is_admin()) {
-        $items[] = ['users.php', 'Users', 'fa-users-gear'];
-        $items[] = ['settings.php', 'Settings', 'fa-sliders'];
-        $items[] = ['activity.php', 'Activity log', 'fa-clock-rotate-left'];
+        $items[] = ['users', 'Users', 'fa-users-gear'];
+        $items[] = ['settings', 'Settings', 'fa-sliders'];
+        $items[] = ['activity', 'Activity log', 'fa-clock-rotate-left'];
     }
     if (is_developer()) {
-        $items[] = ['system.php', 'System', 'fa-server'];
-        $items[] = ['security.php', 'Security', 'fa-shield-halved'];
+        $items[] = ['system', 'System', 'fa-server'];
+        $items[] = ['security', 'Security', 'fa-shield-halved'];
     }
     return $items;
 }
@@ -32,7 +32,7 @@ function render_header(string $title, string $active = ''): void
 {
     $user = current_user();
     $newMessages = (int) db()->query("SELECT COUNT(*) FROM messages WHERE status = 'new'")->fetchColumn();
-    $page = basename($_SERVER['SCRIPT_NAME']);
+    $page = basename($_SERVER['SCRIPT_NAME'], '.php');
     $active = $active ?: $page;
     ?>
 <!DOCTYPE html>
@@ -47,12 +47,12 @@ function render_header(string $title, string $active = ''): void
     <link rel="preload" href="../fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="../fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="../css/fonts.css">
-    <link rel="stylesheet" href="assets/admin.css">
+    <link rel="stylesheet" href="assets/admin.css?v=<?= (int) @filemtime(__DIR__ . '/../assets/admin.css') ?>">
 </head>
 <body>
 <div class="app">
     <aside class="sidebar" id="sidebar">
-        <a href="index.php" class="brand">
+        <a href="index" class="brand">
             <span class="brand-logo"><img src="../images/jude-logo-192.webp" alt=""></span>
             <span><strong>JUDES CBO</strong><small>Admin dashboard</small></span>
         </a>
@@ -60,7 +60,7 @@ function render_header(string $title, string $active = ''): void
             <?php foreach (nav_items() as [$href, $label, $icon]): ?>
                 <a href="<?= h($href) ?>" class="<?= $href === $active ? 'active' : '' ?>">
                     <i class="fas <?= h($icon) ?>"></i><span><?= h($label) ?></span>
-                    <?php if ($href === 'messages.php' && $newMessages > 0): ?><em class="badge"><?= $newMessages ?></em><?php endif; ?>
+                    <?php if ($href === 'messages' && $newMessages > 0): ?><em class="badge"><?= $newMessages ?></em><?php endif; ?>
                 </a>
             <?php endforeach; ?>
         </nav>
@@ -74,7 +74,7 @@ function render_header(string $title, string $active = ''): void
             <button type="button" class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu"><i class="fas fa-bars"></i></button>
             <h1 class="page-title"><?= h($title) ?></h1>
             <div class="topbar-actions">
-                <a href="messages.php?status=new" class="icon-btn" aria-label="New messages" title="New messages">
+                <a href="messages?status=new" class="icon-btn" aria-label="New messages" title="New messages">
                     <i class="fas fa-bell"></i><?php if ($newMessages > 0): ?><span class="dot"></span><?php endif; ?>
                 </a>
                 <div class="user-menu">
@@ -84,8 +84,8 @@ function render_header(string $title, string $active = ''): void
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="dropdown" id="user-dropdown">
-                        <a href="profile.php"><i class="fas fa-user"></i> My profile</a>
-                        <form method="post" action="logout.php"><?= csrf_field() ?><button type="submit"><i class="fas fa-right-from-bracket"></i> Log out</button></form>
+                        <a href="profile"><i class="fas fa-user"></i> My profile</a>
+                        <form method="post" action="logout"><?= csrf_field() ?><button type="submit"><i class="fas fa-right-from-bracket"></i> Log out</button></form>
                     </div>
                 </div>
             </div>

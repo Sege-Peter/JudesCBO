@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             publish_with_feedback($new === 'published' ? 'Story published to the website.' : 'Story moved to drafts and hidden from the website.');
         }
     }
-    redirect('stories.php');
+    redirect('stories');
 }
 
 $status = in_array($_GET['status'] ?? '', ['published', 'draft'], true) ? $_GET['status'] : '';
@@ -47,7 +47,7 @@ render_header('Stories');
 ?>
 <div class="toolbar">
     <div class="tabs">
-        <a href="stories.php" class="<?= $status === '' ? 'active' : '' ?>">All <em><?= array_sum($counts) ?></em></a>
+        <a href="stories" class="<?= $status === '' ? 'active' : '' ?>">All <em><?= array_sum($counts) ?></em></a>
         <a href="?status=published" class="<?= $status === 'published' ? 'active' : '' ?>">Published <em><?= (int) ($counts['published'] ?? 0) ?></em></a>
         <a href="?status=draft" class="<?= $status === 'draft' ? 'active' : '' ?>">Drafts <em><?= (int) ($counts['draft'] ?? 0) ?></em></a>
     </div>
@@ -55,7 +55,7 @@ render_header('Stories');
         <?php if ($status): ?><input type="hidden" name="status" value="<?= h($status) ?>"><?php endif; ?>
         <i class="fas fa-magnifying-glass"></i><input type="search" name="q" value="<?= h($q) ?>" placeholder="Search stories">
     </form>
-    <a href="story-edit.php" class="btn btn-primary"><i class="fas fa-plus"></i> New story</a>
+    <a href="story-edit" class="btn btn-primary"><i class="fas fa-plus"></i> New story</a>
 </div>
 
 <?php if (!$stories): ?>
@@ -63,24 +63,24 @@ render_header('Stories');
         <i class="fas fa-newspaper"></i>
         <h3><?= $q || $status ? 'No stories match' : 'No stories yet' ?></h3>
         <p>Stories appear on the website's Stories page and homepage.</p>
-        <a href="story-edit.php" class="btn btn-primary">Write the first story</a>
+        <a href="story-edit" class="btn btn-primary">Write the first story</a>
     </div>
 <?php else: ?>
     <div class="story-list">
         <?php foreach ($stories as $s): ?>
             <article class="story-row panel">
-                <a href="story-edit.php?id=<?= (int) $s['id'] ?>" class="story-cover">
+                <a href="story-edit?id=<?= (int) $s['id'] ?>" class="story-cover">
                     <?php if ($s['cover_image']): ?><img src="../<?= h($s['cover_image']) ?>" alt="" loading="lazy">
                     <?php else: ?><i class="fas <?= h(CATEGORY_ICONS[$s['category']] ?? 'fa-newspaper') ?>"></i><?php endif; ?>
                 </a>
                 <div class="story-info">
                     <div class="story-meta-row"><?= status_pill($s['status']) ?><span class="tag"><?= h($s['category']) ?></span>
                         <small><?= $s['published_at'] ? h(date('j M Y', strtotime($s['published_at']))) : 'No date' ?><?= $s['author'] ? ' · by ' . h($s['author']) : '' ?></small></div>
-                    <h3><a href="story-edit.php?id=<?= (int) $s['id'] ?>"><?= h($s['title']) ?></a></h3>
+                    <h3><a href="story-edit?id=<?= (int) $s['id'] ?>"><?= h($s['title']) ?></a></h3>
                     <p><?= h(mb_strimwidth($s['excerpt'], 0, 160, '…')) ?></p>
                 </div>
                 <div class="row-actions">
-                    <a href="story-edit.php?id=<?= (int) $s['id'] ?>" class="btn btn-light btn-sm"><i class="fas fa-pen"></i> Edit</a>
+                    <a href="story-edit?id=<?= (int) $s['id'] ?>" class="btn btn-light btn-sm"><i class="fas fa-pen"></i> Edit</a>
                     <?php if ($s['status'] === 'published'): ?>
                         <a href="../blog-<?= h($s['slug']) ?>.html" target="_blank" rel="noopener" class="btn btn-light btn-sm"><i class="fas fa-eye"></i> View</a>
                     <?php endif; ?>

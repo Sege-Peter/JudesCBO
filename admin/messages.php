@@ -23,9 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db()->prepare('DELETE FROM messages WHERE id = ?')->execute([$id]);
         log_activity('message.delete', "Message #$id");
         flash('success', 'Message deleted.');
-        redirect('messages.php');
+        redirect('messages');
     }
-    redirect('messages.php?id=' . $id);
+    redirect('messages?id=' . $id);
 }
 
 $status = in_array($_GET['status'] ?? '', STATUSES, true) ? $_GET['status'] : '';
@@ -76,12 +76,12 @@ render_header('Messages');
 
 if (setting('form_mode', 'formspree') !== 'builtin'): ?>
     <div class="alert alert-info"><i class="fas fa-circle-info"></i><span>The website's contact form currently sends messages to Formspree, so new messages won't appear here.
-        <?php if (is_admin()): ?><a href="settings.php#forms">Switch to the built-in inbox</a> once the site is on PHP hosting.<?php else: ?>An administrator can switch to the built-in inbox in Settings.<?php endif; ?></span></div>
+        <?php if (is_admin()): ?><a href="settings#forms">Switch to the built-in inbox</a> once the site is on PHP hosting.<?php else: ?>An administrator can switch to the built-in inbox in Settings.<?php endif; ?></span></div>
 <?php endif; ?>
 
 <div class="toolbar">
     <div class="tabs">
-        <a href="messages.php" class="<?= $status === '' ? 'active' : '' ?>">All <em><?= array_sum($counts) ?></em></a>
+        <a href="messages" class="<?= $status === '' ? 'active' : '' ?>">All <em><?= array_sum($counts) ?></em></a>
         <?php foreach (STATUSES as $s): ?>
             <a href="?<?= h(http_build_query(array_merge($query, ['status' => $s]))) ?>" class="<?= $status === $s ? 'active' : '' ?>"><?= ucfirst($s) ?> <em><?= (int) ($counts[$s] ?? 0) ?></em></a>
         <?php endforeach; ?>
@@ -127,7 +127,7 @@ if (setting('form_mode', 'formspree') !== 'builtin'): ?>
             $waNumber = preg_replace('/\D+/', '', $current['phone']);
             if (str_starts_with($waNumber, '0')) $waNumber = '254' . substr($waNumber, 1);
         ?>
-            <a href="messages.php?<?= h(http_build_query($query)) ?>" class="back-link inbox-back"><i class="fas fa-arrow-left"></i> Back to inbox</a>
+            <a href="messages?<?= h(http_build_query($query)) ?>" class="back-link inbox-back"><i class="fas fa-arrow-left"></i> Back to inbox</a>
             <header class="message-head">
                 <span class="avatar"><?= h(mb_strtoupper(mb_substr($current['name'], 0, 1))) ?></span>
                 <div>
@@ -145,7 +145,7 @@ if (setting('form_mode', 'formspree') !== 'builtin'): ?>
 
             <div class="message-actions">
                 <?php if ($hasMailbox): ?>
-                    <a href="mailbox.php?compose=1&amp;contact=<?= (int) $current['id'] ?>" class="btn btn-primary"><i class="fas fa-reply"></i> Reply from mailbox</a>
+                    <a href="mailbox?compose=1&amp;contact=<?= (int) $current['id'] ?>" class="btn btn-primary"><i class="fas fa-reply"></i> Reply from mailbox</a>
                     <a href="<?= h($mailto) ?>" class="btn btn-light" data-mark-replied="<?= (int) $current['id'] ?>"><i class="fas fa-envelope"></i> Email app</a>
                 <?php else: ?>
                     <a href="<?= h($mailto) ?>" class="btn btn-primary" data-mark-replied="<?= (int) $current['id'] ?>"><i class="fas fa-reply"></i> Reply by email</a>

@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($badIps) $errors[] = 'These are not valid IP addresses: ' . implode(', ', array_slice($badIps, 0, 5));
         if ($errors) {
             foreach ($errors as $e) flash('error', $e);
-            redirect('system.php#maintenance');
+            redirect('system#maintenance');
         }
         $wasOn = maintenance_on();
         save_setting('maint_on', $on ? '1' : '0');
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             flash('success', $on ? 'Maintenance mode is on. Visitors now see the maintenance page.' : ($wasOn ? 'Maintenance mode is off. The website is live again.' : 'Maintenance settings saved.'));
         }
-        redirect('system.php#maintenance');
+        redirect('system#maintenance');
     }
 
     if ($section === 'lock') {
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         log_activity('maintenance.dashboard_' . ($lock ? 'locked' : 'unlocked'), $lock ? 'Dashboard locked to System admins' : 'Dashboard open to all staff');
         flash('success', $lock ? 'Dashboard locked. Everyone except System admins has been signed out.' : 'Dashboard unlocked. All staff can log in again.');
-        redirect('system.php#lock');
+        redirect('system#lock');
     }
 
     if ($section === 'sessions') {
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             log_activity('maintenance.rotate_token', 'New staff preview key');
             flash('success', 'Staff preview key renewed. Staff get the new one automatically next time they open the dashboard.');
         }
-        redirect('system.php#sessions');
+        redirect('system#sessions');
     }
 }
 
@@ -181,7 +181,7 @@ render_header('System');
             <li><span>Failed logins (last 15 min)</span><strong><?= $lockouts ?></strong></li>
         </ul>
         <div class="tool-row">
-            <a href="security.php" class="btn btn-primary btn-sm"><i class="fas fa-shield-halved"></i> Open the Security page</a>
+            <a href="security" class="btn btn-primary btn-sm"><i class="fas fa-shield-halved"></i> Open the Security page</a>
             <form method="post"><?= csrf_field() ?><input type="hidden" name="section" value="sessions"><input type="hidden" name="action" value="clear-lockouts">
                 <button class="btn btn-light btn-sm"><i class="fas fa-unlock"></i> Clear login lockouts</button></form>
             <form method="post" data-confirm="Renew the staff preview key? Staff who are browsing the website during maintenance will need to open the dashboard again."><?= csrf_field() ?><input type="hidden" name="section" value="sessions"><input type="hidden" name="action" value="rotate-token">
@@ -217,7 +217,7 @@ render_header('System');
                 </tbody>
             </table>
         </div>
-        <p class="muted small">Logging someone out ends their open sessions and "remember me" on every device. It doesn't stop them logging in again; deactivate the account on the <a href="users.php">Users</a> page for that.</p>
+        <p class="muted small">Logging someone out ends their open sessions and "remember me" on every device. It doesn't stop them logging in again; deactivate the account on the <a href="users">Users</a> page for that.</p>
     </section>
 
     <section class="panel span-2" id="info">

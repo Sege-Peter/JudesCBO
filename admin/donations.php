@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db()->prepare('DELETE FROM donations WHERE id = ?')->execute([$id]);
         log_activity('donation.delete', "Donation #$id");
         flash('success', 'Donation record deleted.');
-        redirect('donations.php');
+        redirect('donations');
     }
     if ($action === 'add') {
         foreach ($form as $k => $_) $form[$k] = post_str($k, 300);
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ->execute([$form['donor_name'], $form['phone'], $amount, $form['mpesa_code'] ?: null, $form['method'], $form['cause'], $form['received_at'], $form['note'], $user['id']]);
             log_activity('donation.add', format_kes($amount) . ' ' . $form['cause'] . ($form['mpesa_code'] ? ' (' . $form['mpesa_code'] . ')' : ''));
             flash('success', 'Donation of ' . format_kes($amount) . ' recorded.');
-            redirect('donations.php');
+            redirect('donations');
         }
     }
 }
@@ -92,7 +92,7 @@ render_header('Donations');
             <label>Cause<select name="cause"><option value="">All causes</option><?php foreach (CAUSES as $c): ?><option <?= $cause === $c ? 'selected' : '' ?>><?= h($c) ?></option><?php endforeach; ?></select></label>
             <label>Search<input type="search" name="q" value="<?= h($q) ?>" placeholder="Name, phone, code"></label>
             <button class="btn btn-light btn-sm"><i class="fas fa-filter"></i> Filter</button>
-            <?php if ($query): ?><a href="donations.php" class="link">Clear</a><?php endif; ?>
+            <?php if ($query): ?><a href="donations" class="link">Clear</a><?php endif; ?>
             <a href="?<?= h(http_build_query(array_merge($query, ['export' => 1]))) ?>" class="btn btn-light btn-sm push-right"><i class="fas fa-file-csv"></i> Export</a>
         </form>
         <p class="muted small"><?= (int) $filtered['n'] ?> donation<?= (int) $filtered['n'] === 1 ? '' : 's' ?> · <strong><?= h(format_kes($filtered['total'])) ?></strong><?= $query ? ' matching these filters' : ' in total' ?></p>

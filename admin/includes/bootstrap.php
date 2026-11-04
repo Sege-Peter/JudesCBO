@@ -66,7 +66,7 @@ function error_page(int $code, string $title, string $message, string $icon = 'f
         exit($message);
     }
     if (!headers_sent()) header('Content-Type: text/html; charset=utf-8');
-    $back = $code === 403 ? '<a class="btn primary" href="index.php"><i class="fas fa-gauge"></i> Dashboard</a>'
+    $back = $code === 403 ? '<a class="btn primary" href="index"><i class="fas fa-gauge"></i> Dashboard</a>'
         : '<button type="button" class="btn primary" onclick="location.reload()"><i class="fas fa-rotate-right"></i> Try again</button>';
     ?><!DOCTYPE html>
 <html lang="en">
@@ -110,7 +110,7 @@ function error_page(int $code, string $title, string $message, string $icon = 'f
     <p><?= h($message) ?></p>
     <div class="actions">
         <?= $back ?>
-        <button type="button" class="btn" onclick="history.length > 1 ? history.back() : location.assign('index.php')"><i class="fas fa-arrow-left"></i> Go back</button>
+        <button type="button" class="btn" onclick="history.length > 1 ? history.back() : location.assign('index')"><i class="fas fa-arrow-left"></i> Go back</button>
     </div>
 </main>
 </body>
@@ -389,12 +389,12 @@ function require_login(): array
 {
     $user = current_user();
     if (!$user) {
-        redirect('login.php');
+        redirect('login');
     }
     // While the dashboard is locked for maintenance only System admins can use it
     if (dashboard_locked() && $user['role'] !== 'developer') {
         unset($_SESSION['user_id'], $_SESSION['sv']);
-        redirect('login.php');
+        redirect('login');
     }
     maintenance_tick();
     staff_bypass_cookie();
@@ -404,9 +404,9 @@ function require_login(): array
     }
     // Administrators must turn on two-step login before using the dashboard (when required in Settings)
     if (in_array($user['role'], ['admin', 'developer'], true) && !(int) $user['totp_enabled'] && setting('require_2fa_admins', '1') === '1'
-        && !in_array(basename($_SERVER['SCRIPT_NAME']), ['profile.php', 'logout.php'], true)) {
+        && !in_array(basename($_SERVER['SCRIPT_NAME'], '.php'), ['profile', 'logout'], true)) {
         flash('info', 'Administrators need two-step login. Set it up below to continue.');
-        redirect('profile.php#two-step');
+        redirect('profile#two-step');
     }
     return $user;
 }
@@ -417,7 +417,7 @@ function complete_login(int $userId, bool $remember, string $note): never
     if (dashboard_locked() && user_role($userId) !== 'developer') {
         unset($_SESSION['pending_2fa']);
         flash('error', 'The dashboard is closed for maintenance. Only System admins can log in right now.');
-        redirect('login.php');
+        redirect('login');
     }
     session_regenerate_id(true);
     unset($_SESSION['pending_2fa']);
@@ -429,7 +429,7 @@ function complete_login(int $userId, bool $remember, string $note): never
     }
     db()->prepare('UPDATE users SET last_login = NOW() WHERE id = ?')->execute([$userId]);
     log_activity('login', $note . ($remember ? ' (remember me)' : ''), $userId);
-    redirect('index.php');
+    redirect('index');
 }
 
 /* ---------- Roles ---------- */
@@ -665,7 +665,7 @@ function send_email_verification(array $user, string $email): bool
     db()->prepare('INSERT INTO email_verifications (user_id, email, token_hash, expires_at) VALUES (?, ?, ?, NOW() + INTERVAL ' . VERIFY_HOURS . ' HOUR)')
         ->execute([$user['id'], strtolower($email), hash('sha256', $token)]);
     $base = (string) config('admin_url') ?: rtrim((string) config('site_url'), '/') . '/admin/';
-    $link = rtrim($base, '/') . '/verify-email.php?token=' . $token;
+    $link = rtrim($base, '/') . '/verify-email?token=' . $token;
     $body = "Hello {$user['name']},\n\nPlease confirm that this is your personal email for the Judes CBO dashboard by opening this link (it works for " . VERIFY_HOURS . " hours):\n$link\n\n"
         . "Once confirmed, password reset links will also be sent here, so you can get back into your account even if you can't reach your work email.\n\n"
         . "If you didn't add this email, you can ignore this message.\n\nJudes CBO";

@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db()->prepare('DELETE FROM events WHERE id = ?')->execute([$id]);
         log_activity('event.delete', $event['title']);
         publish_with_feedback('Event deleted and removed from the website.');
-        redirect('events.php');
+        redirect('events');
     }
 
     $old = $event;
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             @unlink(site_path('calendar/' . $old['slug'] . '.ics'));
         }
         publish_with_feedback($event['status'] === 'published' ? 'Event saved and published.' : 'Draft saved. It is not on the website yet.');
-        redirect('events.php');
+        redirect('events');
     }
 }
 
@@ -124,7 +124,7 @@ function event_row(array $e): void
 }
 ?>
 <?php if ($showForm): ?>
-    <a href="events.php" class="back-link"><i class="fas fa-arrow-left"></i> All events</a>
+    <a href="events" class="back-link"><i class="fas fa-arrow-left"></i> All events</a>
     <?php foreach ($errors as $e): ?><div class="alert alert-error"><?= h($e) ?></div><?php endforeach; ?>
     <form method="post" enctype="multipart/form-data" class="editor-layout">
         <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $id ?>">

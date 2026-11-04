@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         log_activity('analytics.clear', 'All visitor statistics deleted');
         flash('success', 'All visitor statistics have been deleted.');
     }
-    redirect('analytics.php');
+    redirect('analytics');
 }
 
 /* ---------- Period ---------- */
@@ -313,15 +313,15 @@ render_header('Analytics');
                 <span><strong><?= number_format($events[$key]) ?></strong><small><?= h($label) ?></small></span>
             </div>
         <?php endforeach; ?>
-        <a class="action-tile" href="messages.php">
+        <a class="action-tile" href="messages">
             <span class="stat-icon icon-sm icon-purple"><i class="fas fa-inbox"></i></span>
             <span><strong><?= number_format($results['messages']) ?></strong><small>Messages sent</small></span>
         </a>
-        <a class="action-tile" href="subscribers.php">
+        <a class="action-tile" href="subscribers">
             <span class="stat-icon icon-sm icon-blue"><i class="fas fa-envelope-open-text"></i></span>
             <span><strong><?= number_format($results['subscribers']) ?></strong><small>New subscribers</small></span>
         </a>
-        <a class="action-tile" href="donations.php">
+        <a class="action-tile" href="donations">
             <span class="stat-icon icon-sm icon-green"><i class="fas fa-hand-holding-dollar"></i></span>
             <span><strong><?= h(format_kes($results['donations']['total'])) ?></strong><small><?= (int) $results['donations']['n'] ?> donation<?= (int) $results['donations']['n'] === 1 ? '' : 's' ?> recorded</small></span>
         </a>

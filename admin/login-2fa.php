@@ -9,7 +9,7 @@ $pending = $_SESSION['pending_2fa'] ?? null;
 if (!$pending || time() - $pending['at'] > PENDING_MINUTES * 60) {
     unset($_SESSION['pending_2fa']);
     flash('error', 'Please log in again.');
-    redirect('login.php');
+    redirect('login');
 }
 
 $useRecovery = ($_GET['method'] ?? $_POST['method'] ?? '') === 'recovery';
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $stmt->fetch();
     if (!$user || !(int) $user['active']) {
         unset($_SESSION['pending_2fa']);
-        redirect('login.php');
+        redirect('login');
     }
     $code = post_str('code', 20);
     if ($useRecovery) {
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db()->prepare('INSERT INTO login_attempts (ip, username) VALUES (?, ?)')->execute([client_ip(), 'user#' . $user['id']]);
         auto_block_check(client_ip());
         flash('error', 'Too many wrong codes. Please log in again.');
-        redirect('login.php');
+        redirect('login');
     }
     $error = $useRecovery ? 'That recovery code is not valid or was already used.' : 'That code is not right. Check your app and try the newest code.';
 }
@@ -84,12 +84,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
         <p class="auth-foot">
             <?php if ($useRecovery): ?>
-                <a href="login-2fa.php"><i class="fas fa-mobile-screen-button"></i> Use the app code instead</a>
+                <a href="login-2fa"><i class="fas fa-mobile-screen-button"></i> Use the app code instead</a>
             <?php else: ?>
-                <a href="login-2fa.php?method=recovery"><i class="fas fa-life-ring"></i> Lost your phone? Use a recovery code</a>
+                <a href="login-2fa?method=recovery"><i class="fas fa-life-ring"></i> Lost your phone? Use a recovery code</a>
             <?php endif; ?>
         </p>
-        <p class="auth-foot"><a href="login.php"><i class="fas fa-arrow-left"></i> Back to login</a></p>
+        <p class="auth-foot"><a href="login"><i class="fas fa-arrow-left"></i> Back to login</a></p>
     </main>
 </body>
 </html>

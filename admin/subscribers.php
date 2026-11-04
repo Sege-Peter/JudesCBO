@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('success', 'Subscriber deleted.');
         }
     }
-    redirect('subscribers.php');
+    redirect('subscribers');
 }
 
 $status = in_array($_GET['status'] ?? '', ['active', 'unsubscribed'], true) ? $_GET['status'] : '';
@@ -72,7 +72,7 @@ render_header('Subscribers');
     <section class="panel">
         <div class="toolbar toolbar-inner">
             <div class="tabs">
-                <a href="subscribers.php" class="<?= $status === '' ? 'active' : '' ?>">All</a>
+                <a href="subscribers" class="<?= $status === '' ? 'active' : '' ?>">All</a>
                 <a href="?status=active" class="<?= $status === 'active' ? 'active' : '' ?>">Active</a>
                 <a href="?status=unsubscribed" class="<?= $status === 'unsubscribed' ? 'active' : '' ?>">Unsubscribed</a>
             </div>

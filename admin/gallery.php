@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!$failed) {
             flash('error', 'Choose at least one photo to upload.');
         }
-        redirect('gallery.php');
+        redirect('gallery');
     }
 
     if ($action === 'reorder') {
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ->execute([post_str('caption', 160), post_str('alt', 200), $album, !empty($_POST['show_on_home']) ? 1 : 0, $id]);
         log_activity('gallery.update', "Photo #$id");
         publish_with_feedback('Photo details saved.');
-        redirect('gallery.php' . (isset($_GET['album']) ? '?album=' . urlencode($_GET['album']) : ''));
+        redirect('gallery' . (isset($_GET['album']) ? '?album=' . urlencode($_GET['album']) : ''));
     }
 
     if ($action === 'bulk') {
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             flash('error', 'Select at least one photo first.');
         }
-        redirect('gallery.php');
+        redirect('gallery');
     }
 }
 
@@ -128,7 +128,7 @@ render_header('Gallery');
 
 <div class="toolbar">
     <div class="tabs tabs-scroll">
-        <a href="gallery.php" class="<?= $album === '' ? 'active' : '' ?>">All <em><?= array_sum($albumCounts) ?></em></a>
+        <a href="gallery" class="<?= $album === '' ? 'active' : '' ?>">All <em><?= array_sum($albumCounts) ?></em></a>
         <?php foreach (ALBUMS as $a): if (empty($albumCounts[$a])) continue; ?>
             <a href="?album=<?= urlencode($a) ?>" class="<?= $album === $a ? 'active' : '' ?>"><?= h($a) ?> <em><?= (int) $albumCounts[$a] ?></em></a>
         <?php endforeach; ?>
