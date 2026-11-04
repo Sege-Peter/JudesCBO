@@ -162,6 +162,20 @@ function build_message(array $opt): array
     $body .= "--$alt--\r\n";
     $contentType = "multipart/alternative; boundary=\"$alt\"";
 
+    // Inline images (the logo) referenced from the HTML as cid:...
+    if (!empty($opt['inline']) && $html !== '') {
+        $rel = 'rel' . bin2hex(random_bytes(8));
+        $related = "--$rel\r\nContent-Type: $contentType\r\n\r\n$body";
+        foreach ($opt['inline'] as $img) {
+            $related .= "--$rel\r\nContent-Type: {$img['type']}; name=\"{$img['name']}\"\r\nContent-Transfer-Encoding: base64\r\n"
+                . "Content-ID: <{$img['cid']}>\r\nContent-Disposition: inline; filename=\"{$img['name']}\"\r\n\r\n"
+                . chunk_split(base64_encode($img['data']), 76, "\r\n");
+        }
+        $related .= "--$rel--\r\n";
+        $body = $related;
+        $contentType = "multipart/related; boundary=\"$rel\"";
+    }
+
     if (!empty($opt['attachments'])) {
         $mix = 'mix' . bin2hex(random_bytes(8));
         $outer = "--$mix\r\nContent-Type: $contentType\r\n\r\n$body";
@@ -281,7 +295,8 @@ function system_mail(string $to, string $subject, string $body, string $replyTo 
     $box = org_mailbox();
     if ($box) {
         try {
-            mailbox_send($box, ['to' => [$to], 'subject' => $subject, 'text' => $body, 'html' => text_to_html($body), 'reply_to' => $replyTo, 'from_name' => 'Judes CBO'], [], false);
+            mailbox_send($box, ['to' => [$to], 'subject' => $subject, 'text' => $body, 'html' => email_brand_html(email_text_block($body), EMAIL_LOGO_CID),
+                'inline' => email_logo_inline(), 'reply_to' => $replyTo, 'from_name' => 'Judes CBO'], [], false);
             return true;
         } catch (Throwable $e) {
             // fall back to mail() below
@@ -289,8 +304,12 @@ function system_mail(string $to, string $subject, string $body, string $replyTo 
     }
     if (!function_exists('mail')) return false;
     $from = setting('org_email', 'info@judescbo.co.ke');
-    $headers = "From: Judes CBO <$from>\r\nContent-Type: text/plain; charset=utf-8" . ($replyTo ? "\r\nReply-To: " . str_replace(["\r", "\n"], '', $replyTo) : '');
-    return @mail($to, mime_header($subject), $body, $headers);
+    [$raw] = build_message(['from' => $from, 'from_name' => 'Judes CBO', 'to' => [$to], 'subject' => $subject, 'text' => $body,
+        'html' => email_brand_html(email_text_block($body), email_logo_url()), 'reply_to' => $replyTo]);
+    // mail() takes the headers and body separately; To and Subject are passed as arguments
+    [$head, $content] = explode("\r\n\r\n", $raw, 2);
+    $head = preg_replace('/^(To|Subject): .*(\r\n[ \t].*)*\r\n/mi', '', $head . "\r\n");
+    return @mail($to, mime_header($subject), $content, rtrim($head));
 }
 
 /* ---------- Automatic replies (cPanel autoresponder, managed with the mailbox's own login) ---------- */
@@ -326,7 +345,12 @@ function autoreply_get(array $box): ?array
     foreach ($list as $r) if (strtolower($r['email'] ?? '') === strtolower($box['address'])) $on = true;
     if (!$on) return null;
     $d = webmail_api($box, 'get_auto_responder', ['email' => $box['address']])['data'] ?? [];
-    return ['subject' => (string) ($d['subject'] ?? ''), 'body' => rtrim((string) ($d['body'] ?? '')), 'interval' => (int) ($d['interval'] ?? 24)];
+    $body = rtrim((string) ($d['body'] ?? ''));
+    if (!empty($d['is_html'])) {
+        // We keep the plain text the user typed; the server only has the designed HTML
+        $body = setting('autoreply_text_' . $box['id']) ?: trim(html_entity_decode(strip_tags($body), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+    }
+    return ['subject' => (string) ($d['subject'] ?? ''), 'body' => $body, 'interval' => (int) ($d['interval'] ?? 24)];
 }
 
 function autoreply_set(array $box, bool $on, string $subject, string $body, int $intervalHours = 24): void
@@ -336,9 +360,11 @@ function autoreply_set(array $box, bool $on, string $subject, string $body, int 
         if (autoreply_get($box) !== null) webmail_api($box, 'delete_auto_responder', ['email' => $box['address']]);
         return;
     }
+    save_setting('autoreply_text_' . $box['id'], $body);
     webmail_api($box, 'add_auto_responder', [
         'email' => $user, 'domain' => $domain, 'from' => $box['display_name'] ?: 'Judes CBO',
-        'subject' => $subject, 'body' => $body, 'is_html' => 0, 'interval' => max(1, $intervalHours), 'start' => '', 'stop' => '',
+        'subject' => $subject, 'body' => email_brand_html(email_text_block($body), email_logo_url()), 'is_html' => 1,
+        'interval' => max(1, $intervalHours), 'start' => '', 'stop' => '',
     ]);
 }
 
@@ -466,4 +492,125 @@ function block_sender(array $box, string $sender, string $spamFolder): void
 function unblock_sender(array $box, string $sender): void
 {
     webmail_api($box, 'delete_filter', ['account' => $box['address'], 'filtername' => BLOCK_PREFIX . $sender]);
+}
+
+/* ---------- Branded email design ---------- */
+
+const EMAIL_LOGO_CID = 'cid:judes-logo@judescbo.co.ke';
+const DEFAULT_SIGNATURE = "Judes CBO\nEmpowerment for Development\n+254 712 109310 · judescbo.co.ke";
+
+function email_logo_inline(): array
+{
+    $file = dirname(__DIR__, 2) . '/images/email-logo.png';
+    if (!is_file($file)) return [];
+    return [['cid' => 'judes-logo@judescbo.co.ke', 'type' => 'image/png', 'name' => 'judes-cbo-logo.png', 'data' => (string) file_get_contents($file)]];
+}
+
+function email_logo_url(): string
+{
+    return rtrim((string) config('site_url'), '/') . '/images/email-logo.png';
+}
+
+/** Plain text -> email-safe HTML paragraphs; a link on its own line becomes a button. */
+function email_text_block(string $text): string
+{
+    $text = trim(str_replace(["\r\n", "\r"], "\n", $text));
+    $out = '';
+    foreach (preg_split("/\n{2,}/", $text) as $para) {
+        $para = trim($para);
+        if ($para === '') continue;
+        if (preg_match('~^(https?://\S+)$~', $para, $m)) {
+            $url = $m[1];
+            $label = str_contains($url, 'reset-password') ? 'Choose a new password' : (str_contains($url, 'verify-email') ? 'Confirm my email' : 'Open link');
+            $out .= '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 20px"><tr><td style="border-radius:999px;background:#2d5016">'
+                . '<a href="' . h($url) . '" style="display:inline-block;padding:13px 26px;font:700 15px Arial,Helvetica,sans-serif;color:#ffffff;text-decoration:none;border-radius:999px">' . h($label) . '</a></td></tr></table>'
+                . '<p style="margin:0 0 18px;font-size:12px;color:#8a94a6;word-break:break-all">Or copy this link: ' . h($url) . '</p>';
+            continue;
+        }
+        $html = nl2br(h($para));
+        $html = preg_replace('~(https?://[^\s<]+)~', '<a href="$1" style="color:#2d5016;font-weight:bold">$1</a>', $html);
+        $out .= '<p style="margin:0 0 16px">' . $html . '</p>';
+    }
+    return $out;
+}
+
+/** The full branded layout used for automated emails. $logo is a cid: reference or an https URL. */
+function email_brand_html(string $inner, string $logo): string
+{
+    $site = rtrim((string) config('site_url'), '/');
+    $email = setting('org_email', 'info@judescbo.co.ke');
+    return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>'
+        . '<body style="margin:0;padding:0;background:#f4f6f9">'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9"><tr><td align="center" style="padding:28px 12px">'
+        . '<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e7ebf0">'
+        // Header
+        . '<tr><td style="background:#0f2440;padding:22px 28px">'
+        . '<table role="presentation" cellpadding="0" cellspacing="0"><tr>'
+        . '<td style="background:#ffffff;border-radius:12px;padding:6px;line-height:0"><img src="' . h($logo) . '" width="56" height="39" alt="Judes CBO" style="display:block;border:0;width:56px;height:auto"></td>'
+        . '<td style="padding-left:14px;font-family:Arial,Helvetica,sans-serif">'
+        . '<div style="font-size:19px;font-weight:bold;letter-spacing:2px;color:#ffffff">JUDES CBO</div>'
+        . '<div style="font-size:11px;font-weight:bold;letter-spacing:1.5px;color:#9ae6b4;padding-top:3px">EMPOWERMENT FOR DEVELOPMENT</div>'
+        . '</td></tr></table></td></tr>'
+        . '<tr><td style="height:4px;line-height:4px;font-size:0;background:#2d5016">&nbsp;</td></tr>'
+        // Content
+        . '<tr><td style="padding:30px 30px 14px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a202c">' . $inner . '</td></tr>'
+        // Footer
+        . '<tr><td style="padding:20px 30px 24px;background:#f8fafc;border-top:1px solid #e7ebf0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;color:#718096;text-align:center">'
+        . '<strong style="color:#1a365d">Judes Community Based Organization</strong><br>Oyugis, Homa Bay County, Kenya<br>'
+        . '<a href="tel:+254712109310" style="color:#2d5016;text-decoration:none">+254 712 109310</a> &nbsp;·&nbsp; '
+        . '<a href="mailto:' . h($email) . '" style="color:#2d5016;text-decoration:none">' . h($email) . '</a> &nbsp;·&nbsp; '
+        . '<a href="' . h($site) . '" style="color:#2d5016;text-decoration:none">' . h(preg_replace('#^https?://#', '', $site)) . '</a>'
+        . '</td></tr></table></td></tr></table></body></html>';
+}
+
+/** Signature card for everyday emails: logo beside the signature lines. */
+function email_signature_html(string $sig, string $logo): string
+{
+    $lines = array_values(array_filter(array_map('trim', explode("\n", trim($sig))), 'strlen'));
+    if (!$lines) return '';
+    $first = array_shift($lines);
+    $rest = '';
+    foreach ($lines as $l) {
+        $l = h($l);
+        $l = preg_replace('~(\+?\d[\d \-]{7,}\d)~', '<a href="tel:$1" style="color:#4a5568;text-decoration:none">$1</a>', $l);
+        $l = preg_replace('~\b((?:https?://)?(?:www\.)?judescbo\.co\.ke[^\s<]*)~', '<a href="https://judescbo.co.ke" style="color:#2d5016;font-weight:bold;text-decoration:none">$1</a>', $l);
+        $l = preg_replace('~([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})~', '<a href="mailto:$1" style="color:#2d5016;text-decoration:none">$1</a>', $l);
+        $rest .= '<br>' . $l;
+    }
+    return '<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:22px;border-top:3px solid #2d5016;padding-top:14px">'
+        . '<tr><td style="padding:14px 14px 0 0;vertical-align:top;line-height:0"><img src="' . h($logo) . '" width="64" alt="Judes CBO" style="display:block;border:0;width:64px;height:auto;border-radius:10px"></td>'
+        . '<td style="padding-top:14px;vertical-align:top;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.55;color:#4a5568">'
+        . '<strong style="font-size:15px;color:#1a365d">' . h($first) . '</strong>' . $rest . '</td></tr></table>';
+}
+
+/**
+ * HTML for an email typed in the dashboard: the message, the signature card (after the "-- " line)
+ * and any quoted earlier email in a grey block.
+ */
+function compose_html(string $text): string
+{
+    $text = str_replace(["\r\n", "\r"], "\n", $text);
+    $quoteRe = '/(^|\n)(On [^\n]{6,200} wrote:\n|---------- Forwarded message ----------)/';
+    $main = $text;
+    $sig = '';
+    $quote = '';
+    if (($p = strpos($text, "\n-- \n")) !== false) {
+        $main = substr($text, 0, $p);
+        $sig = substr($text, $p + 5);
+        if (preg_match($quoteRe, $sig, $m, PREG_OFFSET_CAPTURE)) {
+            $quote = substr($sig, $m[0][1]);
+            $sig = substr($sig, 0, $m[0][1]);
+        }
+    } elseif (preg_match($quoteRe, $text, $m, PREG_OFFSET_CAPTURE)) {
+        $main = substr($text, 0, $m[0][1]);
+        $quote = substr($text, $m[0][1]);
+    }
+    $html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#1a202c">' . email_text_block($main) . '</div>';
+    if (trim($sig) !== '') $html .= email_signature_html($sig, EMAIL_LOGO_CID);
+    if (trim($quote) !== '') {
+        $q = preg_replace('/^> ?/m', '', trim($quote));
+        $html .= '<div style="margin-top:22px;padding:4px 0 4px 14px;border-left:3px solid #cbd5e0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.55;color:#718096">'
+            . nl2br(h($q)) . '</div>';
+    }
+    return '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:16px">' . $html . '</body></html>';
 }

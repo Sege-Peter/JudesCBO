@@ -210,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             if ($total > MBX_MAX_UPLOAD) throw new RuntimeException('Attachments add up to more than 15 MB. Send large files as a link instead.');
             mailbox_send($box, [
-                'to' => $to, 'cc' => $cc, 'subject' => $subject, 'text' => $text, 'html' => text_to_html($text),
+                'to' => $to, 'cc' => $cc, 'subject' => $subject, 'text' => $text, 'html' => compose_html($text), 'inline' => email_logo_inline(),
                 'in_reply_to' => $inReplyTo, 'references' => $references, 'attachments' => $attachments,
             ], $bcc);
             if ($replyUid && $mode !== 'fwd') {
@@ -513,7 +513,7 @@ function html_to_text(string $html): string
 /* ---------- Compose prefill ---------- */
 $compose = null;
 if ($box && !$authFailed && (isset($_GET['compose']) || in_array($_GET['mode'] ?? '', ['reply', 'all', 'fwd'], true))) {
-    $sig = trim((string) ($box['signature'] ?? ''));
+    $sig = trim((string) ($box['signature'] ?? '')) ?: str_replace('Judes CBO', $box['display_name'] ?: 'Judes CBO', DEFAULT_SIGNATURE);
     $compose = ['to' => '', 'cc' => '', 'bcc' => '', 'subject' => '', 'body' => $sig !== '' ? "\n\n-- \n$sig" : '', 'mode' => '', 'reply_uid' => 0, 'contact' => 0, 'atts' => []];
     $mode = $_GET['mode'] ?? '';
     if ($message && in_array($mode, ['reply', 'all', 'fwd'], true)) {
@@ -651,8 +651,8 @@ render_header('Mailbox');
             <label class="field">Sender name <small>Shown to people you email</small>
                 <input type="text" name="display_name" maxlength="120" value="<?= h($box['display_name']) ?>">
             </label>
-            <label class="field">Signature <small>Added to new emails and replies</small>
-                <textarea name="signature" rows="5" maxlength="2000" placeholder="Judes CBO&#10;Homa Bay, Kenya&#10;+254 712 109310 · judescbo.co.ke"><?= h($box['signature'] ?? '') ?></textarea>
+            <label class="field">Signature <small>Shown at the end of your emails as a card with the Judes CBO logo. First line is your name (in bold); add your role, phone and website below.</small>
+                <textarea name="signature" rows="5" maxlength="2000" placeholder="Mary Atieno&#10;Programmes Officer, Judes CBO&#10;+254 712 109310 · judescbo.co.ke"><?= h($box['signature'] ?: DEFAULT_SIGNATURE) ?></textarea>
             </label>
             <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save</button>
         </form>
