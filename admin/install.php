@@ -48,7 +48,7 @@ try {
     exit('Could not connect to the database. Check the settings in admin/config.php (or config.local.php). Error: ' . h($e->getMessage()));
 }
 
-$hasAdmin = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin'")->fetchColumn() > 0;
+$hasAdmin = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role IN ('admin', 'developer')")->fetchColumn() > 0;
 if ($hasAdmin) {
     http_response_code(403);
     exit('Setup is already complete. <a href="login">Go to the login page</a>.');
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirm) $errors[] = 'The two passwords do not match.';
 
     if (!$errors) {
-        $stmt = $pdo->prepare("INSERT INTO users (name, email, username, password_hash, role) VALUES (?, ?, ?, ?, 'admin')");
+        $stmt = $pdo->prepare("INSERT INTO users (name, email, username, password_hash, role) VALUES (?, ?, ?, ?, 'developer')"); // the first account is the System admin
         $stmt->execute([$name, $email, $username, password_hash($password, PASSWORD_DEFAULT)]);
         $pdo->prepare("INSERT INTO activity_log (user_id, action, details, ip) VALUES (?, 'install', 'Setup completed', ?)")
             ->execute([$pdo->lastInsertId(), substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 45)]);

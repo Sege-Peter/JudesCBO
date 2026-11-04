@@ -185,7 +185,7 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 10;
+const SCHEMA_VERSION = 11;
 
 function column_exists(string $table, string $column): bool
 {
@@ -260,6 +260,8 @@ function migrate(): void
     if (!column_exists('users', 'personal_email_verified_at')) {
         db()->exec('ALTER TABLE users ADD COLUMN personal_email_verified_at DATETIME NULL AFTER personal_email');
     }
+    // Version 11: sites set up after version 5 got an Admin as their first account; the
+    // "first administrator becomes the System admin" step above runs again to fix that
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
 
