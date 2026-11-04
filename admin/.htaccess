@@ -1,10 +1,21 @@
 Options -Indexes
 # Local server settings and notes stay private
-<FilesMatch "^(config\.local\.php|.*\.local\..*)$">
+<FilesMatch "^(config\.php|config\.local\.php|.*\.local\..*)$">
     Require all denied
 </FilesMatch>
 
+# The dashboard's own security policy (the web server doesn't skip the public one for /admin, so set it here)
+<IfModule mod_headers.c>
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https:; connect-src 'self'; frame-src 'self'; frame-ancestors 'self'; form-action 'self'; base-uri 'self'; object-src 'none'"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "same-origin"
+    Header always set X-Robots-Tag "noindex, nofollow"
+</IfModule>
+
 RewriteEngine On
+# config.php is settings only; the clean address /admin/config is refused too
+RewriteRule ^config/?$ - [F,L]
 # Old .php addresses redirect to the clean ones (page views only, so form posts are never redirected)
 RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
 RewriteCond %{THE_REQUEST} \s([^\s?]*/)([a-z0-9-]+)\.php[\s?]

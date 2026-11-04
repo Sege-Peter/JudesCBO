@@ -128,4 +128,4 @@ render_header('Partners');
     </form>
     <form method="post" id="p-delete" data-confirm="Remove this partner from the website?"><?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" id="p-delete-id"></form>
 </dialog>
-<?php render_footer(['https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js', 'assets/partners.js']); ?>
+<?php render_footer(['assets/vendor/Sortable.min.js', 'assets/partners.js']); ?>

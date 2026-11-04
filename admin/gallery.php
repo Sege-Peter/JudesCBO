@@ -187,4 +187,4 @@ render_header('Gallery');
         <footer class="modal-foot"><button type="button" class="btn btn-light" data-close>Cancel</button><button type="submit" class="btn btn-primary">Save</button></footer>
     </form>
 </dialog>
-<?php render_footer(['https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js', 'assets/gallery.js']); ?>
+<?php render_footer(['assets/vendor/Sortable.min.js', 'assets/gallery.js']); ?>

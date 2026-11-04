@@ -142,4 +142,4 @@ render_header('Team');
     </form>
     <form method="post" id="m-delete" data-confirm="Remove this person from the team page?"><?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" id="m-delete-id"></form>
 </dialog>
-<?php render_footer(['https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js', 'assets/team.js']); ?>
+<?php render_footer(['assets/vendor/Sortable.min.js', 'assets/team.js']); ?>

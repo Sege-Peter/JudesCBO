@@ -249,4 +249,4 @@ render_header('My profile');
         <p class="muted small">Don't recognise something? Change your password straight away and tell a System admin.</p>
     <?php endif; ?>
 </section>
-<?php render_footer(['https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js', 'assets/twofa.js']); ?>
+<?php render_footer(['assets/vendor/qrcode.min.js', 'assets/twofa.js']); ?>
