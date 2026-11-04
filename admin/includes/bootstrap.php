@@ -626,7 +626,7 @@ function send_csv(string $filename, array $header, iterable $rows): never
 }
 
 const NEWSLETTER_WELCOME_SUBJECT = 'Thanks for subscribing to the Judes CBO newsletter';
-const NEWSLETTER_WELCOME_BODY = "Hello,\n\nThank you for subscribing to the Judes CBO newsletter!\n\nYou'll now receive news about our work in Homa Bay: youth and adolescent health, disability inclusion, community events and ways you can get involved.\n\nYou can also find us at https://judescbo.co.ke\n\nWarm regards,\nJudes CBO";
+const NEWSLETTER_WELCOME_BODY = "Hello,\n\nThank you for subscribing to the Judes CBO newsletter!\n\nYou'll now receive news about our work in Homa Bay: youth and adolescent health, disability inclusion, community events and ways you can get involved.\n\nThank you for standing with communities in Homa Bay County.\n\nWarm regards,\nJudes CBO";
 
 /** Signed link that lets a subscriber leave the newsletter without logging in. */
 function unsubscribe_url(string $email): string

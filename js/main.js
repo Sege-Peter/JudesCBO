@@ -586,3 +586,59 @@ if (upcomingList && pastList) {
         if (status) status.hidden = false;
     });
 })();
+
+
+// Installed app: branded launch screen (once per launch) and a bottom tab bar
+(function () {
+    const root = document.documentElement;
+    if (!root.classList.contains('is-app')) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (root.classList.contains('app-launch')) {
+        try { sessionStorage.setItem('judesSplash', '1'); } catch (e) { /* storage unavailable */ }
+        const splash = document.createElement('div');
+        splash.id = 'app-splash';
+        splash.setAttribute('role', 'presentation');
+        const letters = 'JUDES CBO'.split('').map((c, i) => `<span style="animation-delay:${0.55 + i * 0.06}s">${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+        splash.innerHTML = `<div class="splash-logo"><img src="images/jude-logo-192.webp" alt=""></div>
+            <div class="splash-name" aria-label="Judes CBO">${letters}</div>
+            <div class="splash-tagline">Empowerment for Development</div>
+            <div class="splash-bar"><i></i></div>
+            <div class="splash-credit">Powered by<strong>Skope Designs</strong></div>`;
+        document.body.appendChild(splash);
+        root.classList.remove('app-launch');
+        const started = performance.now();
+        let gone = false;
+        const leave = () => {
+            if (gone) return;
+            gone = true;
+            splash.classList.add('is-leaving');
+            setTimeout(() => splash.remove(), 600);
+        };
+        const minTime = reduce ? 800 : 2800;
+        const done = () => setTimeout(leave, Math.max(0, minTime - (performance.now() - started)));
+        if (document.readyState === 'complete') done(); else window.addEventListener('load', done, { once: true });
+        setTimeout(leave, 6000);               // never keep people waiting on a slow connection
+        splash.addEventListener('click', leave); // tap to skip
+    }
+
+    // Bottom tab bar
+    const page = (location.pathname.replace(/\/+$/, '').split('/').pop() || 'index').replace(/\.html$/, '');
+    const tabs = [
+        ['./', 'fa-house', 'Home', ['', 'index']],
+        ['programs', 'fa-hand-holding-heart', 'Programs', ['programs']],
+        ['donate', 'fa-heart', 'Donate', ['donate']],
+        ['events', 'fa-calendar-days', 'Events', ['events']],
+    ];
+    const bar = document.createElement('nav');
+    bar.className = 'app-tabbar';
+    bar.setAttribute('aria-label', 'App');
+    bar.innerHTML = tabs.map(([href, icon, label, pages]) =>
+        `<a href="${href}" class="app-tab${label === 'Donate' ? ' app-tab--donate' : ''}${pages.includes(page) ? ' is-active' : ''}"${pages.includes(page) ? ' aria-current="page"' : ''}><i class="fas ${icon}" aria-hidden="true"></i><span>${label}</span></a>`
+    ).join('') + `<button type="button" class="app-tab" id="app-more"><i class="fas fa-bars" aria-hidden="true"></i><span>More</span></button>`;
+    document.body.appendChild(bar);
+    document.getElementById('app-more').addEventListener('click', () => {
+        const toggle = document.querySelector('.mobile-nav-toggle');
+        if (toggle) toggle.click();
+    });
+})();

@@ -2,7 +2,7 @@
 // static files from the cache first, and the offline page when there's no connection.
 const VERSION = 'judes-v7';
 const CORE = [
-    './', 'offline', 'css/style.css?v=20261104d', 'css/fonts.css?v=20261104d', 'js/main.js?v=20261104d',
+    './', 'offline', 'css/style.css?v=20261104e', 'css/fonts.css?v=20261104e', 'js/main.js?v=20261104e',
     'fonts/raleway-latin.woff2', 'fonts/montserrat-latin.woff2', 'fonts/fa-solid.woff2', 'fonts/fa-brands.woff2',
     'favicon.ico', 'images/icons/icon-192.png', 'images/icons/favicon-32.png', 'images/jude-logo-192.webp'
 ];

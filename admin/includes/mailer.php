@@ -149,6 +149,9 @@ function build_message(array $opt): array
     if (!empty($opt['references'])) $h[] = 'References: ' . str_replace(["\r", "\n"], '', $opt['references']);
     $h[] = 'MIME-Version: 1.0';
     $h[] = 'X-Mailer: Judes CBO dashboard';
+    foreach ($opt['headers'] ?? [] as $name => $value) {
+        $h[] = $name . ': ' . str_replace(["\r", "\n"], '', (string) $value);
+    }
 
     $text = str_replace(["\r\n", "\r"], "\n", (string) $opt['text']);
     $html = $opt['html'] ?? '';
@@ -535,10 +538,18 @@ function email_text_block(string $text): string
 }
 
 /** The full branded layout used for automated emails. $logo is a cid: reference or an https URL. */
-function email_brand_html(string $inner, string $logo): string
+function email_brand_html(string $inner, string $logo, string $unsubscribe = ''): string
 {
     $site = rtrim((string) config('site_url'), '/');
     $email = setting('org_email', 'info@judescbo.co.ke');
+    if ($unsubscribe !== '') {
+        // Newsletter emails: a quiet footer with a single Unsubscribe button and no other links
+        $footer = '<tr><td style="padding:22px 30px 26px;background:#f8fafc;border-top:1px solid #e7ebf0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;color:#718096;text-align:center">'
+            . '<strong style="color:#1a365d">Judes Community Based Organization</strong><br>Oyugis, Homa Bay County, Kenya'
+            . '<table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:14px auto 6px"><tr><td style="border:1px solid #cbd5e0;border-radius:999px">'
+            . '<a href="' . h($unsubscribe) . '" style="display:inline-block;padding:8px 20px;font:bold 12px Arial,Helvetica,sans-serif;color:#4a5568;text-decoration:none;border-radius:999px">Unsubscribe</a>'
+            . '</td></tr></table>You are receiving this because you subscribed on our website.</td></tr>';
+    }
     return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>'
         . '<body style="margin:0;padding:0;background:#f4f6f9">'
         . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9"><tr><td align="center" style="padding:28px 12px">'
@@ -555,12 +566,13 @@ function email_brand_html(string $inner, string $logo): string
         // Content
         . '<tr><td style="padding:30px 30px 14px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a202c">' . $inner . '</td></tr>'
         // Footer
-        . '<tr><td style="padding:20px 30px 24px;background:#f8fafc;border-top:1px solid #e7ebf0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;color:#718096;text-align:center">'
+        . ($unsubscribe !== '' ? $footer : '<tr><td style="padding:20px 30px 24px;background:#f8fafc;border-top:1px solid #e7ebf0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;color:#718096;text-align:center">'
         . '<strong style="color:#1a365d">Judes Community Based Organization</strong><br>Oyugis, Homa Bay County, Kenya<br>'
         . '<a href="tel:+254712109310" style="color:#2d5016;text-decoration:none">+254 712 109310</a> &nbsp;·&nbsp; '
         . '<a href="mailto:' . h($email) . '" style="color:#2d5016;text-decoration:none">' . h($email) . '</a> &nbsp;·&nbsp; '
         . '<a href="' . h($site) . '" style="color:#2d5016;text-decoration:none">' . h(preg_replace('#^https?://#', '', $site)) . '</a>'
-        . '</td></tr></table></td></tr></table></body></html>';
+        . '</td></tr>')
+        . '</table></td></tr></table></body></html>';
 }
 
 /** Signature card for everyday emails: logo beside the signature lines. */
@@ -614,4 +626,33 @@ function compose_html(string $text): string
             . nl2br(h($q)) . '</div>';
     }
     return '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:16px">' . $html . '</body></html>';
+}
+
+/** Newsletter email (welcome and future issues): no links in the text, one Unsubscribe button, and the
+ *  List-Unsubscribe headers so Gmail and Outlook show their own unsubscribe option. */
+function newsletter_mail(string $to, string $subject, string $text, string $unsubscribeUrl): bool
+{
+    $plain = $text . "\n\n--\nUnsubscribe: " . $unsubscribeUrl;
+    $html = email_brand_html(email_text_block($text), EMAIL_LOGO_CID, $unsubscribeUrl);
+    $headers = [
+        'List-Unsubscribe' => '<' . $unsubscribeUrl . '>',
+        'List-Unsubscribe-Post' => 'List-Unsubscribe=One-Click',
+    ];
+    $box = org_mailbox();
+    if ($box) {
+        try {
+            mailbox_send($box, ['to' => [$to], 'subject' => $subject, 'text' => $plain, 'html' => $html, 'inline' => email_logo_inline(),
+                'from_name' => 'Judes CBO', 'headers' => $headers], [], false);
+            return true;
+        } catch (Throwable $e) {
+            // fall back to mail() below
+        }
+    }
+    if (!function_exists('mail')) return false;
+    $from = setting('org_email', 'info@judescbo.co.ke');
+    [$raw] = build_message(['from' => $from, 'from_name' => 'Judes CBO', 'to' => [$to], 'subject' => $subject, 'text' => $plain,
+        'html' => email_brand_html(email_text_block($text), email_logo_url(), $unsubscribeUrl), 'headers' => $headers]);
+    [$head, $content] = explode("\r\n\r\n", $raw, 2);
+    $head = preg_replace('/^(To|Subject): .*(\r\n[ \t].*)*\r\n/mi', '', $head . "\r\n");
+    return @mail($to, mime_header($subject), $content, rtrim($head));
 }

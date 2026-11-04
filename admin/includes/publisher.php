@@ -372,7 +372,7 @@ function render_story_page(array $s, ?array $next, array $shell): string
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{$e($title)}</title>
     <meta name="description" content="{$e($desc)}">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
@@ -411,13 +411,13 @@ function render_story_page(array $s, ?array $next, array $shell): string
     <!-- Fonts, icons and styles -->
     <link rel="preload" href="fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="css/fonts.css?v=20261104d">
-    <link rel="stylesheet" href="css/style.css?v=20261104d">
+    <link rel="stylesheet" href="css/fonts.css?v=20261104e">
+    <link rel="stylesheet" href="css/style.css?v=20261104e">
     <!-- Structured data -->
     <script type="application/ld+json">
 $jsonLd
     </script>
-    <script>document.documentElement.classList.add('js');</script>
+    <script>document.documentElement.classList.add('js');(function(){try{var d=document.documentElement,s=sessionStorage;if(/[?&]app=1\b/.test(location.search))s.setItem('judesAppPreview','1');if(matchMedia('(display-mode: standalone)').matches||navigator.standalone===true||s.getItem('judesAppPreview')){d.classList.add('is-app');if(!s.getItem('judesSplash'))d.classList.add('app-launch');}}catch(e){}})();</script>
 </head>
 <body>
 {$shell['header']}    <!-- Article -->

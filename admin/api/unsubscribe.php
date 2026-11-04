@@ -10,6 +10,7 @@ $email = mb_strtolower(trim((string) ($_POST['e'] ?? $_GET['e'] ?? '')));
 $token = (string) ($_POST['t'] ?? $_GET['t'] ?? '');
 $valid = filter_var($email, FILTER_VALIDATE_EMAIL) && unsubscribe_valid($email, $token);
 $done = false;
+// Mail apps' one-click unsubscribe (RFC 8058) posts List-Unsubscribe=One-Click with the token in the URL
 if ($valid && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = db()->prepare("UPDATE subscribers SET status = 'unsubscribed' WHERE email = ?");
     $stmt->execute([$email]);
