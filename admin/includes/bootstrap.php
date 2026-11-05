@@ -373,7 +373,8 @@ function current_user(): ?array
     }
     if (!empty($_SESSION['user_id'])) {
         $_SESSION['ua'] ??= $agent;
-        $_SESSION['last_seen'] = time();
+        // Background checks (live updates) don't count as activity for the idle sign-out
+        if (!defined('PASSIVE_REQUEST')) $_SESSION['last_seen'] = time();
         $stmt = db()->prepare('SELECT id, name, email, personal_email, personal_email_verified_at, username, role, active, totp_enabled, session_version FROM users WHERE id = ?');
         $stmt->execute([$_SESSION['user_id']]);
         $row = $stmt->fetch();

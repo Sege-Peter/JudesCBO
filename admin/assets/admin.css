@@ -1295,3 +1295,13 @@ kbd { font-family: inherit; font-size: .72rem; padding: 1px 6px; border-radius: 
 .verify-role select { width: 100%; min-width: 0; }
 .verify-note { display: flex; gap: 8px; align-items: flex-start; margin: .4rem 0; padding: 10px 12px; border-radius: 10px; background: var(--green-soft); color: var(--green); font-size: .88rem; }
 .approve-actions { gap: 10px; }
+
+/* ---------- Live activity log ---------- */
+.live-pill { align-self: center; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-size: .75rem; font-weight: 700; }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: verify-pulse 1.6s ease-in-out infinite; }
+.live-pill.is-off { background: #edf2f7; color: #718096; }
+.live-pill.is-off .live-dot { animation: none; }
+.timeline li.is-new { animation: activityIn .6s var(--ease); }
+.timeline li.is-new .timeline-body p { position: relative; }
+@keyframes activityIn { from { opacity: 0; transform: translateY(-6px); background: #f3f8ef; } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .live-dot, .timeline li.is-new { animation: none; } }
