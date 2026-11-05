@@ -185,7 +185,7 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 11;
+const SCHEMA_VERSION = 12;
 
 function column_exists(string $table, string $column): bool
 {
@@ -262,6 +262,8 @@ function migrate(): void
     }
     // Version 11: sites set up after version 5 got an Admin as their first account; the
     // "first administrator becomes the System admin" step above runs again to fix that
+    // Version 12: email verification at login for every role (login_challenges table comes from schema.sql)
+    db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('login_verify_developer', 'both'), ('login_verify_admin', 'both'), ('login_verify_editor', 'both')");
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
 
@@ -408,8 +410,10 @@ function require_login(): array
     if (!isset($_COOKIE['judes_staff']) && !headers_sent()) {
         setcookie('judes_staff', '1', ['expires' => time() + 365 * 86400, 'path' => '/', 'httponly' => true, 'samesite' => 'Lax', 'secure' => secure_cookies()]);
     }
-    // Administrators must turn on two-step login before using the dashboard (when required in Settings)
+    // Administrators must turn on two-step login before using the dashboard (when required in Settings),
+    // unless their role already gets an email check at every login
     if (in_array($user['role'], ['admin', 'developer'], true) && !(int) $user['totp_enabled'] && setting('require_2fa_admins', '1') === '1'
+        && setting('login_verify_' . $user['role'], 'both') === 'off'
         && !in_array(basename($_SERVER['SCRIPT_NAME'], '.php'), ['profile', 'logout'], true)) {
         flash('info', 'Administrators need two-step login. Set it up below to continue.');
         redirect('profile#two-step');

@@ -2,6 +2,7 @@
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/includes/publisher.php';
+require_once __DIR__ . '/includes/login-verify.php';
 require_admin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -71,7 +72,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($section === 'security') {
         save_setting('require_2fa_admins', !empty($_POST['require_2fa_admins']) ? '1' : '0');
         log_activity('settings.security', 'Two-step login for administrators: ' . (!empty($_POST['require_2fa_admins']) ? 'required' : 'optional'));
+        // Only System admins choose how each role confirms sign-ins by email
+        if (is_developer()) {
+            $changes = [];
+            foreach (ROLES as $role => $label) {
+                $mode = (string) ($_POST['login_verify'][$role] ?? 'both');
+                if (!isset(LOGIN_VERIFY_MODES[$mode])) continue;
+                if ($mode !== login_verify_mode($role)) $changes[] = "$label: " . LOGIN_VERIFY_MODES[$mode];
+                save_setting('login_verify_' . $role, $mode);
+            }
+            if ($changes) log_activity('settings.login_verify', 'Email check at login: ' . implode(', ', $changes));
+        }
         flash('success', 'Security settings saved.');
+        redirect('settings#security');
     } elseif ($section === 'publish') {
         try {
             $files = publish_site();
@@ -162,12 +175,23 @@ render_header('Settings');
         </form>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="security">
         <h3 class="panel-title"><i class="fas fa-shield-halved"></i> Security</h3>
         <form method="post" class="form-stack">
             <?= csrf_field() ?><input type="hidden" name="section" value="security">
-            <label class="check"><input type="checkbox" name="require_2fa_admins" value="1" <?= setting('require_2fa_admins', '1') === '1' ? 'checked' : '' ?>> Require two-step login for administrators and System admins</label>
-            <p class="muted small">Administrators without it are taken to My profile to set it up before they can use the dashboard. Editors can turn it on for themselves.</p>
+            <fieldset class="verify-roles">
+                <legend>Email check at every login</legend>
+                <p class="muted small">After the password, a sign-in email goes to the person's work email (and confirmed personal email). <strong>Code</strong>: they type the 6-digit code. <strong>Button</strong>: they press "Yes, it's me" in the email, even on their phone.<?= is_developer() ? '' : ' Only System admins can change this.' ?></p>
+                <?php foreach (ROLES as $role => $label): ?>
+                    <label class="verify-role"><span><?= h($label) ?>s</span>
+                        <select name="login_verify[<?= h($role) ?>]" <?= is_developer() ? '' : 'disabled' ?>>
+                            <?php foreach (LOGIN_VERIFY_MODES as $value => $text): ?><option value="<?= $value ?>" <?= login_verify_mode($role) === $value ? 'selected' : '' ?>><?= h($text) ?></option><?php endforeach; ?>
+                        </select></label>
+                <?php endforeach; ?>
+                <?php if (!login_mail_available()): ?><p class="alert alert-error small"><i class="fas fa-triangle-exclamation"></i> No mailbox can send sign-in emails yet, so the check is skipped. Link the <?= h(setting('org_email', 'info@judescbo.co.ke')) ?> mailbox (shared) on the Mailbox page.</p><?php endif; ?>
+            </fieldset>
+            <label class="check"><input type="checkbox" name="require_2fa_admins" value="1" <?= setting('require_2fa_admins', '1') === '1' ? 'checked' : '' ?>> Require an authenticator app for administrators whose email check is off</label>
+            <p class="muted small">People with an authenticator app use it instead of the email, and can still choose "Email me a sign-in code instead".</p>
             <button class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save</button>
         </form>
     </section>

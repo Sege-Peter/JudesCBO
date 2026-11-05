@@ -451,6 +451,13 @@ textarea { resize: vertical; }
 .timeline li { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .timeline-icon { width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: var(--green-soft); color: var(--green); }
 .timeline p { font-size: .92rem; }
+.timeline-body { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.timeline li.is-alert .timeline-icon { background: #fff5f5; color: #c53030; }
+.timeline-actions { flex-shrink: 0; align-self: center; }
+.block-inline { display: flex; gap: 6px; align-items: center; }
+.block-inline select { width: auto; min-width: 0; padding-top: 6px; padding-bottom: 6px; padding-left: 10px; font-size: .82rem; border-radius: 8px; background-color: #fff; }
+.pill-alert { align-self: center; background: #fff5f5; color: #c53030; text-decoration: none; }
+@media (max-width: 640px) { .timeline li { flex-wrap: wrap; } .timeline-actions { margin-left: 50px; } }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1280px) {
@@ -602,12 +609,36 @@ select {
 }
 select:hover { border-color: #c9d3de; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%232d5016' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-color: #fff; }
 select:focus { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%232d5016' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
-select:open, select:focus-visible { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 6.5l5-5 5 5' fill='none' stroke='%232d5016' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+select:focus-visible { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 6.5l5-5 5 5' fill='none' stroke='%232d5016' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 select:disabled { opacity: .6; cursor: not-allowed; }
 select::-ms-expand { display: none; }
 select option { font-weight: 500; color: var(--dark); background: #fff; }
 select option:checked { font-weight: 700; color: var(--green); }
 select optgroup { font-weight: 700; color: var(--muted); }
+/* "input:focus, select:focus { background: #fff }" above resets the chevron's repeat/size; pin them for every state */
+select:hover, select:focus, select:focus-visible, select:active { background-repeat: no-repeat; background-position: right 13px center; background-size: 12px 8px; }
+select:focus { background-color: #fff; }
+/* Browsers that can style the open list (Chrome/Edge 135+): a clean card instead of the plain system list */
+@supports (appearance: base-select) {
+    select, ::picker(select) { appearance: base-select; }
+    select { display: inline-flex; align-items: center; }
+    select::picker-icon { display: none; }
+    ::picker(select) {
+        margin-top: 6px; padding: 6px; border: 1px solid var(--line); border-radius: 12px; background: #fff;
+        box-shadow: 0 14px 34px rgba(15, 36, 64, .14), 0 2px 6px rgba(15, 36, 64, .06);
+        max-height: min(320px, 60vh); overflow-y: auto;
+        opacity: 0; transform: translateY(-4px); transition: opacity .15s, transform .15s, overlay .15s allow-discrete, display .15s allow-discrete;
+    }
+    ::picker(select):popover-open { opacity: 1; transform: none; }
+    @starting-style { ::picker(select):popover-open { opacity: 0; transform: translateY(-4px); } }
+    select option { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 8px; font-size: .92rem; font-weight: 500; color: var(--dark); background: transparent; cursor: pointer; }
+    select option::checkmark { order: 1; margin-left: auto; content: '\2713'; color: var(--green); font-weight: 700; }
+    select option:hover, select option:focus-visible { background: var(--green-soft); color: var(--green); outline: none; }
+    select option:checked { font-weight: 700; color: var(--green); background: #f3f8ef; }
+    .bulk-bar select option { color: var(--dark); }
+    select optgroup { padding: 4px 0; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; }
+    @media (prefers-reduced-motion: reduce) { ::picker(select) { transition: none; } }
+}
 /* Inside the search bar: borderless, just text and chevron */
 .search select { padding: 10px 34px 10px 0 !important; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2394a3b8' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 10px center / 12px 8px; border-right: 1px solid var(--line) !important; border-radius: 0; box-shadow: none !important; }
 /* Compact filters and toolbars */
@@ -1244,3 +1275,23 @@ kbd { font-family: inherit; font-size: .72rem; padding: 1px 6px; border-radius: 
 .idle-modal h3 { margin: .2rem 0 .4rem; }
 .idle-modal .modal-foot { justify-content: center; margin-top: 1.2rem; }
 .idle-icon { width: 56px; height: 56px; margin: .2rem auto .6rem; border-radius: 50%; display: grid; place-items: center; background: #fff4e5; color: #c05621; font-size: 1.4rem; }
+
+/* ---------- Email check at login ---------- */
+.verify-wait { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 1rem 0 .4rem; padding: 12px; border-radius: 12px; background: var(--green-soft); color: var(--green); font-size: .88rem; font-weight: 600; }
+.verify-dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; animation: verify-pulse 1.2s ease-in-out infinite; }
+@keyframes verify-pulse { 0%, 100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.1); } }
+@media (prefers-reduced-motion: reduce) { .verify-dot { animation: none; } }
+.link-btn { background: none; border: 0; padding: 0; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
+.link-btn:hover { color: var(--green); }
+.auth-icon.icon-red { background: #fff5f5; color: #c53030; }
+.signin-facts { margin: 1rem 0 1.2rem; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.signin-facts div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font-size: .88rem; }
+.signin-facts div + div { border-top: 1px solid var(--line); }
+.signin-facts dt { color: var(--muted); font-weight: 600; }
+.signin-facts dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.verify-roles { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.verify-roles legend { font-weight: 700; padding: 0 6px; }
+.verify-role { display: grid; grid-template-columns: 1fr minmax(150px, 200px); align-items: center; gap: 12px; font-weight: 600; }
+.verify-role select { width: 100%; min-width: 0; }
+.verify-note { display: flex; gap: 8px; align-items: flex-start; margin: .4rem 0; padding: 10px 12px; border-radius: 10px; background: var(--green-soft); color: var(--green); font-size: .88rem; }
+.approve-actions { gap: 10px; }

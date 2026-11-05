@@ -522,9 +522,14 @@ function email_text_block(string $text): string
     foreach (preg_split("/\n{2,}/", $text) as $para) {
         $para = trim($para);
         if ($para === '') continue;
+        if (preg_match('~^Your sign-in code is: ([0-9 ]{6,7})$~', $para, $m)) {
+            $out .= '<p style="margin:0 0 8px;font-size:13px;color:#4a5568">Your sign-in code</p>'
+                . '<p style="margin:0 0 20px"><span style="display:inline-block;padding:12px 22px;background:#f0f7ec;border:1px solid #c6e2b5;border-radius:12px;font:700 30px/1 Courier New,monospace;letter-spacing:6px;color:#1a365d">' . h($m[1]) . '</span></p>';
+            continue;
+        }
         if (preg_match('~^(https?://\S+)$~', $para, $m)) {
             $url = $m[1];
-            $label = str_contains($url, 'reset-password') ? 'Choose a new password' : (str_contains($url, 'verify-email') ? 'Confirm my email' : 'Open link');
+            $label = str_contains($url, 'reset-password') ? 'Choose a new password' : (str_contains($url, 'verify-email') ? 'Confirm my email' : (str_contains($url, 'login-approve') ? "Yes, it's me: sign in" : 'Open link'));
             $out .= '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 20px"><tr><td style="border-radius:999px;background:#2d5016">'
                 . '<a href="' . h($url) . '" style="display:inline-block;padding:13px 26px;font:700 15px Arial,Helvetica,sans-serif;color:#ffffff;text-decoration:none;border-radius:999px">' . h($label) . '</a></td></tr></table>'
                 . '<p style="margin:0 0 18px;font-size:12px;color:#8a94a6;word-break:break-all">Or copy this link: ' . h($url) . '</p>';

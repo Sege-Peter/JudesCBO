@@ -2,6 +2,7 @@
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/includes/layout.php';
 require __DIR__ . '/includes/totp.php';
+require __DIR__ . '/includes/login-verify.php';
 $me = require_login();
 $required = in_array($me['role'], ['admin', 'developer'], true) && setting('require_2fa_admins', '1') === '1';
 
@@ -132,7 +133,12 @@ render_header('My profile');
         <span class="stat-icon <?= (int) $twofa['totp_enabled'] ? 'icon-green' : 'icon-gold' ?>"><i class="fas fa-shield-halved"></i></span>
         <div>
             <h3>Two-step login <?= (int) $twofa['totp_enabled'] ? '<span class="pill pill-published">On</span>' : '<span class="pill pill-draft">Off</span>' ?></h3>
+            <?php $verify = login_verify_mode($me['role']); ?>
+            <?php if ($verify !== 'off'): ?><p class="verify-note"><i class="fas fa-envelope-open-text"></i> <span><strong>Email check is on for you.</strong> Every login sends a sign-in email to <?= h($me['email']) ?><?= !empty($me['personal_email_verified_at']) ? ' and ' . h($me['personal_email']) : '' ?> (<?= h(strtolower(LOGIN_VERIFY_MODES[$verify])) ?>).</span></p>
+            <p class="muted">Optional: use a 6-digit code from an authenticator app on your phone (Google Authenticator, Microsoft Authenticator or Authy) instead of waiting for the email.</p>
+            <?php else: ?>
             <p class="muted">After your password, you'll also enter a 6-digit code from an authenticator app on your phone (Google Authenticator, Microsoft Authenticator or Authy).<?= $required ? ' <strong>Required for administrators.</strong>' : '' ?></p>
+            <?php endif; ?>
         </div>
     </div>
 

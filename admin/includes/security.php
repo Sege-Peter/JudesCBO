@@ -97,13 +97,21 @@ function security_checks(): array
         ? ['ok', 'Login cookies are HTTPS-only', 'Cookies are never sent over an unencrypted connection.']
         : ['warn', 'Login cookies also work over plain HTTP', 'This turns on automatically when the dashboard is opened over HTTPS.'];
 
-    $without = db()->query("SELECT name FROM users WHERE active = 1 AND role IN ('admin','developer') AND totp_enabled = 0")->fetchAll(PDO::FETCH_COLUMN);
+    require_once __DIR__ . '/login-verify.php';
+    $emailRoles = array_values(array_filter(array_keys(ROLES), fn($r) => login_verify_mode($r) !== 'off'));
+    $skip = $emailRoles ? " AND role NOT IN ('" . implode("','", $emailRoles) . "')" : '';
+    if ($emailRoles) {
+        $checks[] = login_mail_available()
+            ? ['ok', 'Sign-ins are confirmed by email', 'For: ' . implode(', ', array_map(fn($r) => ROLES[$r] . 's', $emailRoles)) . '. Set in Settings.']
+            : ['bad', 'Sign-in emails cannot be sent', 'The email check at login is skipped until the ' . setting('org_email', 'info@judescbo.co.ke') . ' mailbox is linked (shared) on the Mailbox page.'];
+    }
+    $without = db()->query("SELECT name FROM users WHERE active = 1 AND role IN ('admin','developer') AND totp_enabled = 0$skip")->fetchAll(PDO::FETCH_COLUMN);
     $checks[] = !$without
         ? ['ok', 'All administrators use two-step login', 'A stolen password alone is not enough to get in.']
         : ['bad', count($without) . ' administrator' . (count($without) === 1 ? '' : 's') . ' without two-step login', implode(', ', $without) . '. They should set it up under My profile.'];
-    $editors = (int) db()->query("SELECT COUNT(*) FROM users WHERE active = 1 AND role = 'editor' AND totp_enabled = 0")->fetchColumn();
+    $editors = in_array('editor', $emailRoles, true) ? 0 : (int) db()->query("SELECT COUNT(*) FROM users WHERE active = 1 AND role = 'editor' AND totp_enabled = 0")->fetchColumn();
     if ($editors) $checks[] = ['warn', "$editors editor" . ($editors === 1 ? '' : 's') . ' without two-step login', 'Optional for editors, but recommended. They can turn it on under My profile.'];
-    $checks[] = setting('require_2fa_admins', '1') === '1'
+    if (!in_array('admin', $emailRoles, true) || !in_array('developer', $emailRoles, true)) $checks[] = setting('require_2fa_admins', '1') === '1'
         ? ['ok', 'Two-step login is required for administrators', 'Set in Settings.']
         : ['bad', 'Two-step login is optional for administrators', 'Turn on "Require two-step login" in Settings.'];
 

@@ -70,7 +70,7 @@ $failed = db()->query("SELECT ip, COUNT(*) AS n, GROUP_CONCAT(DISTINCT username 
     FROM login_attempts WHERE attempted_at > NOW() - INTERVAL 1 DAY GROUP BY ip ORDER BY n DESC, last_at DESC LIMIT 20")->fetchAll();
 $failedTotal = array_sum(array_column($failed, 'n'));
 $signins = db()->query("SELECT a.action, a.details, a.ip, a.created_at, u.name FROM activity_log a LEFT JOIN users u ON u.id = a.user_id
-    WHERE a.action IN ('login', 'login.2fa_failed', 'password.reset') OR a.action LIKE 'security.%' ORDER BY a.created_at DESC LIMIT 15")->fetchAll();
+    WHERE a.action IN ('login', 'login.failed', 'login.locked', 'login.2fa_failed', 'login.approved', 'login.denied', 'password.reset') OR a.action LIKE 'security.%' ORDER BY a.created_at DESC LIMIT 15")->fetchAll();
 $admins = db()->query("SELECT COUNT(*) AS total, SUM(totp_enabled) AS with2fa FROM users WHERE active = 1 AND role IN ('admin','developer')")->fetch();
 
 render_header('Security');
@@ -134,7 +134,7 @@ render_header('Security');
 
     <section class="panel" id="autoblock">
         <h3 class="panel-title"><i class="fas fa-robot"></i> Automatic blocking</h3>
-        <p class="muted">Anyone who gets 5 passwords wrong waits 15 minutes. Addresses that keep guessing are blocked for 24 hours.</p>
+        <p class="muted">Anyone who gets 4 passwords wrong waits 2 minutes before trying again. Addresses that keep guessing are blocked for 24 hours.</p>
         <form method="post" class="form-stack">
             <?= csrf_field() ?><input type="hidden" name="action" value="autoblock">
             <label class="check"><input type="checkbox" name="sec_autoblock" value="1" <?= setting('sec_autoblock', '1') === '1' ? 'checked' : '' ?>> Block addresses that keep guessing passwords</label>
@@ -224,7 +224,7 @@ render_header('Security');
                 <?php foreach ($signins as $s):
                     [$icon, $tone] = match (true) {
                         $s['action'] === 'login' => ['fa-right-to-bracket', 'icon-green'],
-                        $s['action'] === 'login.2fa_failed', $s['action'] === 'security.session_mismatch', $s['action'] === 'security.auto_block' => ['fa-triangle-exclamation', 'icon-red'],
+                        $s['action'] === 'login.failed', $s['action'] === 'login.locked', $s['action'] === 'login.denied', $s['action'] === 'login.2fa_failed', $s['action'] === 'security.session_mismatch', $s['action'] === 'security.auto_block' => ['fa-triangle-exclamation', 'icon-red'],
                         default => ['fa-shield-halved', 'icon-blue'],
                     }; ?>
                     <li>

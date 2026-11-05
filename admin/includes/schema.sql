@@ -241,3 +241,19 @@ CREATE TABLE IF NOT EXISTS email_verifications (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS login_challenges (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    code_hash CHAR(64) NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    ip VARCHAR(45) NOT NULL,
+    user_agent VARCHAR(255) NOT NULL DEFAULT '',
+    status ENUM('pending','approved','denied','used','expired') NOT NULL DEFAULT 'pending',
+    tries TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    sends TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    sent_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
