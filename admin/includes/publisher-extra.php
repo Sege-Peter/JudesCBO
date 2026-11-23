@@ -461,3 +461,114 @@ function publish_giving(): array
     }
     return $changed;
 }
+
+/* ---------- Careers ---------- */
+
+const VACANCY_TYPES = ['Full-time', 'Part-time', 'Contract', 'Consultancy', 'Internship', 'Volunteer'];
+
+/** Last moment applications are accepted (end of the deadline day), or null for "open until filled". */
+function vacancy_closes(array $v): ?int
+{
+    return $v['deadline'] ? strtotime($v['deadline'] . ' 23:59:59') : null;
+}
+
+function vacancy_is_open(array $v): bool
+{
+    if ($v['status'] !== 'published') return false;
+    $closes = vacancy_closes($v);
+    return $closes === null || $closes >= time();
+}
+
+/** One item per line, leading "-", "*" or "•" optional. */
+function vacancy_list(string $text): string
+{
+    $items = array_filter(array_map(fn($l) => trim((string) preg_replace('/^\s*[-*•]\s*/u', '', $l)), preg_split('/\R/', trim($text)) ?: []));
+    return $items ? '<ul>' . implode('', array_map(fn($i) => '<li>' . h($i) . '</li>', $items)) . '</ul>' : '';
+}
+
+function vacancy_apply_link(array $v): string
+{
+    if ($v['apply_url'] !== '') return $v['apply_url'];
+    $email = $v['apply_email'] ?: setting('org_email', 'info@judescbo.co.ke');
+    return 'mailto:' . $email . '?subject=' . rawurlencode('Application: ' . $v['title']);
+}
+
+function render_vacancy_card(array $v, bool $closed = false): string
+{
+    $closes = vacancy_closes($v);
+    $badge = $closes
+        ? '<div class="event-card-date job-card-date"><small>' . ($closed ? 'Closed' : 'Closes') . '</small><strong>' . date('j', $closes) . '</strong><span>' . date('M', $closes) . '</span></div>'
+        : '<div class="event-card-date job-card-date"><i class="fas fa-briefcase" aria-hidden="true"></i><small>' . ($closed ? 'Closed' : 'Open') . '</small></div>';
+    $meta = '<span class="story-tag">' . h($v['job_type']) . '</span>'
+        . '<span><i class="far fa-clock"></i> ' . ($closes ? ($closed ? 'Closed ' : 'Apply by ') . h(date('D j M Y', $closes)) : ($closed ? 'Closed' : 'Open until filled')) . '</span>';
+    $details = '';
+    if (trim($v['description']) !== '') $details .= '<h4>About the role</h4>' . "\n" . event_paragraphs($v['description']) . "\n";
+    if (($list = vacancy_list($v['requirements'])) !== '') $details .= '<h4>What we are looking for</h4>' . "\n" . $list . "\n";
+    if (!$closed && trim($v['how_to_apply']) !== '') $details .= '<h4>How to apply</h4>' . "\n" . event_paragraphs($v['how_to_apply']) . "\n";
+    $more = $details !== '' ? '<details class="event-more job-more"><summary>Full details</summary>' . "\n" . $details . '</details>' : '';
+    $link = vacancy_apply_link($v);
+    $share = rawurlencode('Vacancy at Judes CBO: ' . $v['title'] . ($closes ? ' (apply by ' . date('j M Y', $closes) . ')' : '') . '. ' . site_url('careers') . '#job-' . $v['slug']);
+    $actions = $closed ? '' : '<div class="event-actions">'
+        . '<a href="' . h($link) . '" class="event-btn event-btn-primary"' . (str_starts_with($link, 'mailto:') ? '' : ' target="_blank" rel="noopener"') . '><i class="fas fa-paper-plane"></i> Apply now</a>'
+        . '<a href="https://wa.me/?text=' . $share . '" class="event-btn" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Share</a>'
+        . '</div>';
+    return '<article class="event-card job-card reveal" id="job-' . h($v['slug']) . '"' . ($closes && !$closed ? ' data-ends="' . date('c', $closes) . '"' : '') . '>' . "\n"
+        . '    ' . $badge . "\n"
+        . '    <div class="event-card-body">' . "\n"
+        . '        <div class="event-meta">' . $meta . "</div>\n"
+        . '        <h3>' . h($v['title']) . "</h3>\n"
+        . ($v['location'] !== '' ? '        <p class="event-where"><i class="fas fa-location-dot"></i> ' . h($v['location']) . "</p>\n" : '')
+        . ($v['summary'] !== '' ? '        <p>' . h($v['summary']) . "</p>\n" : '')
+        . ($more ? '        ' . $more . "\n" : '')
+        . ($actions ? '        ' . $actions . "\n" : '')
+        . "    </div>\n"
+        . '</article>';
+}
+
+/** schema.org JobPosting data so open roles can show up in Google's job search. */
+function render_jobs_schema(array $open): string
+{
+    $types = ['Full-time' => 'FULL_TIME', 'Part-time' => 'PART_TIME', 'Contract' => 'CONTRACTOR', 'Consultancy' => 'CONTRACTOR', 'Internship' => 'INTERN', 'Volunteer' => 'VOLUNTEER'];
+    $items = [];
+    foreach ($open as $v) {
+        $body = event_paragraphs($v['description'] ?: $v['summary']) . vacancy_list($v['requirements']) . event_paragraphs($v['how_to_apply']);
+        $item = [
+            '@type' => 'JobPosting',
+            'title' => $v['title'],
+            'description' => $body ?: h($v['title']),
+            'datePosted' => date('Y-m-d', strtotime($v['created_at'])),
+            'employmentType' => $types[$v['job_type']] ?? 'OTHER',
+            'hiringOrganization' => ['@type' => 'Organization', 'name' => 'Judes CBO', 'sameAs' => site_url(), 'logo' => site_url('jude-logo.png')],
+            'jobLocation' => ['@type' => 'Place', 'address' => ['@type' => 'PostalAddress', 'addressLocality' => $v['location'] ?: 'Oyugis', 'addressRegion' => 'Homa Bay County', 'addressCountry' => 'KE']],
+            'url' => site_url('careers') . '#job-' . $v['slug'],
+            'directApply' => false,
+        ];
+        if ($closes = vacancy_closes($v)) $item['validThrough'] = date('c', $closes);
+        $items[] = $item;
+    }
+    if (!$items) return '';
+    $json = json_encode(['@context' => 'https://schema.org', '@graph' => $items], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG);
+    return '<script type="application/ld+json">' . $json . '</script>';
+}
+
+function publish_careers(array $shell): array
+{
+    if (!is_file(site_path('careers.html'))) return [];
+    $all = db()->query("SELECT * FROM vacancies WHERE status IN ('published','closed') ORDER BY COALESCE(deadline, '9999-12-31'), id DESC")->fetchAll();
+    $open = array_values(array_filter($all, 'vacancy_is_open'));
+    $closed = array_values(array_filter($all, fn($v) => !vacancy_is_open($v)));
+    usort($closed, fn($a, $b) => strcmp((string) ($b['deadline'] ?? $b['updated_at']), (string) ($a['deadline'] ?? $a['updated_at'])));
+
+    $openHtml = $open
+        ? implode("\n", array_map(fn($v) => render_vacancy_card($v), $open)) . "\n" . render_jobs_schema($open)
+        : '<div class="events-empty"><i class="fas fa-briefcase"></i><p>There are no open positions right now. Subscribe below or follow us on WhatsApp to hear when we are hiring.</p></div>';
+    $closedHtml = $closed
+        ? implode("\n", array_map(fn($v) => render_vacancy_card($v, true), array_slice($closed, 0, 6)))
+        : '<p class="events-none">Closed vacancies will appear here.</p>';
+
+    $html = file_get_contents(site_path('careers.html'));
+    $html = replace_region($html, 'careers-open', indent_block($openHtml, 16), 'careers.html');
+    $html = replace_region($html, 'careers-closed', indent_block($closedHtml, 16), 'careers.html');
+    write_atomic(site_path('careers.html'), $html);
+    return ['careers.html'];
+}

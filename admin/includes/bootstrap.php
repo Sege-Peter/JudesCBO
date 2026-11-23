@@ -185,7 +185,7 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 12;
+const SCHEMA_VERSION = 13;
 
 function column_exists(string $table, string $column): bool
 {
@@ -264,6 +264,7 @@ function migrate(): void
     // "first administrator becomes the System admin" step above runs again to fix that
     // Version 12: email verification at login for every role (login_challenges table comes from schema.sql)
     db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('login_verify_developer', 'both'), ('login_verify_admin', 'both'), ('login_verify_editor', 'both')");
+    // Version 13: job vacancies for the Careers page (vacancies table comes from schema.sql)
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
 

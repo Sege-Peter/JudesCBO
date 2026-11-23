@@ -9,6 +9,7 @@ function nav_items(): array
         ['stories', 'Stories', 'fa-newspaper'],
         ['gallery', 'Gallery', 'fa-images'],
         ['events', 'Events', 'fa-calendar-days'],
+        ['vacancies', 'Vacancies', 'fa-briefcase'],
         ['team', 'Team', 'fa-people-group'],
         ['partners', 'Partners', 'fa-handshake'],
         ['messages', 'Messages', 'fa-inbox'],

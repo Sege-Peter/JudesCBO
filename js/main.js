@@ -495,6 +495,26 @@ if (upcomingList && pastList) {
     }
 }
 
+// Careers page: vacancies whose closing date has passed since the last rebuild move to "Recently closed"
+const jobsOpen = document.getElementById('careers-open');
+const jobsClosed = document.getElementById('careers-closed');
+if (jobsOpen && jobsClosed) {
+    const now = Date.now();
+    jobsOpen.querySelectorAll('.job-card[data-ends]').forEach(card => {
+        if (Date.parse(card.dataset.ends) < now) {
+            card.querySelectorAll('.event-actions').forEach(a => a.remove());
+            const label = card.querySelector('.job-card-date small');
+            if (label) label.textContent = 'Closed';
+            const placeholder = jobsClosed.querySelector('.events-none');
+            if (placeholder) placeholder.remove();
+            jobsClosed.prepend(card);
+        }
+    });
+    if (!jobsOpen.querySelector('.job-card') && !jobsOpen.querySelector('.events-empty')) {
+        jobsOpen.insertAdjacentHTML('afterbegin', '<div class="events-empty"><i class="fas fa-briefcase"></i><p>There are no open positions right now. Check back soon.</p></div>');
+    }
+}
+
 // Visitor statistics for the dashboard: no cookies and nothing personal is sent.
 // Only works where the dashboard runs (PHP hosting), so it stays quiet on GitHub Pages.
 (() => {

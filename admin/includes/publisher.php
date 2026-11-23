@@ -28,6 +28,7 @@ const STATIC_PAGES = [
     'stories.html' => ['0.7', 'weekly'], 'gallery.html' => ['0.6', 'monthly'], 'donate.html' => ['0.9', 'monthly'],
     'contact.html' => ['0.6', 'yearly'], 'app.html' => ['0.4', 'yearly'], 'privacy.html' => ['0.3', 'yearly'], 'terms.html' => ['0.3', 'yearly'],
     'events.html' => ['0.8', 'weekly'], 'team.html' => ['0.6', 'monthly'],
+    'careers.html' => ['0.7', 'weekly'],
 ];
 
 function site_path(string $file): string
@@ -411,8 +412,8 @@ function render_story_page(array $s, ?array $next, array $shell): string
     <!-- Fonts, icons and styles -->
     <link rel="preload" href="fonts/raleway-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="css/fonts.css?v=20261104e">
-    <link rel="stylesheet" href="css/style.css?v=20261104e">
+    <link rel="stylesheet" href="css/fonts.css?v=20261123a">
+    <link rel="stylesheet" href="css/style.css?v=20261123a">
     <!-- Structured data -->
     <script type="application/ld+json">
 $jsonLd
@@ -535,7 +536,7 @@ function publish_site(): array
         $changed[] = $file;
     }
 
-    $changed = array_merge($changed, publish_events($shell), publish_team(), publish_partners(), publish_giving());
+    $changed = array_merge($changed, publish_events($shell), publish_careers($shell), publish_team(), publish_partners(), publish_giving());
 
     // Form endpoints on every page
     foreach (glob(site_path('*.html')) as $path) {

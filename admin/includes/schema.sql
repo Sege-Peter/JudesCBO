@@ -257,3 +257,23 @@ CREATE TABLE IF NOT EXISTS login_challenges (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS vacancies (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(120) NOT NULL UNIQUE,
+    title VARCHAR(200) NOT NULL,
+    job_type VARCHAR(40) NOT NULL DEFAULT 'Full-time',
+    location VARCHAR(200) NOT NULL DEFAULT '',
+    summary VARCHAR(300) NOT NULL DEFAULT '',
+    description TEXT NOT NULL,
+    requirements TEXT NOT NULL,
+    how_to_apply TEXT NOT NULL,
+    apply_email VARCHAR(190) NOT NULL DEFAULT '',
+    apply_url VARCHAR(255) NOT NULL DEFAULT '',
+    deadline DATE NULL,
+    status ENUM('draft','published','closed') NOT NULL DEFAULT 'published',
+    created_by INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX (status, deadline)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

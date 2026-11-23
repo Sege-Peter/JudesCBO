@@ -2170,6 +2170,17 @@ h1, h2, h3, h4, h5 {
 .events-empty i { font-size: 2rem; color: #a0aec0; margin-bottom: .6rem; }
 .events-none { color: #64748b; }
 
+/* Careers */
+.job-card-date { gap: 2px; }
+.job-card-date small { opacity: .9; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.job-card-date > i { font-size: 1.6rem; margin-bottom: 4px; }
+.job-more h4 { font-size: 1rem; color: var(--dark); margin-top: 1rem; }
+.job-more ul { margin: .5rem 0 0 1.2rem; list-style: disc; }
+.job-more li { margin-bottom: .3rem; }
+.careers-note { margin-top: 1.4rem; padding: .9rem 1.1rem; border-radius: 14px; background: #fff; border-left: 4px solid var(--green); font-size: .92rem; color: #4a5568; }
+.careers-note i { color: var(--green); margin-right: 6px; }
+.careers-note a { color: var(--green); font-weight: 600; }
+
 /* Homepage strip */
 .home-events { background: #fff; }
 .home-events-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
