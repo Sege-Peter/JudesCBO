@@ -316,7 +316,7 @@ h1, h2, h3, h4, h5 {
 }
 .desktop-nav a {
     display: block;
-    padding: 8px 16px;
+    padding: 8px 13px;
     border-radius: 999px;
     color: inherit;
     text-decoration: none;
@@ -448,6 +448,8 @@ h1, h2, h3, h4, h5 {
 .mobile-nav.active li:nth-child(4) { transition-delay: .2s; }
 .mobile-nav.active li:nth-child(5) { transition-delay: .24s; }
 .mobile-nav.active li:nth-child(6) { transition-delay: .28s; }
+.mobile-nav.active li:nth-child(7) { transition-delay: .32s; }
+.mobile-nav.active li:nth-child(8) { transition-delay: .36s; }
 .mobile-nav ul a {
     position: relative;
     display: flex;
@@ -589,7 +591,7 @@ h1, h2, h3, h4, h5 {
 .subscribe-form button:hover { background: var(--blue); }
 .footer-grid {
     display: grid;
-    grid-template-columns: 1.6fr 1fr 1.2fr 1.4fr;
+    grid-template-columns: 1.5fr 1.4fr 1.1fr 1.3fr;
     gap: 2.5rem;
     padding-bottom: 3rem;
 }
@@ -631,6 +633,9 @@ h1, h2, h3, h4, h5 {
 }
 .footer-links, .footer-contact { list-style: none; }
 .footer-links li, .footer-contact li { margin-bottom: .75rem; }
+/* Explore has twice as many links as the other columns, so it runs in two short columns */
+.footer-links--split { columns: 2; column-gap: 1.5rem; }
+.footer-links--split li { break-inside: avoid; }
 .footer-links a, .footer-contact a {
     color: rgba(255,255,255,0.72);
     text-decoration: none;
@@ -2090,7 +2095,7 @@ h1, h2, h3, h4, h5 {
 }
 /* The full number is in the footer and on the contact page; the header keeps a compact call button */
 .header-phone span { display: none; }
-/* Seven menu items plus actions need about 1240px; below that the hamburger menu takes over */
+/* Eight menu items plus actions need about 1240px; below that the hamburger menu takes over */
 @media (max-width: 1240px) {
     .desktop-nav, .header-phone, .header-login { display: none; }
     .mobile-nav-toggle { display: flex; }

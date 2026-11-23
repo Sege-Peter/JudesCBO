@@ -1,8 +1,8 @@
 // Judes CBO service worker: pages come from the network first (always fresh),
 // static files from the cache first, and the offline page when there's no connection.
-const VERSION = 'judes-v8';
+const VERSION = 'judes-v9';
 const CORE = [
-    './', 'offline', 'css/style.css?v=20261123a', 'css/fonts.css?v=20261123a', 'js/main.js?v=20261123a',
+    './', 'offline', 'css/style.css?v=20261123b', 'css/fonts.css?v=20261123b', 'js/main.js?v=20261123b',
     'fonts/raleway-latin.woff2', 'fonts/montserrat-latin.woff2', 'fonts/fa-solid.woff2', 'fonts/fa-brands.woff2',
     'favicon.ico', 'images/icons/icon-192.png', 'images/icons/favicon-32.png', 'images/jude-logo-192.webp'
 ];
