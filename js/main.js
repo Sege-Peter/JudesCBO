@@ -515,6 +515,115 @@ if (jobsOpen && jobsClosed) {
     }
 }
 
+// Application form: preselect the job from ?job=, check files before upload, send with progress
+const applyForm = document.getElementById('apply-form');
+if (applyForm) {
+    const jobSelect = document.getElementById('job');
+    const info = document.getElementById('apply-job-info');
+    const now = Date.now();
+    jobSelect.querySelectorAll('option[data-ends]').forEach(o => { if (Date.parse(o.dataset.ends) < now) o.remove(); });
+    if (jobSelect.options.length <= 1) {
+        applyForm.hidden = true;
+        document.getElementById('apply-closed').hidden = false;
+    }
+    const wanted = new URLSearchParams(location.search).get('job');
+    if (wanted && [...jobSelect.options].some(o => o.value === wanted)) jobSelect.value = wanted;
+    else if (jobSelect.options.length === 2) jobSelect.selectedIndex = 1;
+    const showJob = () => {
+        const o = jobSelect.selectedOptions[0];
+        if (!o || !o.value) { info.hidden = true; return; }
+        const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        info.innerHTML = `<i class="fas fa-briefcase"></i> ${esc(o.dataset.type || '')}`
+            + (o.dataset.location ? `<i class="fas fa-location-dot"></i> ${esc(o.dataset.location)}` : '')
+            + `<i class="far fa-clock"></i> ${o.dataset.closes ? 'Apply by ' + esc(o.dataset.closes) : 'Open until filled'}`;
+        info.hidden = false;
+    };
+    jobSelect.addEventListener('change', showJob);
+    showJob();
+
+    const motivation = document.getElementById('motivation');
+    const counter = document.getElementById('motivation-count');
+    motivation.addEventListener('input', () => { counter.textContent = motivation.value.length; });
+
+    const checkFile = input => {
+        const drop = input.closest('.file-drop');
+        const label = applyForm.querySelector(`.file-name[data-for="${input.id}"]`);
+        const file = input.files[0];
+        input.setCustomValidity('');
+        if (file) {
+            const allowed = input.accept.split(',').filter(a => a.startsWith('.'));
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            if (!allowed.includes(ext)) input.setCustomValidity(`Choose a ${allowed.join(', ').toUpperCase()} file.`);
+            else if (file.size > Number(input.dataset.max) * 1048576) input.setCustomValidity(`This file is too large. The limit is ${input.dataset.max} MB.`);
+        }
+        label.textContent = file ? (input.validationMessage || `${file.name} (${(file.size / 1048576).toFixed(1)} MB)`) : 'No file chosen';
+        drop.classList.toggle('has-file', !!file && input.checkValidity());
+        drop.classList.toggle('invalid', !!file && !input.checkValidity());
+    };
+    applyForm.querySelectorAll('input[type="file"]').forEach(input => input.addEventListener('change', () => checkFile(input)));
+    applyForm.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('input', () => { el.closest('.field, .check-line, .file-drop')?.classList.remove('invalid'); });
+        el.addEventListener('change', () => { el.closest('.field, .check-line')?.classList.remove('invalid'); });
+    });
+
+    const status = applyForm.querySelector('.form-status');
+    const button = applyForm.querySelector('[type="submit"]');
+    const label = button.querySelector('.btn-label');
+    applyForm.addEventListener('submit', e => {
+        e.preventDefault();
+        let first = null;
+        applyForm.querySelectorAll('input, select, textarea').forEach(el => {
+            if (el.name === '_gotcha' || el.type === 'radio') return;
+            const ok = el.checkValidity();
+            const box = el.closest('.file-drop') || el.closest('.check-line') || el.closest('.field');
+            if (box) box.classList.toggle('invalid', !ok);
+            if (!ok && !first) first = el;
+        });
+        if (first) {
+            status.className = 'form-status error';
+            status.textContent = first.type === 'file' && first.validationMessage && first.files.length
+                ? first.validationMessage
+                : 'Please complete the highlighted fields.';
+            (first.closest('.file-drop') || first).scrollIntoView({ behavior: 'smooth', block: 'center' });
+            first.focus({ preventScroll: true });
+            return;
+        }
+        button.disabled = true;
+        status.className = 'form-status';
+        status.textContent = '';
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', applyForm.action);
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.upload.addEventListener('progress', ev => {
+            if (ev.lengthComputable) label.textContent = `Uploading… ${Math.round(ev.loaded / ev.total * 100)}%`;
+        });
+        xhr.addEventListener('load', () => {
+            let data = {};
+            try { data = JSON.parse(xhr.responseText); } catch { /* not JSON */ }
+            if (xhr.status === 200 && data.ok) {
+                applyForm.hidden = true;
+                const done = document.getElementById('apply-done');
+                document.getElementById('apply-done-text').textContent = data.message;
+                document.getElementById('apply-done-ref').textContent = data.ref || '';
+                done.hidden = false;
+                done.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                done.focus({ preventScroll: true });
+                return;
+            }
+            fail(data.message || 'Sorry, your application could not be sent. Please try again.');
+        });
+        xhr.addEventListener('error', () => fail('Your connection dropped while sending. Please check your internet and try again.'));
+        xhr.send(new FormData(applyForm));
+        function fail(message) {
+            button.disabled = false;
+            label.textContent = 'Submit application';
+            status.className = 'form-status error';
+            status.textContent = message + ' If this keeps happening, email your CV to info@judescbo.co.ke.';
+        }
+        label.textContent = 'Sending…';
+    });
+}
+
 // Visitor statistics for the dashboard: no cookies and nothing personal is sent.
 // Only works where the dashboard runs (PHP hosting), so it stays quiet on GitHub Pages.
 (() => {

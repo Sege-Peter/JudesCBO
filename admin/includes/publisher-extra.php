@@ -488,9 +488,21 @@ function vacancy_list(string $text): string
 
 function vacancy_apply_link(array $v): string
 {
-    if ($v['apply_url'] !== '') return $v['apply_url'];
-    $email = $v['apply_email'] ?: setting('org_email', 'info@judescbo.co.ke');
-    return 'mailto:' . $email . '?subject=' . rawurlencode('Application: ' . $v['title']);
+    // An outside form link wins; otherwise applicants use the website's own application form
+    return $v['apply_url'] !== '' ? $v['apply_url'] : 'apply?job=' . rawurlencode($v['slug']);
+}
+
+/** <option>s for the application form: every open position that takes applications on the website. */
+function render_apply_options(array $open): string
+{
+    $out = ['<option value="">Choose a position…</option>'];
+    foreach ($open as $v) {
+        if ($v['apply_url'] !== '') continue;
+        $closes = vacancy_closes($v);
+        $out[] = '<option value="' . h($v['slug']) . '" data-type="' . h($v['job_type']) . '" data-location="' . h($v['location']) . '"'
+            . ($closes ? ' data-closes="' . h(date('D j M Y', $closes)) . '" data-ends="' . date('c', $closes) . '"' : '') . '>' . h($v['title']) . '</option>';
+    }
+    return implode("\n", $out);
 }
 
 function render_vacancy_card(array $v, bool $closed = false): string
@@ -509,7 +521,7 @@ function render_vacancy_card(array $v, bool $closed = false): string
     $link = vacancy_apply_link($v);
     $share = rawurlencode('Vacancy at Judes CBO: ' . $v['title'] . ($closes ? ' (apply by ' . date('j M Y', $closes) . ')' : '') . '. ' . site_url('careers') . '#job-' . $v['slug']);
     $actions = $closed ? '' : '<div class="event-actions">'
-        . '<a href="' . h($link) . '" class="event-btn event-btn-primary"' . (str_starts_with($link, 'mailto:') ? '' : ' target="_blank" rel="noopener"') . '><i class="fas fa-paper-plane"></i> Apply now</a>'
+        . '<a href="' . h($link) . '" class="event-btn event-btn-primary"' . (preg_match('#^https?://#i', $link) ? ' target="_blank" rel="noopener"' : '') . '><i class="fas fa-paper-plane"></i> Apply now</a>'
         . '<a href="https://wa.me/?text=' . $share . '" class="event-btn" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Share</a>'
         . '</div>';
     return '<article class="event-card job-card reveal" id="job-' . h($v['slug']) . '"' . ($closes && !$closed ? ' data-ends="' . date('c', $closes) . '"' : '') . '>' . "\n"
@@ -570,5 +582,12 @@ function publish_careers(array $shell): array
     $html = replace_region($html, 'careers-open', indent_block($openHtml, 16), 'careers.html');
     $html = replace_region($html, 'careers-closed', indent_block($closedHtml, 16), 'careers.html');
     write_atomic(site_path('careers.html'), $html);
-    return ['careers.html'];
+    $changed = ['careers.html'];
+
+    if (is_file(site_path('apply.html'))) {
+        $apply = file_get_contents(site_path('apply.html'));
+        write_atomic(site_path('apply.html'), replace_region($apply, 'apply-jobs', indent_block(render_apply_options($open), 28), 'apply.html'));
+        $changed[] = 'apply.html';
+    }
+    return $changed;
 }

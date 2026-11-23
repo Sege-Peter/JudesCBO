@@ -1305,3 +1305,37 @@ kbd { font-family: inherit; font-size: .72rem; padding: 1px 6px; border-radius: 
 .timeline li.is-new .timeline-body p { position: relative; }
 @keyframes activityIn { from { opacity: 0; transform: translateY(-6px); background: #f3f8ef; } to { background: transparent; } }
 @media (prefers-reduced-motion: reduce) { .live-dot, .timeline li.is-new { animation: none; } }
+
+/* Job applications */
+.pill-reviewed { background: #ebf4ff; color: #2b6cb0; }
+.pill-shortlisted { background: #faf5ff; color: #6b46c1; }
+.pill-interview { background: #fffaeb; color: #975a16; }
+.pill-offered { background: #e6fffa; color: #2c7a7b; }
+.pill-hired { background: #e9f7ef; color: #276749; }
+.pill-rejected { background: #fff5f5; color: #c53030; }
+.row-new td { background: #f6fbf3; }
+.row-new .app-name strong::after { content: ''; display: inline-block; width: 8px; height: 8px; margin-left: 6px; border-radius: 50%; background: var(--red); vertical-align: middle; }
+.app-name { color: var(--text); text-decoration: none; }
+.app-name:hover strong { color: var(--green); text-decoration: underline; }
+.btn .badge { margin-left: 4px; }
+.app-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.app-files { display: grid; gap: 10px; }
+.app-file { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; color: var(--text); text-decoration: none; transition: border-color .2s, background .2s; }
+.app-file:hover { border-color: var(--green); background: #f6fbf3; }
+.app-file > i:first-child { font-size: 1.5rem; color: var(--green); }
+.app-file > i:last-child { margin-left: auto; color: var(--muted); }
+.app-file span { display: flex; flex-direction: column; min-width: 0; }
+.app-file small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-dl { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.app-dl .wide { grid-column: 1 / -1; }
+.app-dl dt { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 3px; }
+.app-dl dd { margin: 0; white-space: normal; word-break: break-word; line-height: 1.55; }
+.stars { color: #d69e2e; font-size: .8rem; letter-spacing: 1px; }
+.stars-off { color: #e2e8f0; }
+.rating-form { margin-top: .4rem; }
+.rating-buttons { display: flex; gap: 2px; }
+.rating-buttons .star { border: 0; background: none; padding: 2px 3px; font-size: 1.5rem; line-height: 1; color: #e2e8f0; cursor: pointer; }
+.rating-buttons .star.on { color: #d69e2e; }
+.rating-buttons:hover .star { color: #d69e2e; }
+.rating-buttons .star:hover ~ .star { color: #e2e8f0; }
+@media (max-width: 700px) { .app-dl { grid-template-columns: 1fr; } }

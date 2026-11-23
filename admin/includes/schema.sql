@@ -277,3 +277,26 @@ CREATE TABLE IF NOT EXISTS vacancies (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX (status, deadline)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS job_applications (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ref_code VARCHAR(20) NOT NULL DEFAULT '',
+    vacancy_id INT UNSIGNED NULL,
+    vacancy_title VARCHAR(200) NOT NULL DEFAULT '',
+    full_name VARCHAR(120) NOT NULL,
+    email VARCHAR(190) NOT NULL,
+    phone VARCHAR(40) NOT NULL DEFAULT '',
+    county VARCHAR(80) NOT NULL DEFAULT '',
+    highest_level VARCHAR(40) NOT NULL DEFAULT '',
+    years_experience VARCHAR(20) NOT NULL DEFAULT '',
+    details MEDIUMTEXT NOT NULL,
+    files TEXT NOT NULL,
+    status ENUM('new','reviewed','shortlisted','interview','offered','hired','rejected') NOT NULL DEFAULT 'new',
+    rating TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    internal_note TEXT NULL,
+    ip VARCHAR(45) NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX (vacancy_id, status),
+    INDEX (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

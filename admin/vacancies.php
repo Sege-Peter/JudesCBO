@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$rows = db()->query("SELECT * FROM vacancies ORDER BY FIELD(status, 'published', 'draft', 'closed'), COALESCE(deadline, '9999-12-31'), id DESC")->fetchAll();
+$rows = db()->query("SELECT v.*, (SELECT COUNT(*) FROM job_applications a WHERE a.vacancy_id = v.id) AS applicants, (SELECT COUNT(*) FROM job_applications a WHERE a.vacancy_id = v.id AND a.status = 'new') AS new_applicants FROM vacancies v ORDER BY FIELD(status, 'published', 'draft', 'closed'), COALESCE(deadline, '9999-12-31'), id DESC")->fetchAll();
 $open = array_values(array_filter($rows, 'vacancy_is_open'));
 $other = array_values(array_filter($rows, fn($v) => !vacancy_is_open($v)));
 $showForm = $id || isset($_GET['new']) || $errors;
@@ -99,13 +99,14 @@ function vacancy_row(array $v): void
                 <?php if ($v['location']): ?>· <i class="fas fa-location-dot"></i> <?= h($v['location']) ?><?php endif; ?></p>
         </div>
         <div class="row-actions">
+            <a href="applications?vacancy=<?= (int) $v['id'] ?>" class="btn btn-light btn-sm" title="Applications"><i class="fas fa-user-tie"></i> <?= (int) $v['applicants'] ?><?= (int) $v['new_applicants'] ? ' <em class="badge">' . (int) $v['new_applicants'] . ' new</em>' : '' ?></a>
             <?php if (vacancy_is_open($v)): ?><a href="../careers#job-<?= h($v['slug']) ?>" class="btn btn-light btn-sm" target="_blank" rel="noopener" title="View on website"><i class="fas fa-arrow-up-right-from-square"></i></a><?php endif; ?>
             <a href="?edit=<?= (int) $v['id'] ?>" class="btn btn-light btn-sm"><i class="fas fa-pen"></i> Edit</a>
             <?php if ($v['status'] === 'published'): ?>
             <form method="post" data-confirm="Close “<?= h($v['title']) ?>” to new applications?"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $v['id'] ?>"><input type="hidden" name="action" value="close">
                 <button class="btn btn-light btn-sm" title="Close to applications"><i class="fas fa-lock"></i> Close</button></form>
             <?php endif; ?>
-            <form method="post" data-confirm="Delete “<?= h($v['title']) ?>”?"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $v['id'] ?>"><input type="hidden" name="action" value="delete">
+            <form method="post" data-confirm="Delete “<?= h($v['title']) ?>”? Its applications stay under Applications."><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $v['id'] ?>"><input type="hidden" name="action" value="delete">
                 <button class="btn btn-danger-ghost btn-sm" aria-label="Delete"><i class="fas fa-trash"></i></button></form>
         </div>
     </article>
@@ -127,7 +128,7 @@ function vacancy_row(array $v): void
                 <label class="field">Short summary <small>One or two sentences shown on the card</small><textarea name="summary" rows="2" maxlength="300"><?= h($job['summary']) ?></textarea></label>
                 <label class="field">About the role <small>Duties and responsibilities. Blank lines start new paragraphs.</small><textarea name="description" rows="7" maxlength="6000"><?= h($job['description']) ?></textarea></label>
                 <label class="field">Requirements <small>One per line, shown as a bulleted list</small><textarea name="requirements" rows="6" maxlength="4000" placeholder="Diploma in Community Health or related field&#10;Resident of Kasipul or Kabondo Kasipul&#10;Fluent in Dholuo and English"><?= h($job['requirements']) ?></textarea></label>
-                <label class="field">How to apply <small>What to send and any instructions</small><textarea name="how_to_apply" rows="3" maxlength="2000" placeholder="Send your CV and a one-page cover letter. Only shortlisted candidates will be contacted."><?= h($job['how_to_apply']) ?></textarea></label>
+                <label class="field">How to apply <small>What to send and any instructions</small><textarea name="how_to_apply" rows="3" maxlength="2000" placeholder="Optional extra instructions, e.g. Include copies of your academic certificates. Only shortlisted candidates will be contacted."><?= h($job['how_to_apply']) ?></textarea></label>
             </section>
         </div>
         <aside class="editor-side">
@@ -143,10 +144,10 @@ function vacancy_row(array $v): void
                 <button class="btn btn-primary btn-block"><i class="fas fa-floppy-disk"></i> Save vacancy</button>
             </section>
             <section class="panel">
-                <h3 class="panel-title">Applications go to</h3>
-                <label class="field">Email<input type="email" name="apply_email" value="<?= h($job['apply_email']) ?>" maxlength="190" placeholder="<?= h($orgEmail) ?>"></label>
-                <label class="field">or an online form link <small>optional, used instead of email</small><input type="url" name="apply_url" value="<?= h($job['apply_url']) ?>" maxlength="255" placeholder="https://forms.gle/…"></label>
-                <p class="muted small">The "Apply now" button opens an email to this address with the position in the subject line.</p>
+                <h3 class="panel-title">Applications</h3>
+                <p class="muted small">Applicants fill in the website's application form and upload their CV. Applications appear under <a href="applications">Applications</a>.</p>
+                <label class="field">Email alerts for new applications<input type="email" name="apply_email" value="<?= h($job['apply_email']) ?>" maxlength="190" placeholder="<?= h(setting('notify_email') ?: $orgEmail) ?>"></label>
+                <label class="field">Use an outside form instead <small>optional, e.g. a partner's portal</small><input type="url" name="apply_url" value="<?= h($job['apply_url']) ?>" maxlength="255" placeholder="https://…"></label>
             </section>
         </aside>
     </form>

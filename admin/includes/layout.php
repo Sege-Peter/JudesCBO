@@ -10,6 +10,7 @@ function nav_items(): array
         ['gallery', 'Gallery', 'fa-images'],
         ['events', 'Events', 'fa-calendar-days'],
         ['vacancies', 'Vacancies', 'fa-briefcase'],
+        ['applications', 'Applications', 'fa-user-tie'],
         ['team', 'Team', 'fa-people-group'],
         ['partners', 'Partners', 'fa-handshake'],
         ['messages', 'Messages', 'fa-inbox'],
@@ -33,6 +34,11 @@ function render_header(string $title, string $active = ''): void
 {
     $user = current_user();
     $newMessages = (int) db()->query("SELECT COUNT(*) FROM messages WHERE status = 'new'")->fetchColumn();
+    try {
+        $newApplications = (int) db()->query("SELECT COUNT(*) FROM job_applications WHERE status = 'new'")->fetchColumn();
+    } catch (PDOException $e) {
+        $newApplications = 0; // table not created yet
+    }
     $page = basename($_SERVER['SCRIPT_NAME'], '.php');
     $active = $active ?: $page;
     ?>
@@ -63,6 +69,7 @@ function render_header(string $title, string $active = ''): void
                 <a href="<?= h($href) ?>" class="<?= $href === $active ? 'active' : '' ?>">
                     <i class="fas <?= h($icon) ?>"></i><span><?= h($label) ?></span>
                     <?php if ($href === 'messages' && $newMessages > 0): ?><em class="badge"><?= $newMessages ?></em><?php endif; ?>
+                    <?php if ($href === 'applications' && $newApplications > 0): ?><em class="badge"><?= $newApplications ?></em><?php endif; ?>
                 </a>
             <?php endforeach; ?>
         </nav>

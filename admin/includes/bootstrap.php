@@ -185,7 +185,7 @@ function require_csrf(): void
 
 /* ---------- Database upgrades ---------- */
 
-const SCHEMA_VERSION = 13;
+const SCHEMA_VERSION = 14;
 
 function column_exists(string $table, string $column): bool
 {
@@ -265,6 +265,7 @@ function migrate(): void
     // Version 12: email verification at login for every role (login_challenges table comes from schema.sql)
     db()->exec("INSERT IGNORE INTO settings (name, value) VALUES ('login_verify_developer', 'both'), ('login_verify_admin', 'both'), ('login_verify_editor', 'both')");
     // Version 13: job vacancies for the Careers page (vacancies table comes from schema.sql)
+    // Version 14: online job applications (job_applications table comes from schema.sql)
     db()->prepare("INSERT INTO settings (name, value) VALUES ('schema_version', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)")->execute([SCHEMA_VERSION]);
 }
 
