@@ -295,11 +295,13 @@ function text_to_html(string $text, string $quoteHtml = ''): string
  */
 function system_mail(string $to, string $subject, string $body, string $replyTo = ''): bool
 {
+    // Marked as automatic (RFC 3834) so mailbox auto-replies, including info@'s own, don't answer them
+    $headers = ['Auto-Submitted' => 'auto-generated', 'X-Auto-Response-Suppress' => 'All'];
     $box = org_mailbox();
     if ($box) {
         try {
             mailbox_send($box, ['to' => [$to], 'subject' => $subject, 'text' => $body, 'html' => email_brand_html(email_text_block($body), EMAIL_LOGO_CID),
-                'inline' => email_logo_inline(), 'reply_to' => $replyTo, 'from_name' => 'Judes CBO'], [], false);
+                'inline' => email_logo_inline(), 'reply_to' => $replyTo, 'from_name' => 'Judes CBO', 'headers' => $headers], [], false);
             return true;
         } catch (Throwable $e) {
             // fall back to mail() below
@@ -308,7 +310,7 @@ function system_mail(string $to, string $subject, string $body, string $replyTo 
     if (!function_exists('mail')) return false;
     $from = setting('org_email', 'info@judescbo.co.ke');
     [$raw] = build_message(['from' => $from, 'from_name' => 'Judes CBO', 'to' => [$to], 'subject' => $subject, 'text' => $body,
-        'html' => email_brand_html(email_text_block($body), email_logo_url()), 'reply_to' => $replyTo]);
+        'html' => email_brand_html(email_text_block($body), email_logo_url()), 'reply_to' => $replyTo, 'headers' => $headers]);
     // mail() takes the headers and body separately; To and Subject are passed as arguments
     [$head, $content] = explode("\r\n\r\n", $raw, 2);
     $head = preg_replace('/^(To|Subject): .*(\r\n[ \t].*)*\r\n/mi', '', $head . "\r\n");
